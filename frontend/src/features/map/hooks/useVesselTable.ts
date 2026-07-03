@@ -4,7 +4,7 @@ import { fetchVesselTable, fetchVesselTableColumns, fetchUniqueColumnValues } fr
 import { mapVesselTableResponse, type VesselTablePage } from "../model/mappers.vesselTable";
 import { buildWfsCqlFilter, buildPolygonCqlFilter, combineCqlFilters } from "../model/cqlFilter";
 import { loadSavedFilters, saveFilter, deleteSavedFilter } from "../api/vesselFilterStorage";
-import { DEFAULT_TABLE_COLUMNS, DEFAULT_PAGE_SIZE } from "../config";
+import { DEFAULT_TABLE_COLUMNS, DEFAULT_PAGE_SIZE } from "../model/config";
 
 interface UseVesselTableOptions {
   pageSize?: number;

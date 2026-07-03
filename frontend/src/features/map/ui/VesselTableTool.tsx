@@ -18,7 +18,7 @@ import {
 import { DataGrid, type GridColDef, type GridSortModel } from "@mui/x-data-grid";
 import CloseIcon from "@mui/icons-material/Close";
 import ViewColumnIcon from "@mui/icons-material/ViewColumn";
-import { PAGE_SIZE_OPTIONS } from "../config";
+import { PAGE_SIZE_OPTIONS } from "../model/config";
 import { formatColumnName } from "@/shared/utils";
 
 interface VesselTableToolProps {

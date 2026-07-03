@@ -1,5 +1,5 @@
 import { WMSTileLayer, TileLayer } from "react-leaflet";
-import { weatherLayers } from "../config";
+import { weatherLayers } from "../model/config";
 import type { OverlayLayerConfig } from "../model/types";
 
 interface MapOverlaysProps {

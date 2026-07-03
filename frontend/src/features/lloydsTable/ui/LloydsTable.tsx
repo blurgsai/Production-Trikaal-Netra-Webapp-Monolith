@@ -14,7 +14,7 @@ import { useLloydsDistinctValues } from "../hooks/useLloydsDistinctValues";
 import {
   LLOYDS_PRIORITY_COLUMNS,
   LLOYDS_PRIMARY_KEY_FIELD,
-} from "../constants/priorityColumns";
+} from "../model/priorityColumns";
 
 export function LloydsTable() {
   const [page, setPage] = useState(0);

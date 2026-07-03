@@ -1,4 +1,4 @@
-import { baseMaps, defaultBaseMap, overlayLayers } from "../config";
+import { baseMaps, defaultBaseMap, overlayLayers } from "../model/config";
 import type { MapConfigApiResponse, CountryPrefixApi, VesselDetailsApi, VesselImageApiResponse, EezRegionApi, CustomShapeApi, StyleDefinitionApi, StyleRuleApi, StyleConditionApi, ClusterConfigApi, TrajectoryConfigApi, DeadReckoningConfigApi, PopupFieldConfigApi } from "../api/types";
 import type { BaseMap, VesselConfig, VesselInfo, CountryPrefix, VesselDetails, VesselImage, EezRegion, CustomShape, StyleDefinition, StyleRule, VesselTableFilter, FilterCombinator, ClusterConfig, TrajectoryConfig, DeadReckoningConfig, PopupFieldConfig } from "./types";
 
