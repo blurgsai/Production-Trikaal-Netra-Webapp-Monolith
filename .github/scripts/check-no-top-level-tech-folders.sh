@@ -37,7 +37,7 @@ fi
 ERRORS=0
 
 # Valid top-level directories inside src/
-VALID_TOP_LEVEL=("app" "features" "shared")
+VALID_TOP_LEVEL=("app" "features" "shared" "assets" "test")
 
 # Folders that indicate technical-role organization (anti-pattern)
 BLOCKED_FOLDERS=(
