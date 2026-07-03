@@ -60,3 +60,5 @@ zstandard==0.25.0
 # ─── Dev / Lint / Architecture Enforcement ───
 ruff>=0.6.0
 import-linter>=2.0.0
+pytest>=8.0.0
+pytest-asyncio>=0.23.0
