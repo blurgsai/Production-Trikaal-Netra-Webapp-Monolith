@@ -1,18 +1,23 @@
 import js from '@eslint/js'
-import globals from 'globals'
+import boundaries from 'eslint-plugin-boundaries'
 import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
-import boundaries from 'eslint-plugin-boundaries'
+import globals from 'globals'
 import tseslint from 'typescript-eslint'
 
 export default tseslint.config(
-  { ignores: ['dist'] },
+  { ignores: ['dist', 'node_modules'] },
+  js.configs.recommended,
+  ...tseslint.configs.recommended,
   {
-    extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ['**/*.{ts,tsx}'],
     languageOptions: {
-      ecmaVersion: 2020,
+      ecmaVersion: 2022,
       globals: globals.browser,
+      parserOptions: {
+        projectService: true,
+        tsconfigRootDir: import.meta.dirname,
+      },
     },
     plugins: {
       'react-hooks': reactHooks,
@@ -20,19 +25,28 @@ export default tseslint.config(
       boundaries,
     },
     settings: {
-      "boundaries/elements": [
-        { type: "root", pattern: "src/*" },
-        { type: "app", pattern: "src/app/**" },
-        { type: "feature", pattern: "src/features/*/index.ts" },
-        { type: "feature-api", pattern: "src/features/*/api/**" },
-        { type: "feature-model", pattern: "src/features/*/model/**" },
-        { type: "feature-hooks", pattern: "src/features/*/hooks/**" },
-        { type: "feature-ui", pattern: "src/features/*/ui/**" },
-        { type: "feature-internal", pattern: "src/features/*/**" },
-        { type: "shared", pattern: "src/shared/**" },
+      'boundaries/include': ['src/**/*'],
+      'boundaries/ignore': ['src/**/*.test.*', 'src/**/*.spec.*'],
+      'boundaries/elements': [
+        { type: 'feature', pattern: 'src/features/*/index.ts', mode: 'full', capture: ['feature'] },
+        {
+          type: 'feature-internal',
+          pattern: 'src/features/*/{api,model,hooks,ui}/**',
+          mode: 'full',
+          capture: ['feature'],
+        },
+        { type: 'shared', pattern: 'src/shared/**', mode: 'full' },
+        { type: 'app', pattern: 'src/app/**', mode: 'full' },
+        { type: 'root', pattern: 'src/main.tsx', mode: 'full' },
       ],
-      "boundaries/include": ["src/**/*"],
-      "boundaries/ignore": ["src/**/*.test.*", "src/**/*.spec.*"],
+      'import/resolver': {
+        typescript: {
+          project: './tsconfig.app.json',
+        },
+        node: {
+          extensions: ['.js', '.jsx', '.ts', '.tsx'],
+        },
+      },
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
@@ -40,20 +54,80 @@ export default tseslint.config(
         'warn',
         { allowConstantExport: true },
       ],
-      "boundaries/element-types": ["error", {
-        default: "disallow",
-        rules: [
-          { from: "root", allow: ["app", "feature", "shared"] },
-          { from: "app", allow: ["root", "app", "feature", "shared"] },
-          { from: "feature", allow: ["feature", "feature-api", "feature-model", "feature-hooks", "feature-ui", "shared"] },
-          { from: "feature-api", allow: ["feature-api", "shared"] },
-          { from: "feature-model", allow: ["feature-api", "feature-model", "shared"] },
-          { from: "feature-hooks", allow: ["feature-api", "feature-model", "feature-hooks", "shared"] },
-          { from: "feature-ui", allow: ["feature-model", "feature-hooks", "feature-ui", "shared"] },
-          { from: "feature-internal", allow: ["feature", "feature-api", "feature-model", "feature-hooks", "feature-ui", "feature-internal", "shared"] },
-          { from: "shared", allow: ["shared"] },
-        ],
-      }],
+      'boundaries/element-types': [
+        'error',
+        {
+          default: 'disallow',
+          rules: [
+            { from: ['root'], allow: ['app', 'shared', 'feature'] },
+            { from: ['app'], allow: ['app', 'feature', 'shared'] },
+            { from: ['feature'], allow: ['feature-internal', 'shared'] },
+            {
+              from: ['feature-internal'],
+              allow: [
+                ['feature-internal', { feature: '{{ from.feature }}' }],
+                'shared',
+              ],
+            },
+            { from: ['shared'], allow: ['shared'] },
+          ],
+        },
+      ],
+      'boundaries/entry-point': [
+        'error',
+        {
+          default: 'disallow',
+          rules: [
+            {
+              target: 'feature',
+              allow: '**/index.ts',
+            },
+            {
+              target: 'app',
+              allow: '**/*',
+            },
+            {
+              target: 'shared',
+              allow: '**/*',
+            },
+            {
+              target: 'root',
+              allow: '**/*',
+            },
+          ],
+        },
+      ],
+      'boundaries/no-private': 'off',
+      'boundaries/no-unknown-files': 'error',
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: [
+                '@features/*/api/*',
+                '@features/*/model/*',
+                '@features/*/hooks/*',
+                '@features/*/ui/*',
+              ],
+              message:
+                'Feature internals must stay behind the feature index.ts barrel.',
+            },
+          ],
+        },
+      ],
     },
   },
+  {
+    ignores: [
+      'dist/',
+      'node_modules/',
+      'build/',
+      '*.config.*',
+      'eslint.config.*',
+      'vite.config.*',
+      'tsconfig.*',
+      'src/test/**',
+    ],
+  }
 )

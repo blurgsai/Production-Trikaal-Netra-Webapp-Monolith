@@ -5,10 +5,18 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
-    "lint": "eslint .",
+    "build": "tsc -b && vite build",
+    "lint": "eslint src/ --max-warnings=0",
+    "lint:boundaries": "eslint src/ --rule 'boundaries/element-types: error' --max-warnings=0",
     "preview": "vite preview",
-    "test": "vitest run"
+    "test": "vitest run",
+    "check:structure": "chmod +x ../.github/scripts/validate-feature-structure.sh && ../.github/scripts/validate-feature-structure.sh src/features",
+    "check:nested": "chmod +x ../.github/scripts/check-no-nested-features.sh && ../.github/scripts/check-no-nested-features.sh src/features",
+    "check:top-level": "chmod +x ../.github/scripts/check-no-top-level-tech-folders.sh && ../.github/scripts/check-no-top-level-tech-folders.sh src",
+    "check:imports": "chmod +x ../.github/scripts/check-layer-imports.sh && ../.github/scripts/check-layer-imports.sh src/features",
+    "check:barrel": "chmod +x ../.github/scripts/check-barrel-exports.sh && ../.github/scripts/check-barrel-exports.sh src/features",
+    "check:all": "npm run check:structure && npm run check:nested && npm run check:top-level && npm run check:imports && npm run check:barrel && npm run lint",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
@@ -46,6 +54,7 @@
     "@types/react-dom": "^19.1.9",
     "@vitejs/plugin-react-swc": "^4.1.0",
     "eslint": "^9.36.0",
+    "eslint-import-resolver-typescript": "^4.4.5",
     "eslint-plugin-boundaries": "^5.0.1",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.22",
