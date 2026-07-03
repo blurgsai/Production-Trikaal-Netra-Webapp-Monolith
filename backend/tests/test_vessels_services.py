@@ -1,10 +1,10 @@
-"""Unit tests for routes.vessels.services — business logic layer."""
+"""Unit tests for src.features.vessels.services — business logic layer."""
 import httpx
 import pytest
 
-from routes.vessels.services import get_vessel_trajectory, get_vessel_playback
-from routes.vessels.models import VesselTrajectoryResponse, VesselPlaybackResponse
-from shared.errors import ExternalServiceError, NotFoundError, ValidationError
+from src.features.vessels.services import get_vessel_trajectory, get_vessel_playback
+from src.features.vessels.models import VesselTrajectoryResponse, VesselPlaybackResponse
+from src.shared.errors import ExternalServiceError, NotFoundError, ValidationError
 
 
 class TestGetVesselTrajectory:

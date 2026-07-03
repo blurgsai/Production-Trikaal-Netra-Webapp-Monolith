@@ -1,13 +1,13 @@
-from fastapi import APIRouter, Depends
 import httpx
+from fastapi import APIRouter, Depends
 
-from routes.vessels.models import (
-    VesselTrajectoryResponse,
-    VesselPlaybackResponse,
+from src.features.vessels.models import (
     PlaybackWindowRequest,
+    VesselPlaybackResponse,
+    VesselTrajectoryResponse,
 )
-from routes.vessels.services import get_vessel_trajectory, get_vessel_playback
-from shared.dependencies import get_http_client
+from src.features.vessels.services import get_vessel_playback, get_vessel_trajectory
+from src.shared.dependencies import get_http_client
 
 router = APIRouter(prefix="/vessels", tags=["Vessels"])
 

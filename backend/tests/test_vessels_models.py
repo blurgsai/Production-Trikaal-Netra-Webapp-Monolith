@@ -1,7 +1,7 @@
-"""Unit tests for routes.vessels.models — mappers and Pydantic models."""
+"""Unit tests for src.features.vessels.models — mappers and Pydantic models."""
 import pytest
 
-from routes.vessels.models import (
+from src.features.vessels.models import (
     VesselPoint,
     VesselTrajectoryResponse,
     VesselPlaybackPoint,
@@ -11,7 +11,7 @@ from routes.vessels.models import (
     map_playback_from_raw,
     parse_playback_raw_rows,
 )
-from routes.vessels.clients import TrajectoryRawRow, PlaybackRawRow
+from src.features.vessels.clients import TrajectoryRawRow, PlaybackRawRow
 
 
 class TestTrajectoryRawRow:

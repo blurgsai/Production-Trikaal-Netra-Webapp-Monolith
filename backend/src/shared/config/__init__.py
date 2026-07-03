@@ -1,5 +1,5 @@
-from pydantic_settings import BaseSettings
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic_settings import BaseSettings
 
 
 def setup_cors(app):
@@ -22,6 +22,18 @@ class Settings(BaseSettings):
     CLICKHOUSE_PASSWORD: str = ""
     CLICKHOUSE_HOST: str = "localhost"
     CLICKHOUSE_PORT: str = "8123"
+
+    USER_ACTIVATION_TOKEN_SECRET: str = ""
+    USER_ACTIVATION_SALT: str = ""
+
+    MINIO_ENDPOINT: str = ""
+    MINIO_ACCESS_KEY: str = ""
+    MINIO_SECRET_KEY: str = ""
+
+    GEOSERVER_URL: str = ""
+    GEOSERVER_WORKSPACE: str = ""
+    GEOSERVER_USERNAME: str = ""
+    GEOSERVER_PASSWORD: str = ""
 
     class Config:
         env_file = ".env"

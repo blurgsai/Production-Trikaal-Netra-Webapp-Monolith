@@ -16,7 +16,7 @@ os.environ.setdefault("CLICKHOUSE_PASSWORD", "test")
 os.environ.setdefault("CLICKHOUSE_HOST", "localhost")
 os.environ.setdefault("CLICKHOUSE_PORT", "8123")
 
-# Ensure backend/ is on sys.path so `routes` and `shared` resolve
+# Ensure backend/ is on sys.path so `src` resolves
 BACKEND_DIR = Path(__file__).resolve().parent.parent
 if str(BACKEND_DIR) not in sys.path:
     sys.path.insert(0, str(BACKEND_DIR))

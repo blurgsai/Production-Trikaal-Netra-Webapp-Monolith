@@ -1,7 +1,9 @@
-import bcrypt
 from datetime import datetime, timedelta
+
+import bcrypt
 import jwt
-from shared.config import settings
+
+from src.shared.config import settings
 
 
 def hash_password(password: str) -> str:
