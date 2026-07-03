@@ -1,0 +1,1103 @@
+React Frontend Architecture Guide
+Separation of Concerns & Schema Isolation
+
+Project Structure
+src/
+├── app
+│
+├── Layout.tsx
+│
+├── pages
+│
+│
+├── HomePage.tsx
+│
+│
+├── PostsPage.tsx
+│
+│
+├── UsersPage.tsx
+│
+│
+└── WeatherPage.tsx
+│
+├── providers.tsx
+│
+└── router.tsx
+├── features
+│
+├── posts
+│
+│
+├── api
+│
+│
+│
+├── postsApi.ts
+│
+│
+│
+└── types.ts
+│
+│
+├── hooks
+│
+│
+│
+└── usePosts.ts
+│
+│
+├── index.ts
+│
+│
+├── model
+│
+│
+│
+├── mappers.ts
+│
+│
+│
+└── types.ts
+│
+│
+└── ui
+│
+│
+├── PostCard.tsx
+│
+│
+├── PostDetail.tsx
+│
+│
+└── PostList.tsx
+│
+├── users
+│
+│
+├── api
+│
+│
+│
+├── types.ts
+│
+│
+│
+└── usersApi.ts
+│
+│
+├── hooks
+│
+│
+│
+└── useUsers.ts
+│
+│
+├── index.ts
+│
+│
+├── model
+│
+│
+│
+├── mappers.ts
+│
+│
+│
+└── types.ts
+│
+│
+└── ui
+│
+│
+├── UserCard.tsx
+│
+│
+├── UserDetail.tsx
+│
+│
+└── UserList.tsx
+│
+└── weather
+1
+
+│
+├── api
+│
+│
+├── types.ts
+│
+│
+└── weatherApi.ts
+├── hooks
+│
+│
+│
+└── useWeather.ts
+│
+├── index.ts
+│
+├── model
+│
+│
+├── mappers.ts
+│
+│
+└── types.ts
+│
+└── ui
+│
+├── CurrentWeatherCard.tsx
+│
+└── ForecastList.tsx
+├── main.tsx
+└── shared
+├── styles
+│
+└── global.css
+├── types
+├── ui
+│
+├── Card.tsx
+│
+├── ErrorMessage.tsx
+│
+├── LoadingSpinner.tsx
+│
+└── index.ts
+└── utils
+23 directories, 39 files
+
+1. The Problem
+In typical React codebases:
+• Raw API response types leak directly into UI components
+• When a backend schema changes (field renamed, object restructured, type
+changed), you end up modifying 5–10+ files across the repo
+• Features become tangled — changing one can break another
+• There’s no enforcement of boundaries, so architecture erodes over time
+Goal: Structure code so that any single type of change (API schema, UI design, business logic) stays local — touching only the files responsible for that concern.
+
+2. Architecture Overview
+We use feature-sliced architecture with an anti-corruption layer.
+
+2
+
+Folder Structure
+src/
+features/
+users/
+api/
+model/
+hooks/
+ui/
+index.ts
+posts/
+api/
+model/
+hooks/
+ui/
+index.ts
+...
+shared/
+app/
+
+← Raw API types + fetch functions
+← Domain types + mappers (anti-corruption layer)
+← Data-fetching hooks (TanStack Query)
+← Presentational components
+← Public API (barrel export)
+
+← Reusable UI components, utils, types
+← Routes, providers, layout, page-level components
+
+Key Principles
+1. Code is organized by feature, not by technical role (no top-level /components,
+/hooks, /utils folders)
+2. Each feature is self-contained — it owns its API calls, domain logic, and UI
+3. UI components never see raw API types — they only know about domain
+models
+4. Barrel exports enforce feature boundaries — external code imports from
+features/x/index.ts, never from internal paths
+5. ESLint rules prevent boundary violations at lint time
+
+3. The Four Layers
+Each feature has four layers. Each layer has one job and only talks to the layer
+next to it:
+Layer 1: API
+Layer 2: Model
+Layer 3: Hooks
+Layer 4: UI
+
+→
+→
+→
+→
+
+"Talk to the backend"
+"Translate backend language → our language"
+"Fetch + cache data"
+"Render things on screen"
+
+Data flows in one direction:
+API
+
+→
+
+Model (mapper)
+
+→
+
+Hook
+
+→
+
+UI Component
+
+Who Knows What
+
+3
+
+Layer
+
+Knows about API
+schema?
+
+api/
+Yes
+model/ Yes
+(mapper)
+hooks/ No (calls mapper)
+ui/
+No
+
+Knows about domain
+model?
+
+Knows about
+React/UI?
+
+No
+Yes
+
+No
+No
+
+Yes
+Yes
+
+Minimal (useQuery)
+Yes
+
+Each layer has one reason to change. That is the separation of concerns.
+
+4. Layer-by-Layer Walkthrough
+Layer 1 — API (features/users/api/)
+Job: Define the raw backend types and fetch data. Knows nothing about UI.
+// api/types.ts — mirrors the backend JSON schema exactly
+interface UserApiResponse {
+id: number;
+name: string;
+address: {
+city: string;
+street: string;
+geo: { lat: string; lng: string };
+// strings from the API
+};
+company: {
+name: string;
+catchPhrase: string;
+bs: string;
+};
+}
+// api/usersApi.ts — fetch functions
+async function fetchUsers(): Promise<UserApiResponse[]> {
+const response = await fetch('https://api.example.com/users');
+if (!response.ok) throw new Error(`Failed: ${response.status}`);
+return response.json();
+}
+Rules: - Types here match the backend response exactly — field names,
+nesting, types - Never import these types in UI components - If the backend
+adds/removes/renames a field, this file changes
+
+4
+
+Layer 2 — Model & Mappers (features/users/model/)
+Job: Define YOUR stable domain types and translate raw API data into them. This is
+the anti-corruption layer — the wall between “their world” and “your world.”
+// model/types.ts — YOUR types, YOUR naming, YOUR shape
+interface User {
+id: number;
+displayName: string;
+// you chose this name
+location: string;
+// flat string, not nested object
+company: string;
+// just the name, not the whole object
+coordinates: {
+lat: number;
+// numbers, not strings
+lng: number;
+};
+}
+// model/mappers.ts — the TRANSLATOR (only file that touches both worlds)
+function mapUserFromApi(raw: UserApiResponse): User {
+return {
+id: raw.id,
+displayName: raw.name,
+// rename
+location: `${raw.address.city}, ${raw.address.street}`, // flatten
+company: raw.company.name,
+// simplify
+coordinates: {
+lat: parseFloat(raw.address.geo.lat),
+// type convert
+lng: parseFloat(raw.address.geo.lng),
+},
+};
+}
+Rules: - Domain types are designed for YOUR UI needs, not the backend’s shape - The
+mapper is the only file that imports both raw API types and domain types - When a
+schema changes, update the mapper — nothing else needs to change
+
+Layer 3 — Hooks (features/users/hooks/)
+Job: Wire together fetching + mapping + caching. Returns domain types.
+// hooks/useUsers.ts
+function useUsers() {
+return useQuery({
+queryKey: ['users'],
+queryFn: async () => {
+const raw = await fetchUsers();
+return mapUsersFromApi(raw);
+},
+});
+5
+
+// Layer 1
+// Layer 2
+
+}
+Rules: - Hooks call the API layer and pass results through the mapper - They return
+domain types (User[]), never raw API types - Caching, refetching, and error handling
+live here
+
+Layer 4 — UI (features/users/ui/)
+Job: Render things on screen. Has zero knowledge of the API.
+// ui/UserCard.tsx
+function UserCard({ user }: { user: User }) {
+return (
+<Card>
+<h3>{user.displayName}</h3>
+<p>{user.location}</p>
+<p>{user.company}</p>
+</Card>
+);
+}
+Rules: - UI components only accept domain types as props - They never import from
+api/ — only from model/types.ts - They are pure presentational components: given
+data, render it
+
+5. The Anti-Corruption Layer in Action
+Example: Backend renames company.name → company.title
+Without this pattern: | File | Change needed | |——|————–| | api/types.ts | Update interface | | UserCard.tsx | raw.company.name → raw.company.title | | UserDetail.tsx | Same | | UserList.tsx | Same | | useUsers.ts | Maybe | | Any util touching
+the field | Same | | Total: 5–10 files | |
+With this pattern: | File | Change needed | |——|————–| | api/types.ts | Update
+interface | | model/mappers.ts | One line: raw.company.name → raw.company.title
+| | Total: 2 files | Done. |
+The mapper absorbs the difference. The domain type User still has company: string.
+Hooks, UI, pages — nothing downstream changes.
+Example: Backend restructures the entire address object
+Backend changes:
+
+// Before
+{ "address": { "city": "NYC", "street": "5th Ave", "geo": { "lat": "40.7", "lng": "
+6
+
+// After
+{ "location": { "cityName": "NYC", "streetAddress": "5th Ave" }, "coordinates": [40
+What you change: 1. api/types.ts — update the interface to match new shape 2.
+model/mappers.ts — update the mapping logic
+// Before
+location: `${raw.address.city}, ${raw.address.street}`,
+coordinates: { lat: parseFloat(raw.address.geo.lat), ... }
+// After
+location: `${raw.location.cityName}, ${raw.location.streetAddress}`,
+coordinates: { lat: raw.coordinates[0], lng: raw.coordinates[1] }
+What stays the same: The User domain type, all hooks, all UI components, all pages.
+Zero changes.
+
+6. Feature Boundaries (Barrel Exports)
+Each feature has an index.ts that controls what’s visible to the outside:
+// features/users/index.ts — the PUBLIC API
+export type { User } from "./model/types";
+// [YES] domain type
+export { useUsers, useUser } from "./hooks/useUsers"; // [YES] hooks
+export { UserCard } from "./ui/UserCard";
+// [YES] components
+export { UserList } from "./ui/UserList";
+export { UserDetail } from "./ui/UserDetail";
+// api/types.ts is NOT exported
+// model/mappers.ts is NOT exported
+
+// [NO] raw types stay internal
+// [NO] mappers stay internal
+
+External code can only import from the barrel:
+// CORRECT — import from barrel
+import { useUsers, UserCard } from "../../features/users";
+// BLOCKED by ESLint — importing internals
+import { fetchUsers } from "../../features/users/api/usersApi";
+import type { UserApiResponse } from "../../features/users/api/types";
+
+7. Dependency Rules
+app/
+
+→
+
+features/ (barrel only)
+
+→
+
+shared/
+
+7
+
+From
+
+Can import from
+
+app/ (pages, layout, router)
+features/ (barrel)
+features/ (internals)
+shared/
+Any feature
+
+features/ (barrel exports), shared/
+Own internals, shared/
+Same feature’s internals, shared/
+Only shared/
+Never another feature’s internals
+
+These rules are enforced automatically by eslint-plugin-boundaries. A developer
+who violates them gets a lint error in their IDE and in CI.
+
+8. Adding a New Feature (Checklist)
+When adding a new feature (e.g., products):
+1. Create the folder structure:
+src/features/products/
+api/types.ts
+api/productsApi.ts
+model/types.ts
+model/mappers.ts
+hooks/useProducts.ts
+ui/ProductCard.tsx
+ui/ProductList.tsx
+index.ts
+2. Define raw API types in api/types.ts — match the backend exactly
+3. Define domain types in model/types.ts — design for your UI needs
+4. Write the mapper in model/mappers.ts — translate raw → domain
+5. Write fetch functions in api/productsApi.ts
+6. Write hooks in hooks/ — wire fetch + mapper + TanStack Query
+7. Write UI components in ui/ — import only from model/types.ts
+8. Export the public API in index.ts — only domain types, hooks, and components
+9. Add a page in app/pages/ that uses the feature’s public API
+
+9. Tooling Enforcement
+ESLint Boundaries Plugin
+Install: npm install -D eslint-plugin-boundaries
+8
+
+Configuration (simplified):
+// eslint.config.js
+settings: {
+"boundaries/elements": [
+{ type: "feature", pattern: "src/features/*" },
+{ type: "feature-internal", pattern: "src/features/*/**" },
+{ type: "shared", pattern: "src/shared/**" },
+{ type: "app", pattern: "src/app/**" },
+],
+},
+rules: {
+"boundaries/element-types": ["error", {
+default: "disallow",
+rules: [
+allow: ["feature", "shared", "app"] },
+{ from: "app",
+{ from: "feature",
+allow: ["feature-internal", "shared"] },
+{ from: "feature-internal", allow: ["feature-internal", "shared"] },
+{ from: "shared",
+allow: ["shared"] },
+],
+}],
+}
+API Type Codegen (Recommended)
+If your backend has an OpenAPI spec or GraphQL schema, auto-generate the raw API
+types: - REST: openapi-typescript generates types from OpenAPI specs - GraphQL:
+graphql-codegen generates types from your schema
+This means api/types.ts is auto-generated — you never hand-write it. When the
+backend schema changes, you regenerate and only update the mapper.
+
+10. Tech Stack (Reference Implementation)
+Tool
+
+Purpose
+
+React 19 + TypeScript
+Vite
+TanStack Query
+React Router v7
+eslint-plugin-boundaries
+
+UI framework + type safety
+Build tool
+Data fetching + caching
+Routing
+Architectural lint rules
+
+11. Quick Reference — Where Does Each Change Go?
+
+9
+
+What changed?
+
+Files to touch
+
+Backend renamed a field
+Backend restructured an object
+New backend endpoint
+UI redesign of a card
+New page using existing data
+Add caching/refetch logic
+New shared button component
+
+api/types.ts + model/mappers.ts
+api/types.ts + model/mappers.ts
+New api/ function + new mapper + new hook
+ui/ components only
+app/pages/ only
+hooks/ only
+shared/ui/ only
+
+Reference implementation available in the react-architecture-demo repository.
+
+10
+
+FastAPI Backend Architecture Guide
+Separation of Concerns & Schema Isolation
+
+Project Structure
+src/
+|-- features
+|
+|-- posts
+|
+|
+|-- clients/
+<- External API client + raw schemas
+| | |-- models/
+<- Domain models + mappers (anti-corruption layer)
+|
+|
+|-- services/
+<- Business logic
+|
+|
+|-- router/
+<- FastAPI route handlers
+|
+|
++-- __init__.py
+|
+|-- users
+|
+|
+|-- clients/
+|
+|
+|-- models/
+|
+|
+|-- services/
+|
+|
+|-- router/
+|
+|
++-- __init__.py
+|
++-- weather
+|
+|-- clients/
+|
+|-- models/
+|
+|-- services/
+|
+|-- router/
+|
++-- __init__.py
+|-- shared
+|
+|-- config/
+<- App settings (Pydantic BaseSettings)
+| |-- dependencies/
+<- FastAPI dependency injection (HTTP client, DB, etc.)
+|
++-- errors/
+<- Shared exception classes
++-- main.py
+<- App factory, router registration
+
+1. The Problem
+In typical FastAPI codebases:
+• Raw database/API response schemas are reused directly as endpoint response
+models
+• When an external API or database schema changes, you modify route handlers,
+services, and tests across the repo
+• Features become tangled – changing one area breaks another
+• No clear boundary between “external data shapes” and “your app’s data shapes”
+Goal: Structure code so that any single type of change (external schema, business
+
+1
+
+logic, endpoint design) stays local – touching only the files responsible for that concern.
+
+2. Architecture Overview
+We use feature-sliced architecture with an anti-corruption layer, adapted for
+FastAPI.
+Key Principles
+1. Code is organized by feature, not by technical role (no top-level /models,
+/routes, /schemas folders)
+2. Each feature is self-contained – it owns its external clients, domain logic, and
+endpoints
+3. Routers never see raw external schemas – they only know about domain
+models
+4. Services orchestrate – they call clients, map through the anti-corruption layer,
+and return domain models
+5. The mapper absorbs schema changes so nothing downstream needs to move
+
+3. The Four Layers
+Each feature has four layers. Each layer has one job and only talks to the layer
+next to it:
+Layer 1: Client
+Layer 2: Model
+Layer 3: Service
+Layer 4: Router
+
+->
+->
+->
+->
+
+"Talk to external services / database"
+"Translate external shapes -> our shapes"
+"Business logic, orchestration, error handling"
+"HTTP endpoints (only sees domain models)"
+
+Data flows in one direction:
+Client
+
+->
+
+Model (mapper)
+
+->
+
+Service
+
+->
+
+Router
+
+Who Knows What
+Layer
+
+Knows about external
+schema?
+
+clients/ Yes
+models/ Yes
+(mapper)
+services/No (calls mapper)
+router/ No
+
+Knows about domain
+model?
+
+Knows about
+FastAPI?
+
+No
+Yes
+
+No
+No
+
+Yes
+Yes
+
+No
+Yes
+
+Each layer has one reason to change. That is the separation of concerns.
+2
+
+4. Layer-by-Layer Walkthrough
+Layer 1 – Client (features/users/clients/)
+Job: Define the raw external schemas and fetch data. Knows nothing about FastAPI.
+# clients/__init__.py -- mirrors the external API exactly
+class CompanyApiSchema(BaseModel):
+name: str
+catchPhrase: str
+bs: str
+class AddressApiSchema(BaseModel):
+street: str
+city: str
+geo: GeoApiSchema
+class UserApiSchema(BaseModel):
+id: int
+name: str
+# backend calls it "name"
+username: str
+email: str
+address: AddressApiSchema
+# deeply nested
+company: CompanyApiSchema
+async def fetch_users(
+client: httpx.AsyncClient, base_url: str
+) -> list[UserApiSchema]:
+response = await client.get(f"{base_url}/users")
+response.raise_for_status()
+return [UserApiSchema.model_validate(u) for u in response.json()]
+Rules:
+• Schemas here match the external response exactly – field names, nesting, types
+• Never use these schemas as response models in routers
+• If the external schema changes, this file changes
+
+Layer 2 – Model & Mapper (features/users/models/)
+Job: Define YOUR stable domain models and translate raw data into them. This is the
+anti-corruption layer.
+# models/__init__.py -- YOUR types, YOUR naming, YOUR shape
+
+3
+
+class User(BaseModel):
+id: int
+# you chose this name
+display_name: str
+username: str
+email: str
+phone: str
+website: str
+# flat string, not nested object
+location: str
+company: str
+# just the name, not the whole object
+coordinates: Coordinates # parsed to floats
+# --- Mapper (the ONLY function that touches both worlds) --def map_user_from_api(raw: UserApiSchema) -> User:
+return User(
+id=raw.id,
+# rename
+display_name=raw.name,
+username=raw.username,
+email=raw.email,
+phone=raw.phone,
+website=raw.website,
+location=f"{raw.address.city}, {raw.address.street}", # flatten
+company=raw.company.name,
+# simplify
+coordinates=Coordinates(
+# type convert
+lat=float(raw.address.geo.lat),
+lng=float(raw.address.geo.lng),
+),
+)
+Rules:
+• Domain models are designed for YOUR API consumers, not the external service’s
+shape
+• The mapper is the only place that imports both raw schemas and domain models
+• When an external schema changes, update the mapper – nothing else needs to
+change
+
+Layer 3 – Service (features/users/services/)
+Job: Business logic and orchestration. Calls clients, maps via the anti-corruption layer,
+handles errors.
+# services/__init__.py
+async def get_all_users(client: httpx.AsyncClient) -> list[User]:
+settings = get_settings()
+try:
+4
+
+raw = await fetch_users(client, settings.base_url) # Layer 1
+except httpx.HTTPError as e:
+raise ExternalServiceError("JSONPlaceholder", str(e))
+return map_users_from_api(raw)
+# Layer 2
+async def get_user_by_id(
+client: httpx.AsyncClient, user_id: int
+) -> User:
+settings = get_settings()
+try:
+raw = await fetch_user_by_id(client, settings.base_url, user_id)
+except httpx.HTTPStatusError as e:
+if e.response.status_code == 404:
+raise NotFoundError("User", user_id)
+raise ExternalServiceError("JSONPlaceholder", str(e))
+return map_user_from_api(raw)
+Rules:
+• Services return domain models, never raw schemas
+• Error handling and business rules live here
+• Services are independent of FastAPI (no Request/Response objects)
+
+Layer 4 – Router (features/users/router/)
+Job: Define HTTP endpoints. Has zero knowledge of external schemas.
+# router/__init__.py
+router = APIRouter(prefix="/users", tags=["users"])
+@router.get("", response_model=list[User])
+async def list_users(
+client: httpx.AsyncClient = Depends(get_http_client),
+):
+return await get_all_users(client)
+@router.get("/{user_id}", response_model=User)
+async def get_user(
+user_id: int,
+client: httpx.AsyncClient = Depends(get_http_client),
+):
+return await get_user_by_id(client, user_id)
+Rules:
+• Routers only import domain models for response_model
+
+5
+
+• They delegate all logic to the service layer
+• They use FastAPI’s dependency injection for shared resources (HTTP client, DB
+sessions)
+
+5. The Anti-Corruption Layer in Action
+Example: External API renames company.name -> company.title
+Without this pattern:
+File
+
+Change needed
+
+clients/
+services/
+router/
+Tests
+Total: 5-10 files
+
+Update schema
+Update references
+Update response model
+Update everywhere
+
+With this pattern:
+File
+
+Change needed
+
+clients/
+models/ mapper
+Total: 2 files
+
+Update schema
+One line: raw.company.name -> raw.company.title
+Done.
+
+The mapper absorbs the difference. The domain model User still has company: str.
+Services, routers, tests – nothing downstream changes.
+Example: Switching from external API to database
+You replace clients/__init__.py with a new implementation that queries a database
+instead of calling an HTTP API. The raw schema changes from UserApiSchema to your
+ORM model. You update the mapper to translate the ORM model into the same User
+domain model. Services and routers don’t change at all.
+
+6. Dependency Rules
+router/
+
+->
+
+services/
+
+->
+
+models/ + clients/
+
+->
+
+shared/
+
+From
+
+Can import from
+
+router/
+services/
+
+services/, models/ (domain models), shared/
+clients/, models/, shared/
+6
+
+From
+
+Can import from
+
+models/ (mapper)
+clients/
+Any feature
+
+clients/ (raw schemas), shared/
+shared/ only
+Never another feature’s internals
+
+7. Shared Layer
+The shared/ directory contains cross-cutting concerns:
+# shared/config/__init__.py -- App settings
+class Settings(BaseModel):
+app_name: str = "My App"
+database_url: str = "postgresql://..."
+external_api_base_url: str = "https://..."
+# shared/dependencies/__init__.py -- FastAPI DI
+async def get_http_client() -> AsyncGenerator[httpx.AsyncClient, None]:
+async with httpx.AsyncClient(timeout=10.0) as client:
+yield client
+async def get_db() -> AsyncGenerator[Session, None]:
+async with async_session() as session:
+yield session
+# shared/errors/__init__.py -- Reusable exceptions
+class ExternalServiceError(HTTPException):
+def __init__(self, service: str, detail: str):
+super().__init__(status_code=502, detail=f"'{service}' error: {detail}")
+
+class NotFoundError(HTTPException):
+def __init__(self, resource: str, resource_id: int | str):
+super().__init__(status_code=404, detail=f"{resource} '{resource_id}' not f
+
+8. Adding a New Feature (Checklist)
+When adding a new feature (e.g., products):
+1. Create the folder structure:
+src/features/products/
+__init__.py
+clients/__init__.py
+models/__init__.py
+services/__init__.py
+7
+
+router/__init__.py
+2. Define raw schemas in clients/ – match the external source exactly
+3. Define domain models in models/ – design for your API consumers
+4. Write the mapper in models/ – translate raw -> domain
+5. Write client functions in clients/ – fetch/query raw data
+6. Write services in services/ – business logic, error handling, returns domain
+models
+7. Write router in router/ – HTTP endpoints using response_model=DomainModel
+8. Register the router in main.py:
+from .features.products.router import router as products_router
+app.include_router(products_router, prefix="/api")
+
+9. Quick Reference – Where Does Each Change Go?
+What changed?
+
+Files to touch
+
+External API renamed a field
+External API restructured an object
+New external endpoint/table
+
+clients/ + models/ mapper
+clients/ + models/ mapper
+New clients/ function + mapper +
+service + router
+services/ only
+router/ only
+models/ domain model + router/
+
+New business rule / validation
+New query parameter on endpoint
+Change response shape for
+consumers
+Switch from API to database
+New shared dependency (cache, auth)
+
+clients/ + models/ mapper
+shared/dependencies/
+
+10. Comparison: React vs FastAPI Layers
+Concern
+
+React Layer
+
+FastAPI Layer
+
+External data
+fetching
+Schema
+translation
+Domain types
+Data orchestration
+Presentation /
+Endpoints
+
+api/
+
+clients/
+
+model/mappers.ts
+
+models/ mapper functions
+
+model/types.ts
+hooks/ (TanStack Query)
+ui/ (React components)
+
+models/ Pydantic BaseModel
+services/
+router/ (FastAPI endpoints)
+
+8
+
+Concern
+
+React Layer
+
+FastAPI Layer
+
+Feature boundary
+Cross-cutting
+concerns
+
+index.ts (barrel export)
+shared/
+
+Python package __init__.py
+shared/
+
+The same architectural principles apply to both frontend and backend.
+changes stay local. Features are self-contained. Layers have one job.
+
+Schema
+
+11. Tech Stack (Reference Implementation)
+Tool
+
+Purpose
+
+FastAPI
+Pydantic v2
+httpx
+uvicorn
+
+Web framework
+Data validation and domain models
+Async HTTP client for external APIs
+ASGI server
+
+12. APIs Used (No Keys Required)
+• JSONPlaceholder (https://jsonplaceholder.typicode.com/) – Users, Posts, Comments
+• Open-Meteo (https://open-meteo.com/) – Weather forecast
+
+Reference implementation available in the fastapi-architecture-demo repository.
+
+9
+
+
