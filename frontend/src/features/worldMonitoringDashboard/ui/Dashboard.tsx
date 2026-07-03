@@ -6,11 +6,11 @@ import { useDashboard, useDashboardEventDetail } from "../hooks/useDashboard";
 import type { DashboardHotspot, DashboardRecentEvent } from "../model/types";
 
 import { MetricCard } from "./MetricCard";
-import { ActivityTrend } from "./sections/ActivityTrend";
-import { SeverityMix } from "./sections/SeverityMix";
-import { EventTypes } from "./sections/EventTypes";
-import { OperationalHotspots } from "./sections/OperationalHotspots";
-import { RecentIntelligence } from "./sections/RecentIntelligence";
+import { ActivityTrend } from "./ActivityTrend";
+import { SeverityMix } from "./SeverityMix";
+import { EventTypes } from "./EventTypes";
+import { OperationalHotspots } from "./OperationalHotspots";
+import { RecentIntelligence } from "./RecentIntelligence";
 
 import EventDetailDialog from "@/shared/ui/world-monitoring/EventDetailDialog";
 

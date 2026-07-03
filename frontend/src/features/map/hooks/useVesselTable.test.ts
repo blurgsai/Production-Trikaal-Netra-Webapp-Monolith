@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderHook, act, waitFor } from "@testing-library/react";
 import { useVesselTable } from "./useVesselTable";
-import { DEFAULT_PAGE_SIZE } from "../config";
+import { DEFAULT_PAGE_SIZE } from "../model/config";
 import * as vesselTableApi from "../api/vesselTableApi";
 
 const mockResponse = {

@@ -9,7 +9,7 @@ import {
 } from "@mui/material";
 import MapOutlinedIcon from "@mui/icons-material/MapOutlined";
 import CloseIcon from "@mui/icons-material/Close";
-import { baseMaps } from "../config";
+import { baseMaps } from "../model/config";
 import type { BaseMap } from "../model/types";
 
 interface MapTypePanelProps {

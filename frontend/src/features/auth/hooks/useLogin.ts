@@ -2,7 +2,7 @@ import { useMutation } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { loginUser } from "../api/authApi";
 import { mapLoginResponseToSession } from "../model/mappers";
-import { useAuth } from "../providers/AuthProvider";
+import { useAuth } from "./AuthProvider";
 import type { LoginApiRequest } from "../api/types";
 
 export function useLogin() {

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { loadMapConfig, saveMapConfig, applyVesselStyle, validateStyleExists } from "../api";
 import { mapApiToDomain, mapDomainToApi } from "../model/mappers";
-import { baseMaps, overlayLayers, weatherLayers } from "../config";
+import { baseMaps, overlayLayers, weatherLayers } from "../model/config";
 import type { BaseMap, OverlayLayerConfig, VesselConfig, VesselInfo, ClusterConfig, TrajectoryConfig, DeadReckoningConfig, PopupFieldConfig } from "../model/types";
 
 const DEFAULT_CLUSTER_CONFIG: ClusterConfig = {

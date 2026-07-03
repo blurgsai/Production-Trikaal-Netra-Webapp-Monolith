@@ -17,7 +17,7 @@ import ZoomControl from "./ZoomControl";
 import MeasureTool from "./MeasureTool";
 import PolygonTool from "./PolygonTool";
 import EezRegionsTool from "./EezRegionsTool";
-import { indiaBoundaryLayer } from "../config";
+import { indiaBoundaryLayer } from "../model/config";
 import type { BaseMap as BaseMapType, OverlayLayerConfig, VesselConfig, VesselInfo, TrajectoryPoint, TrajectoryConfig, DeadReckoningConfig, Polygon, PopupFieldConfig } from "../model/types";
 
 function MapResizeHandler() {

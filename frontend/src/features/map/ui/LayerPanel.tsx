@@ -24,7 +24,7 @@ import {
   useSortable,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { overlayLayers, weatherLayers, baseMaps } from "../config";
+import { overlayLayers, weatherLayers, baseMaps } from "../model/config";
 import type { BaseMap } from "../model/types";
 
 interface LayerPanelProps {
