@@ -1,0 +1,16 @@
+﻿src/features/eventTable/model/__tests__/mappers.test.ts(51,20): error TS2352: Conversion of type 'Event' to type 'Record<string, unknown>' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Index signature for type 'string' is missing in type 'Event'.
+src/features/eventTable/model/__tests__/mappers.test.ts(111,20): error TS2352: Conversion of type 'EventMetadataColumn' to type 'Record<string, unknown>' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Index signature for type 'string' is missing in type 'EventMetadataColumn'.
+src/features/eventTable/model/__tests__/mappers.test.ts(155,20): error TS2352: Conversion of type 'CompoundConfig' to type 'Record<string, unknown>' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Index signature for type 'string' is missing in type 'CompoundConfig'.
+src/features/eventTable/model/__tests__/mappers.test.ts(192,20): error TS2352: Conversion of type 'CompoundInstance' to type 'Record<string, unknown>' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Index signature for type 'string' is missing in type 'CompoundInstance'.
+src/features/eventTable/model/filterHelpers.ts(44,29): error TS2550: Property 'replaceAll' does not exist on type 'string'. Do you need to change your target library? Try changing the 'lib' compiler option to 'es2021' or later.
+src/features/eventTable/model/filterHelpers.ts(93,24): error TS2550: Property 'replaceAll' does not exist on type 'string'. Do you need to change your target library? Try changing the 'lib' compiler option to 'es2021' or later.
+src/features/eventTable/ui/CompoundConfigRow.tsx(29,22): error TS2550: Property 'replaceAll' does not exist on type 'string'. Do you need to change your target library? Try changing the 'lib' compiler option to 'es2021' or later.
+src/features/eventTable/ui/CompoundConfigRow.tsx(37,24): error TS2550: Property 'replaceAll' does not exist on type 'string'. Do you need to change your target library? Try changing the 'lib' compiler option to 'es2021' or later.
+src/features/eventTable/ui/CompoundInstanceList.tsx(61,64): error TS2550: Property 'replaceAll' does not exist on type 'string'. Do you need to change your target library? Try changing the 'lib' compiler option to 'es2021' or later.
+src/features/eventTable/ui/CompoundInstanceList.tsx(63,47): error TS2550: Property 'replaceAll' does not exist on type 'string'. Do you need to change your target library? Try changing the 'lib' compiler option to 'es2021' or later.
+src/features/eventTable/ui/CompoundInstanceRow.tsx(37,24): error TS2550: Property 'replaceAll' does not exist on type 'string'. Do you need to change your target library? Try changing the 'lib' compiler option to 'es2021' or later.
+src/features/eventTable/ui/EventRow.tsx(33,21): error TS2550: Property 'replaceAll' does not exist on type 'string'. Do you need to change your target library? Try changing the 'lib' compiler option to 'es2021' or later.

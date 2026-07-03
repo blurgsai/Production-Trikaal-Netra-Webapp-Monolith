@@ -1,0 +1,575 @@
+{% extends "base.html" %}
+
+{# ─────────────────────────────────────────────────────────────────────────────
+   insight_report.html — Fleet Insight Report template.
+
+   Zero-input snapshot of the monitored fleet based on the latest 50 events.
+   Sections driven by the `data` list produced by InsightReport.generate():
+
+     fleet_kpi             — vessel/event KPIs + severity strip
+     active_events_summary — open/unresolved events (conditional)
+     critical_highlight    — latest high-severity events (conditional)
+     event_hotspot         — staticmap heatmap of all event locations
+     fleet_status          — nav-status, suspicious/spoofing, flag distribution
+     high_risk_vessels     — cross-source risk vessels (conditional)
+     event_intelligence    — velocity, duration analysis, repeat offenders
+     event_breakdown       — per-type card grid sorted by count desc
+     fleet_speed           — ClickHouse speed distribution (conditional)
+     event_cards           — most-recent 30 events table
+─────────────────────────────────────────────────────────────────────────────── #}
+
+{% block content %}
+
+{% if not data %}
+<div class="empty">No report sections were generated.</div>
+{% endif %}
+
+{% for section in data %}
+
+  {# ── Fleet KPI strip ────────────────────────────────────────────────────── #}
+  {% if section.type == "fleet_kpi" %}
+  <div class="card">
+    <div class="card-header">
+      🛰️ Fleet Overview
+    </div>
+    <div class="card-body">
+      <div class="meta" style="margin: 0; border: none; box-shadow: none; background: transparent;">
+
+        <div class="meta-item">
+          <span class="meta-label">Vessels Monitored</span>
+          <span class="meta-value" style="font-size: 1.6rem;">
+            {{ section.total_vessels | default("—") }}
+          </span>
+        </div>
+
+        <div class="meta-item">
+          <span class="meta-label">Events Analysed</span>
+          <span class="meta-value" style="font-size: 1.6rem;">
+            {{ section.total_events | default("—") }}
+          </span>
+        </div>
+
+        <div class="meta-item" style="border-left: 3px solid #dc2626; padding-left: 14px;">
+          <span class="meta-label" style="color:#dc2626;">Critical</span>
+          <span class="meta-value" style="color:#dc2626; font-size:1.6rem;">
+            {{ section.severity_counts.high | default(0) }}
+          </span>
+        </div>
+
+        <div class="meta-item" style="border-left: 3px solid #d97706; padding-left: 14px;">
+          <span class="meta-label" style="color:#d97706;">Warning</span>
+          <span class="meta-value" style="color:#d97706; font-size:1.6rem;">
+            {{ section.severity_counts.warning | default(0) }}
+          </span>
+        </div>
+
+        <div class="meta-item" style="border-left: 3px solid #2563eb; padding-left: 14px;">
+          <span class="meta-label" style="color:#2563eb;">Info</span>
+          <span class="meta-value" style="color:#2563eb; font-size:1.6rem;">
+            {{ section.severity_counts.info | default(0) }}
+          </span>
+        </div>
+
+        {% if section.active_events_count is defined and section.active_events_count > 0 %}
+        <div class="meta-item" style="border-left: 3px solid #7c3aed; padding-left: 14px;">
+          <span class="meta-label" style="color:#7c3aed;">Open Events</span>
+          <span class="meta-value" style="color:#7c3aed; font-size:1.6rem;">
+            {{ section.active_events_count }}
+          </span>
+        </div>
+        {% endif %}
+
+        {% if section.suspicious_vessel_count is defined and section.suspicious_vessel_count > 0 %}
+        <div class="meta-item" style="border-left: 3px solid #b45309; padding-left: 14px;">
+          <span class="meta-label" style="color:#b45309;">Suspicious</span>
+          <span class="meta-value" style="color:#b45309; font-size:1.6rem;">
+            {{ section.suspicious_vessel_count }}
+          </span>
+        </div>
+        {% endif %}
+
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+
+  {# ── Event Hotspot Map ───────────────────────────────────────────────────── #}
+  {% if section.type == "event_hotspot" %}
+  <div class="card">
+    <div class="card-header">
+      🚨 Event Hotspot Map
+    </div>
+    <div class="card-body">
+
+      {% if section.heatmap_b64 %}
+        <div style="text-align: center; padding: 8px 0 4px;">
+          <img
+            class="map-img"
+            src="data:image/png;base64,{{ section.heatmap_b64 }}"
+            alt="Event Hotspot Map"
+            style="
+              box-shadow: 0 2px 12px rgba(0,0,0,.15);
+              border: 1px solid var(--border);
+              border-radius: 8px;
+            "
+          >
+        </div>
+        <p style="font-size: .8rem; color: var(--muted); text-align: center; margin: 6px 0 12px;">
+          Spatial distribution of the latest {{ section.event_count | default("") }} events. &nbsp;
+          <span style="color:#ef4444; font-weight:600;">●</span> Critical &nbsp;
+          <span style="color:#f59e0b; font-weight:600;">●</span> Warning &nbsp;
+          <span style="color:#3b82f6; font-weight:600;">●</span> Info &nbsp;—
+          clusters indicate event-prone zones.
+        </p>
+      {% else %}
+        <div class="empty">
+          Hotspot map could not be generated — no location data available for the latest events.
+        </div>
+      {% endif %}
+
+    </div>
+  </div>
+  {% endif %}
+
+
+  {# ── Active / Open Events ───────────────────────────────────────────────── #}
+  {% if section.type == "active_events_summary" %}
+  <div class="card">
+    <div class="card-header" style="background: linear-gradient(135deg,#7c3aed 0%,#6d28d9 100%); color:#fff;">
+      🔔 Open Events &nbsp;<span style="font-size:.8rem; font-weight:400; opacity:.85;">({{ section.active_events_count }} unresolved)</span>
+    </div>
+    <div class="card-body" style="padding: 0;">
+      {% if section.active_events %}
+      <div class="tbl">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th><th>Event Type</th><th>Severity</th>
+              <th>Started</th><th>Vessels</th><th>Duration</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for ev in section.active_events %}
+              {% if ev.severity == 'high' %}{% set p_bg='#fee2e2' %}{% set p_clr='#dc2626' %}
+              {% elif ev.severity == 'warning' %}{% set p_bg='#fef3c7' %}{% set p_clr='#d97706' %}
+              {% else %}{% set p_bg='#dbeafe' %}{% set p_clr='#2563eb' %}{% endif %}
+            <tr>
+              <td style="color:var(--muted);font-size:.8rem;">{{ loop.index }}</td>
+              <td style="font-weight:600;">{{ ev.label }}</td>
+              <td>
+                <span style="padding:2px 8px;border-radius:10px;font-size:.72rem;font-weight:600;
+                             background:{{ p_bg }};color:{{ p_clr }};">{{ ev.severity | title }}</span>
+              </td>
+              <td style="font-variant-numeric:tabular-nums;font-size:.83rem;">{{ ev.timestamp }}</td>
+              <td style="font-size:.83rem;color:var(--txt2);">{{ ev.vessels }}</td>
+              <td style="font-size:.83rem;color:var(--muted);">{{ ev.duration }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% if section.active_events_count > section.active_events | length %}
+      <p style="font-size:.75rem;color:var(--muted);padding:8px 16px;">
+        Showing {{ section.active_events | length }} of {{ section.active_events_count }} open events.
+      </p>
+      {% endif %}
+      {% else %}
+        <div class="empty">No open event details available.</div>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+
+
+  {# ── Critical Events Highlight ───────────────────────────────────────────── #}
+  {% if section.type == "critical_highlight" %}
+  <div class="card" style="border: 2px solid #dc2626;">
+    <div class="card-header" style="background: linear-gradient(135deg,#dc2626 0%,#b91c1c 100%); color:#fff;">
+      🚨 Critical Events — Immediate Attention Required
+    </div>
+    <div class="card-body" style="padding: 0;">
+      <div class="tbl">
+        <table>
+          <thead>
+            <tr><th>#</th><th>Event Type</th><th>Timestamp</th><th>Vessels</th><th>Duration</th></tr>
+          </thead>
+          <tbody>
+            {% for ev in section.critical_events %}
+            <tr style="background:#fff5f5;">
+              <td style="color:var(--muted);font-size:.8rem;">{{ loop.index }}</td>
+              <td style="font-weight:700;color:#dc2626;">{{ ev.label }}</td>
+              <td style="font-variant-numeric:tabular-nums;font-size:.83rem;">{{ ev.timestamp }}</td>
+              <td style="font-size:.83rem;color:var(--txt2);">{{ ev.vessels }}</td>
+              <td style="font-size:.83rem;color:var(--muted);">{{ ev.duration }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+
+  {# ── Fleet Status (vessel_state) ─────────────────────────────────────────── #}
+  {% if section.type == "fleet_status" %}
+  <div class="card">
+    <div class="card-header">⚓ Fleet Status</div>
+    <div class="card-body">
+
+      {# ─ Alert badges row ─ #}
+      <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:20px;">
+        <div style="flex:1;min-width:140px;padding:14px 18px;border-radius:8px;
+                    background:#fffbeb;border:1px solid #fcd34d;border-left:4px solid #d97706;">
+          <div style="font-size:.75rem;color:#92400e;font-weight:600;text-transform:uppercase;letter-spacing:.04em;">
+            Suspicious Vessels
+          </div>
+          <div style="font-size:2rem;font-weight:800;color:#d97706;line-height:1.2;margin-top:4px;">
+            {{ section.suspicious_count | default(0) }}
+          </div>
+          <div style="font-size:.7rem;color:var(--muted);margin-top:2px;">flagged in vessel_state</div>
+        </div>
+
+        <div style="flex:1;min-width:140px;padding:14px 18px;border-radius:8px;
+                    background:#fef2f2;border:1px solid #fca5a5;border-left:4px solid #dc2626;">
+          <div style="font-size:.75rem;color:#991b1b;font-weight:600;text-transform:uppercase;letter-spacing:.04em;">
+            AIS Spoofing
+          </div>
+          <div style="font-size:2rem;font-weight:800;color:#dc2626;line-height:1.2;margin-top:4px;">
+            {{ section.spoofing_count | default(0) }}
+          </div>
+          <div style="font-size:.7rem;color:var(--muted);margin-top:2px;">active spoofing indicators</div>
+        </div>
+      </div>
+
+      {# ─ Nav status breakdown ─ #}
+      {% if section.nav_status_breakdown %}
+      <div style="margin-bottom:20px;">
+        <div style="font-size:.78rem;font-weight:700;color:var(--txt2);text-transform:uppercase;
+                    letter-spacing:.06em;margin-bottom:10px;">Navigation Status</div>
+        {% set ns_total = section.nav_status_breakdown | sum(attribute='count') %}
+        {% for ns in section.nav_status_breakdown %}
+          {% set pct = ((ns.count / ns_total * 100) | round | int) if ns_total else 0 %}
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+          <div style="width:160px;font-size:.78rem;color:var(--txt1);white-space:nowrap;
+                      overflow:hidden;text-overflow:ellipsis;" title="{{ ns.status }}">{{ ns.status }}</div>
+          <div style="flex:1;background:rgba(0,0,0,.07);border-radius:4px;height:10px;overflow:hidden;">
+            <div style="width:{{ pct }}%;height:100%;background:#3b82f6;border-radius:4px;
+                        transition:width .3s;"></div>
+          </div>
+          <div style="width:38px;text-align:right;font-size:.78rem;font-weight:600;
+                      color:var(--txt2);">{{ ns.count }}</div>
+          <div style="width:32px;text-align:right;font-size:.7rem;color:var(--muted);">{{ pct }}%</div>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      {# ─ Flag distribution ─ #}
+      {% if section.flag_distribution %}
+      <div>
+        <div style="font-size:.78rem;font-weight:700;color:var(--txt2);text-transform:uppercase;
+                    letter-spacing:.06em;margin-bottom:10px;">Flag State Distribution (Top 5)</div>
+        {% set fl_total = section.flag_distribution | sum(attribute='count') %}
+        {% for fl in section.flag_distribution[:5] %}
+          {% set pct = ((fl.count / fl_total * 100) | round | int) if fl_total else 0 %}
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+          <div style="width:160px;font-size:.78rem;color:var(--txt1);">{{ fl.flag }}</div>
+          <div style="flex:1;background:rgba(0,0,0,.07);border-radius:4px;height:10px;overflow:hidden;">
+            <div style="width:{{ pct }}%;height:100%;background:#0ea5e9;border-radius:4px;"></div>
+          </div>
+          <div style="width:38px;text-align:right;font-size:.78rem;font-weight:600;
+                      color:var(--txt2);">{{ fl.count }}</div>
+          <div style="width:32px;text-align:right;font-size:.7rem;color:var(--muted);">{{ pct }}%</div>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+    </div>
+  </div>
+  {% endif %}
+
+
+  {# ── High-Risk Vessels (cross-source) ────────────────────────────────────── #}
+  {% if section.type == "high_risk_vessels" %}
+  <div class="card" style="border:2px solid #d97706;">
+    <div class="card-header" style="background:linear-gradient(135deg,#b45309 0%,#92400e 100%);color:#fff;">
+      ⚠️ High-Risk Vessels — Active Events &amp; Suspicious Flag
+    </div>
+    <div class="card-body" style="padding:0;">
+      <div class="tbl">
+        <table>
+          <thead>
+            <tr><th>#</th><th>Vessel Name</th><th>Vessel ID</th><th>MMSI</th><th>Flag</th></tr>
+          </thead>
+          <tbody>
+            {% for v in section.vessels %}
+            <tr style="background:#fffbeb;">
+              <td style="color:var(--muted);font-size:.8rem;">{{ loop.index }}</td>
+              <td style="font-weight:700;color:#92400e;">{{ v.name }}</td>
+              <td style="font-size:.82rem;font-variant-numeric:tabular-nums;">{{ v.vessel_id }}</td>
+              <td style="font-size:.82rem;">{{ v.mmsi }}</td>
+              <td style="font-size:.82rem;">{{ v.flag }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+
+  {# ── Event Intelligence ───────────────────────────────────────────────────── #}
+  {% if section.type == "event_intelligence" %}
+  <div class="card">
+    <div class="card-header">🔍 Event Intelligence</div>
+    <div class="card-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+
+        {# ─ Left: velocity + repeat offenders ─ #}
+        <div style="display:flex;flex-direction:column;gap:16px;">
+
+          {# Velocity tile #}
+          <div style="padding:16px;border-radius:8px;background:#f0fdf4;border:1px solid #86efac;">
+            <div style="font-size:.75rem;font-weight:700;color:#166534;text-transform:uppercase;
+                        letter-spacing:.05em;margin-bottom:6px;">Event Velocity</div>
+            {% if section.event_velocity %}
+            <div style="font-size:2rem;font-weight:800;color:#16a34a;line-height:1;">
+              {{ section.event_velocity }} <span style="font-size:.9rem;font-weight:500;">events/hr</span>
+            </div>
+            {% if section.event_time_span_hours %}
+            <div style="font-size:.75rem;color:#4ade80;margin-top:4px;">
+              across {{ section.event_time_span_hours }}h window ({{ section.event_velocity * section.event_time_span_hours | round | int }} events)
+            </div>
+            {% endif %}
+            {% else %}
+            <div style="font-size:.85rem;color:var(--muted);">Insufficient data to compute rate.</div>
+            {% endif %}
+          </div>
+
+          {# Repeat offenders #}
+          {% if section.repeat_offenders %}
+          <div style="padding:16px;border-radius:8px;background:#fef9c3;border:1px solid #fde047;">
+            <div style="font-size:.75rem;font-weight:700;color:#713f12;text-transform:uppercase;
+                        letter-spacing:.05em;margin-bottom:10px;">Repeat Offenders (Top 5)</div>
+            {% for ro in section.repeat_offenders %}
+            <div style="display:flex;justify-content:space-between;align-items:center;
+                        padding:5px 0;border-bottom:1px solid rgba(0,0,0,.06);">
+              <span style="font-size:.8rem;color:var(--txt1);font-variant-numeric:tabular-nums;">
+                {{ ro.vessel_id }}
+              </span>
+              <span style="font-size:.8rem;font-weight:700;color:#d97706;">
+                {{ ro.event_count }} events
+              </span>
+            </div>
+            {% endfor %}
+          </div>
+          {% endif %}
+
+        </div>
+
+        {# ─ Right: duration analysis ─ #}
+        <div>
+          {% if section.duration_stats %}
+          <div style="font-size:.75rem;font-weight:700;color:var(--txt2);text-transform:uppercase;
+                      letter-spacing:.05em;margin-bottom:10px;">Average Event Duration by Type</div>
+          <div class="tbl" style="border-radius:6px;overflow:hidden;border:1px solid var(--border);">
+            <table style="font-size:.78rem;">
+              <thead>
+                <tr>
+                  <th style="text-align:left;">Type</th>
+                  <th style="text-align:right;"># Events</th>
+                  <th style="text-align:right;">Avg</th>
+                  <th style="text-align:right;">Max</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for ds in section.duration_stats %}
+                <tr>
+                  <td style="font-weight:600;">{{ ds.label }}</td>
+                  <td style="text-align:right;color:var(--muted);">{{ ds.count }}</td>
+                  <td style="text-align:right;font-variant-numeric:tabular-nums;">{{ ds.avg_duration }}</td>
+                  <td style="text-align:right;font-variant-numeric:tabular-nums;color:var(--muted);">{{ ds.max_duration }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <div class="empty" style="height:100%;display:flex;align-items:center;justify-content:center;">
+            No duration data available.
+          </div>
+          {% endif %}
+        </div>
+
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+
+  {# ── Fleet Speed Snapshot (ClickHouse) ───────────────────────────────────── #}
+  {% if section.type == "fleet_speed" %}
+  <div class="card">
+    <div class="card-header">
+      💨 Fleet Speed Snapshot
+      <span style="font-size:.78rem;font-weight:400;opacity:.7;">
+        — last {{ section.window_hours }}h &nbsp;|&nbsp; {{ section.unique_vessels }} unique vessels
+        &nbsp;|&nbsp; avg {{ section.avg_speed_kn }} kn
+      </span>
+    </div>
+    <div class="card-body">
+      {% if section.distribution %}
+        {% set max_cnt = section.distribution | map(attribute='count') | max %}
+        <div style="display:flex;flex-direction:column;gap:5px;">
+          {% for bucket in section.distribution %}
+            {% set bar_pct = ((bucket.count / max_cnt * 100) | round | int) if max_cnt else 0 %}
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="width:60px;text-align:right;font-size:.75rem;font-variant-numeric:tabular-nums;
+                        color:var(--txt2);">{{ bucket.speed_bucket_kn }}–{{ bucket.speed_bucket_kn + 2 }} kn</div>
+            <div style="flex:1;background:rgba(0,0,0,.07);border-radius:3px;height:14px;overflow:hidden;">
+              <div style="width:{{ bar_pct }}%;height:100%;background:#0ea5e9;border-radius:3px;"></div>
+            </div>
+            <div style="width:48px;font-size:.75rem;font-variant-numeric:tabular-nums;
+                        color:var(--muted);">{{ bucket.count }}</div>
+          </div>
+          {% endfor %}
+        </div>
+        <p style="font-size:.73rem;color:var(--muted);margin-top:10px;">
+          AIS data points from the last {{ section.window_hours }} hours, bucketed into 2-knot speed bands.
+        </p>
+      {% else %}
+        <div class="empty">Speed distribution data unavailable.</div>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+
+
+  {# ── Event Type Breakdown ────────────────────────────────────────────────── #}
+  {% if section.type == "event_breakdown" %}
+  <div class="card">
+    <div class="card-header">📊 Event Type Breakdown</div>
+    <div class="card-body">
+
+      {% if section.type_summary %}
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+
+        {% for ev in section.type_summary %}
+          {% if ev.severity == 'high' %}
+            {% set sev_color = '#dc2626' %}
+            {% set sev_bg    = '#fef2f2' %}
+            {% set sev_bdr   = '#fca5a5' %}
+          {% elif ev.severity == 'warning' %}
+            {% set sev_color = '#d97706' %}
+            {% set sev_bg    = '#fffbeb' %}
+            {% set sev_bdr   = '#fcd34d' %}
+          {% else %}
+            {% set sev_color = '#2563eb' %}
+            {% set sev_bg    = '#eff6ff' %}
+            {% set sev_bdr   = '#93c5fd' %}
+          {% endif %}
+
+        <div style="
+          background: {{ sev_bg }};
+          border: 1px solid {{ sev_bdr }};
+          border-left: 4px solid {{ sev_color }};
+          border-radius: 8px;
+          padding: 14px 16px;
+        ">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
+            <div>
+              <div style="font-weight: 700; font-size: .88rem; color: var(--txt1);">{{ ev.label }}</div>
+              <span style="
+                display: inline-block; margin-top: 4px;
+                padding: 1px 7px; border-radius: 10px;
+                font-size: .7rem; font-weight: 600;
+                background: {{ sev_color }}20; color: {{ sev_color }};
+              ">{{ ev.severity | title }}</span>
+            </div>
+            <div style="font-size: 1.6rem; font-weight: 800; color: {{ sev_color }}; line-height: 1;">
+              {{ ev.count }}
+            </div>
+          </div>
+          <div style="background: rgba(0,0,0,.08); border-radius: 3px; height: 6px; overflow: hidden;">
+            <div style="width: {{ ev.pct }}%; height: 100%; background: {{ sev_color }}; border-radius: 3px;"></div>
+          </div>
+          <div style="font-size: .7rem; color: {{ sev_color }}; margin-top: 4px; text-align: right;">
+            {{ ev.pct }}% of all events
+          </div>
+        </div>
+        {% endfor %}
+
+      </div>
+      {% else %}
+        <div class="empty">No event type data available.</div>
+      {% endif %}
+
+    </div>
+  </div>
+  {% endif %}
+
+
+  {# ── Event Cards (latest 30) ─────────────────────────────────────────────── #}
+  {% if section.type == "event_cards" %}
+  <div class="card">
+    <div class="card-header">📋 Recent Events (Latest 30)</div>
+    <div class="card-body" style="padding: 0;">
+
+      {% if section.recent_events %}
+      <div class="tbl">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Event Type</th>
+              <th>Severity</th>
+              <th>Timestamp</th>
+              <th>Vessels Involved</th>
+              <th>Duration</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for ev in section.recent_events %}
+              {% if ev.severity == 'high' %}
+                {% set pill_bg  = '#fee2e2' %}
+                {% set pill_clr = '#dc2626' %}
+              {% elif ev.severity == 'warning' %}
+                {% set pill_bg  = '#fef3c7' %}
+                {% set pill_clr = '#d97706' %}
+              {% else %}
+                {% set pill_bg  = '#dbeafe' %}
+                {% set pill_clr = '#2563eb' %}
+              {% endif %}
+            <tr>
+              <td style="color:var(--muted); font-size:.8rem;">{{ loop.index }}</td>
+              <td style="font-weight: 600;">{{ ev.label }}</td>
+              <td>
+                <span style="
+                  padding: 2px 8px; border-radius: 10px;
+                  font-size: .72rem; font-weight: 600;
+                  background: {{ pill_bg }}; color: {{ pill_clr }};
+                ">{{ ev.severity | title }}</span>
+              </td>
+              <td style="font-variant-numeric: tabular-nums; font-size: .83rem;">{{ ev.timestamp }}</td>
+              <td style="font-size: .83rem; color: var(--txt2);">{{ ev.vessels }}</td>
+              <td style="font-size: .83rem; color: var(--muted);">{{ ev.duration }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+        <div class="empty">No events found in the system.</div>
+      {% endif %}
+
+    </div>
+  </div>
+  {% endif %}
+
+{% endfor %}
+
+{% endblock %}

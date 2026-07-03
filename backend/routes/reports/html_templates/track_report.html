@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% macro kv_table(data) %}
+<table class="kv">
+  {% set items = data.items() | list %}
+  {% for i in range(0, items | length, 2) %}
+  <tr>
+    <td class="k">{{ items[i][0] }}</td>
+    <td class="v {% if items[i][1]|string in ('N/A','None','') %}na{% endif %}">{{ items[i][1] }}</td>
+    {% if i + 1 < items | length %} <td class="k">{{ items[i+1][0] }}</td>
+      <td class="v {% if items[i+1][1]|string in ('N/A','None','') %}na{% endif %}">{{ items[i+1][1] }}</td>
+      {% else %}
+      <td class="k"></td>
+      <td class="v"></td>
+      {% endif %}
+  </tr>
+  {% endfor %}
+</table>
+{% endmacro %}
+
+{% macro list_table(rows) %}
+{% if rows and rows[0] is mapping %}
+<div class="tbl">
+  <table>
+    <thead>
+      <tr>{% for h in rows[0].keys() %}<th>{{ h }}</th>{% endfor %}</tr>
+    </thead>
+    <tbody>
+      {% for row in rows %}
+      <tr>{% for h in rows[0].keys() %}<td>{{ row.get(h, 'N/A') }}</td>{% endfor %}</tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+{% endmacro %}
+
+{% block content %}
+{% if not data %}
+<div class="empty">No data found.</div>
+{% endif %}
+
+{% for profile in data %}
+<div class="card">
+
+  {# Header #}
+  <div class="card-header">
+    {% if profile.vessel_image_url %}
+    <img class="vessel-img" src="{{ profile.vessel_image_url }}" alt="Vessel">
+    {% endif %}
+    🛳️ {{ profile.profile_title }}
+  </div>
+
+  <div class="card-body">
+
+    {# Track Window #}
+    {% if profile.track_window %}
+    <div class="section">
+      <div class="section-title">Track Window</div>
+      {{ kv_table(profile.track_window) }}
+    </div>
+    {% endif %}
+
+    {# Trajectory Map #}
+    {% if profile.trajectory_map_base64 %}
+    <div class="section">
+      <div class="section-title">Track Overview Map</div>
+      <img class="map-img" src="data:image/png;base64,{{ profile.trajectory_map_base64 }}" alt="Track Map">
+    </div>
+    {% endif %}
+
+    {# All data sections #}
+    {% for name, section in profile.sections.items() %}
+    <div class="section">
+      <div class="section-title">{{ name }}</div>
+      {% if section is mapping %}
+      {{ kv_table(section) }}
+      {% elif section is iterable %}
+      {{ list_table(section) }}
+      {% else %}
+      <p style="padding:10px">{{ section }}</p>
+      {% endif %}
+    </div>
+    {% endfor %}
+
+    {# Event maps #}
+    {% if profile.event_charts %}
+    <div class="section">
+      <div class="section-title">Event Location Maps</div>
+      <div class="event-grid">
+        {% for ec in profile.event_charts %}
+        <div class="event-item">
+          <img src="data:image/png;base64,{{ ec.map_base64 }}" alt="Event">
+          <div class="event-meta">
+            <span class="event-label">{{ ec.label }}</span>
+            <span class="event-time">{{ ec.time }}</span>
+            <span class="event-coords">📍 {{ ec.coords }}</span>
+            {% if ec.info %}<span class="event-info">{{ ec.info }}</span>{% endif %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+  </div>{# card-body #}
+</div>{# card #}
+{% endfor %}
+{% endblock %}

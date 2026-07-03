@@ -1,0 +1,335 @@
+{
+  "event_details": {
+    "id": "mock_geofence_001",
+    "type": "geofence_intrusion",
+    "compound": false,
+    "location": {
+      "type": "Point",
+      "coordinates": [
+        67.2,
+        24.08
+      ]
+    },
+    "timestamp": "2024-06-15T12:20:00Z",
+    "start_time": "2024-06-15T11:35:00Z",
+    "end_time": "2024-06-15T12:20:00Z",
+    "duration": {
+      "value": 2700,
+      "unit": "seconds"
+    },
+    "vessels_involved": [
+      "366168522"
+    ],
+    "severity": "high",
+    "model": "heuristic",
+    "status": "detected",
+    "s2_cell_id": "89c260100000000",
+    "temporality": "bounded",
+    "event_source": "spark",
+    "information": {
+      "geofence_id": "pak_eez_001",
+      "geofence_name": "Pakistan EEZ",
+      "Has_exited_polygon": false
+    }
+  },
+  "geofence_polygon": {
+    "geofence_id": "pak_eez_001",
+    "asset_name": "Pakistan EEZ",
+    "polygon": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            65.0,
+            22.5
+          ],
+          [
+            69.5,
+            22.5
+          ],
+          [
+            70.2,
+            24.0
+          ],
+          [
+            69.0,
+            25.8
+          ],
+          [
+            66.5,
+            25.8
+          ],
+          [
+            65.0,
+            24.8
+          ],
+          [
+            65.0,
+            22.5
+          ]
+        ]
+      ]
+    }
+  },
+  "trajectories": {
+    "1718440500000": {
+      "366168522": {
+        "latitude": 23.80,
+        "longitude": 71.50,
+        "speed_mps": 5.7,
+        "heading": 275,
+        "course": 273
+      }
+    },
+    "1718441400000": {
+      "366168522": {
+        "latitude": 23.83,
+        "longitude": 71.00,
+        "speed_mps": 5.6,
+        "heading": 277,
+        "course": 275
+      }
+    },
+    "1718442300000": {
+      "366168522": {
+        "latitude": 23.86,
+        "longitude": 70.50,
+        "speed_mps": 5.5,
+        "heading": 279,
+        "course": 277
+      }
+    },
+    "1718443200000": {
+      "366168522": {
+        "latitude": 23.89,
+        "longitude": 70.00,
+        "speed_mps": 5.5,
+        "heading": 280,
+        "course": 278
+      }
+    },
+    "1718444100000": {
+      "366168522": {
+        "latitude": 23.92,
+        "longitude": 69.50,
+        "speed_mps": 5.4,
+        "heading": 278,
+        "course": 276
+      }
+    },
+    "1718445000000": {
+      "366168522": {
+        "latitude": 23.95,
+        "longitude": 69.10,
+        "speed_mps": 5.5,
+        "heading": 276,
+        "course": 274
+      }
+    },
+    "1718445900000": {
+      "366168522": {
+        "latitude": 23.97,
+        "longitude": 68.80,
+        "speed_mps": 5.3,
+        "heading": 273,
+        "course": 271
+      }
+    },
+    "1718446800000": {
+      "366168522": {
+        "latitude": 23.99,
+        "longitude": 68.50,
+        "speed_mps": 5.4,
+        "heading": 271,
+        "course": 269
+      }
+    },
+    "1718447700000": {
+      "366168522": {
+        "latitude": 24.01,
+        "longitude": 68.20,
+        "speed_mps": 5.4,
+        "heading": 270,
+        "course": 268
+      }
+    },
+    "1718448600000": {
+      "366168522": {
+        "latitude": 24.03,
+        "longitude": 67.90,
+        "speed_mps": 5.5,
+        "heading": 269,
+        "course": 267
+      }
+    },
+    "1718449500000": {
+      "366168522": {
+        "latitude": 24.04,
+        "longitude": 67.65,
+        "speed_mps": 5.3,
+        "heading": 267,
+        "course": 265
+      }
+    },
+    "1718450400000": {
+      "366168522": {
+        "latitude": 24.05,
+        "longitude": 67.42,
+        "speed_mps": 5.2,
+        "heading": 265,
+        "course": 263
+      }
+    },
+    "1718451300000": {
+      "366168522": {
+        "latitude": 24.07,
+        "longitude": 67.18,
+        "speed_mps": 5.1,
+        "heading": 265,
+        "course": 263
+      }
+    },
+    "1718452200000": {
+      "366168522": {
+        "latitude": 24.09,
+        "longitude": 66.95,
+        "speed_mps": 4.8,
+        "heading": 262,
+        "course": 260
+      }
+    },
+    "1718453100000": {
+      "366168522": {
+        "latitude": 24.12,
+        "longitude": 66.72,
+        "speed_mps": 5.0,
+        "heading": 260,
+        "course": 258
+      }
+    },
+    "1718454000000": {
+      "366168522": {
+        "latitude": 24.15,
+        "longitude": 66.48,
+        "speed_mps": 5.2,
+        "heading": 258,
+        "course": 256
+      }
+    },
+    "1718454900000": {
+      "366168522": {
+        "latitude": 24.18,
+        "longitude": 66.22,
+        "speed_mps": 5.3,
+        "heading": 256,
+        "course": 254
+      }
+    },
+    "1718455800000": {
+      "366168522": {
+        "latitude": 24.21,
+        "longitude": 65.95,
+        "speed_mps": 5.5,
+        "heading": 254,
+        "course": 252
+      }
+    },
+    "1718456700000": {
+      "366168522": {
+        "latitude": 24.23,
+        "longitude": 65.67,
+        "speed_mps": 5.4,
+        "heading": 252,
+        "course": 250
+      }
+    },
+    "1718457600000": {
+      "366168522": {
+        "latitude": 24.25,
+        "longitude": 65.38,
+        "speed_mps": 5.5,
+        "heading": 251,
+        "course": 249
+      }
+    },
+    "1718458500000": {
+      "366168522": {
+        "latitude": 24.27,
+        "longitude": 65.08,
+        "speed_mps": 5.3,
+        "heading": 250,
+        "course": 248
+      }
+    },
+    "1718459400000": {
+      "366168522": {
+        "latitude": 24.28,
+        "longitude": 64.78,
+        "speed_mps": 5.4,
+        "heading": 250,
+        "course": 248
+      }
+    },
+    "1718460300000": {
+      "366168522": {
+        "latitude": 24.29,
+        "longitude": 64.47,
+        "speed_mps": 5.5,
+        "heading": 249,
+        "course": 247
+      }
+    },
+    "1718461200000": {
+      "366168522": {
+        "latitude": 24.30,
+        "longitude": 64.16,
+        "speed_mps": 5.4,
+        "heading": 248,
+        "course": 246
+      }
+    },
+    "1718462100000": {
+      "366168522": {
+        "latitude": 24.31,
+        "longitude": 63.84,
+        "speed_mps": 5.5,
+        "heading": 249,
+        "course": 247
+      }
+    },
+    "1718463000000": {
+      "366168522": {
+        "latitude": 24.32,
+        "longitude": 63.52,
+        "speed_mps": 5.3,
+        "heading": 250,
+        "course": 248
+      }
+    },
+    "1718463900000": {
+      "366168522": {
+        "latitude": 24.33,
+        "longitude": 63.20,
+        "speed_mps": 5.2,
+        "heading": 251,
+        "course": 249
+      }
+    },
+    "1718464800000": {
+      "366168522": {
+        "latitude": 24.34,
+        "longitude": 62.88,
+        "speed_mps": 5.1,
+        "heading": 252,
+        "course": 250
+      }
+    }
+  },
+  "time_window": {
+    "query_start": 1718440500000,
+    "query_end": 1718464800000,
+    "event_start": 1718451300000,
+    "event_end": 1718454000000,
+    "buffer_hours": 3
+  }
+}

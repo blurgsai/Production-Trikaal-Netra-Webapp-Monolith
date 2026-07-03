@@ -1,0 +1,39 @@
+.mosaic-blueprint-theme {
+  height: 100%;
+  width: 100%;
+}
+
+.mosaic-blueprint-theme .mosaic {
+  height: 100%;
+}
+
+.mosaic-blueprint-theme .mosaic-window-body {
+  background: transparent;
+  overflow: hidden;
+}
+
+.mosaic-blueprint-theme .mosaic-window-toolbar {
+  background: #f5f8fa;
+  color: #30404d;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  font-size: 14px;
+  font-weight: 500;
+  border-bottom: 1px solid #e1e4e8;
+}
+
+.mosaic-blueprint-theme .mosaic-split:hover {
+  background: #666;
+}
+
+.mosaic-blueprint-theme .mosaic-split.-row {
+  width: 4px;
+  cursor: col-resize;
+}
+
+.mosaic-blueprint-theme .mosaic-split.-column {
+  height: 4px;
+  cursor: row-resize;
+}

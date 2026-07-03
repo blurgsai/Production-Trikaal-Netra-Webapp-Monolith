@@ -1,0 +1,46 @@
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { ThemeProvider } from "@mui/material/styles";
+import CssBaseline from "@mui/material/CssBaseline";
+import "../app.css";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { darkTheme } from "@/shared/theme";
+import { AuthProvider } from "@/features/auth";
+import LoginPage from "./pages/LoginPage";
+import MapPage from "./pages/MapPage";
+import { EventsPage } from "./pages/EventsPage";
+import AppLayout from "./components/AppLayout";
+import PublicRoute from "./routes/PublicRoute";
+import ProtectedRoute from "./routes/ProtectedRoute";
+
+const queryClient = new QueryClient();
+
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider theme={darkTheme}>
+        <CssBaseline />
+        <BrowserRouter>
+          <AuthProvider>
+            <Routes>
+              <Route
+                path="/login"
+                element={
+                  <PublicRoute>
+                    <LoginPage />
+                  </PublicRoute>
+                }
+              />
+              <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
+                <Route path="/map" element={<MapPage />} />
+                <Route path="/events" element={<EventsPage />} />
+              </Route>
+              <Route path="*" element={<Navigate to="/login" replace />} />
+            </Routes>
+          </AuthProvider>
+        </BrowserRouter>
+      </ThemeProvider>
+    </QueryClientProvider>
+  );
+}
+
+export default App;
