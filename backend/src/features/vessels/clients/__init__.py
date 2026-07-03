@@ -1,7 +1,7 @@
 import httpx
 from pydantic import BaseModel
 
-from shared.config import settings
+from src.shared.config import settings
 
 
 class TrajectoryRawRow(BaseModel):

@@ -1,18 +1,17 @@
 from datetime import datetime
-from typing import Dict, List, Set
 
 import httpx
-from shapely.geometry import shape, Point
+from shapely.geometry import Point, shape
 
-from routes.vessels.clients import fetch_trajectory, fetch_playback
-from routes.vessels.models import (
-    VesselTrajectoryResponse,
-    VesselPlaybackResponse,
+from src.features.vessels.clients import fetch_playback, fetch_trajectory
+from src.features.vessels.models import (
     VesselPlaybackPoint,
+    VesselPlaybackResponse,
+    VesselTrajectoryResponse,
     map_trajectory_from_raw,
     parse_playback_raw_rows,
 )
-from shared.errors import ExternalServiceError, NotFoundError, ValidationError
+from src.shared.errors import ExternalServiceError, NotFoundError, ValidationError
 
 
 async def get_vessel_trajectory(
@@ -21,7 +20,7 @@ async def get_vessel_trajectory(
     try:
         vessel_id_int = int(vessel_id)
     except (ValueError, TypeError):
-        raise ValidationError("Invalid vessel_id: must be numeric")
+        raise ValidationError("Invalid vessel_id: must be numeric") from None
 
     if time < 1:
         raise ValidationError("time must be a positive integer (seconds)")
@@ -30,7 +29,7 @@ async def get_vessel_trajectory(
     try:
         raw_text = await fetch_trajectory(client, vessel_id_int, time)
     except httpx.HTTPError as e:
-        raise ExternalServiceError("ClickHouse", str(e))
+        raise ExternalServiceError("ClickHouse", str(e)) from e
 
     response = map_trajectory_from_raw(raw_text, vessel_id)
 
@@ -46,7 +45,7 @@ async def get_vessel_playback(
     try:
         poly = shape(polygon)
     except Exception as e:
-        raise ValidationError(f"Invalid polygon GeoJSON: {e}")
+        raise ValidationError(f"Invalid polygon GeoJSON: {e}") from e
 
     try:
         start_dt = datetime.strptime(start, "%Y-%m-%d %H:%M:%S")
@@ -54,22 +53,22 @@ async def get_vessel_playback(
         start_str = start_dt.strftime("%Y-%m-%d %H:%M:%S")
         end_str = end_dt.strftime("%Y-%m-%d %H:%M:%S")
     except (ValueError, TypeError):
-        raise ValidationError("Invalid date format: use YYYY-MM-DD HH:MM:SS")
+        raise ValidationError("Invalid date format: use YYYY-MM-DD HH:MM:SS") from None
 
     minx, miny, maxx, maxy = poly.bounds
 
     try:
         raw_text = await fetch_playback(client, minx, miny, maxx, maxy, start_str, end_str)
     except httpx.HTTPError as e:
-        raise ExternalServiceError("ClickHouse", str(e))
+        raise ExternalServiceError("ClickHouse", str(e)) from e
 
     if not raw_text.strip():
         raise NotFoundError("Vessel playback", "no data in window")
 
     raw_rows = parse_playback_raw_rows(raw_text)
 
-    vessels: Dict[str, List[VesselPlaybackPoint]] = {}
-    timestamps: Set[str] = set()
+    vessels: dict[str, list[VesselPlaybackPoint]] = {}
+    timestamps: set[str] = set()
 
     for row in raw_rows:
         pt = Point(row.lon, row.lat)

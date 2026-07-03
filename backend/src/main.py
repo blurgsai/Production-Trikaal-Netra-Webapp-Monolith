@@ -1,12 +1,12 @@
-from contextlib import asynccontextmanager
 import logging
+from contextlib import asynccontextmanager
 
+import uvicorn
+from dotenv import load_dotenv
 from fastapi import FastAPI
 
-from routes.vessels.router import router as vessel_router
-import uvicorn
-from shared.config import setup_cors
-from dotenv import load_dotenv
+from src.features.vessels.router import router as vessel_router
+from src.shared.config import setup_cors
 
 load_dotenv()
 
@@ -27,4 +27,4 @@ setup_cors(app)
 app.include_router(vessel_router)
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="0.0.0.0", port=5000, reload=True)
+    uvicorn.run("src.main:app", host="0.0.0.0", port=5000, reload=True)

@@ -1,9 +1,9 @@
-from typing import AsyncGenerator
+from collections.abc import AsyncGenerator
 
 import httpx
 import motor.motor_asyncio
 
-from shared.config import settings
+from src.shared.config import settings
 
 
 async def get_http_client() -> AsyncGenerator[httpx.AsyncClient, None]:

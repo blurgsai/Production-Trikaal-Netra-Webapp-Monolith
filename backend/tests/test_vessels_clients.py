@@ -1,8 +1,8 @@
-"""Unit tests for routes.vessels.clients — ClickHouse HTTP client functions."""
+"""Unit tests for src.features.vessels.clients — ClickHouse HTTP client functions."""
 import httpx
 import pytest
 
-from routes.vessels.clients import fetch_trajectory, fetch_playback
+from src.features.vessels.clients import fetch_trajectory, fetch_playback
 
 
 @pytest.fixture

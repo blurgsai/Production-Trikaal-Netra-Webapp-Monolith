@@ -1,10 +1,10 @@
-"""Unit tests for routes.vessels.router — FastAPI endpoint tests."""
+"""Unit tests for src.features.vessels.router — FastAPI endpoint tests."""
 import httpx
 import pytest
 from fastapi.testclient import TestClient
 
-from main import app
-from shared.dependencies import get_http_client
+from src.main import app
+from src.shared.dependencies import get_http_client
 
 
 def _mock_response(status_code=200, text=""):

@@ -1,8 +1,6 @@
-from typing import List, Dict
 from pydantic import BaseModel
 
-from routes.vessels.clients import TrajectoryRawRow, PlaybackRawRow
-
+from src.features.vessels.clients import PlaybackRawRow, TrajectoryRawRow
 
 # ── Domain models (designed for API consumers, not ClickHouse shapes) ──
 
@@ -26,8 +24,8 @@ class VesselPlaybackPoint(BaseModel):
 
 
 class VesselPlaybackResponse(BaseModel):
-    timestamps: List[str]
-    vessels: Dict[str, List[VesselPlaybackPoint]]
+    timestamps: list[str]
+    vessels: dict[str, list[VesselPlaybackPoint]]
 
 
 class PlaybackWindowRequest(BaseModel):
@@ -61,7 +59,7 @@ def map_trajectory_from_raw(raw_text: str, vessel_id: str) -> VesselTrajectoryRe
 
 
 def map_playback_from_raw(raw_text: str) -> VesselPlaybackResponse:
-    vessels: Dict[str, List[VesselPlaybackPoint]] = {}
+    vessels: dict[str, list[VesselPlaybackPoint]] = {}
     timestamps: set[str] = set()
 
     for line in raw_text.strip().split("\n"):
