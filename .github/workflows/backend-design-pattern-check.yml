@@ -40,6 +40,12 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      # ─── Check 0: All code must be under src/ (no legacy structures) ───
+      - name: Enforce src/ structure (no routes/, utils/, or loose .py files)
+        run: |
+          chmod +x ../.github/scripts/check-backend-src-enforcement.sh
+          ../.github/scripts/check-backend-src-enforcement.sh .
+
       # ─── Check 1: Feature Folder Structure ───
       - name: Validate backend feature folder structure
         run: |
