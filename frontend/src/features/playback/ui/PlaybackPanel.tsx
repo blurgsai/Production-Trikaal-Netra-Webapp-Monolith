@@ -1,5 +1,4 @@
 import { useMemo, type ReactElement } from 'react';
-import type { ComponentType } from 'react';
 import { Box, CircularProgress, Typography } from '@mui/material';
 import { usePlayback } from '../hooks/usePlayback';
 import type {
@@ -18,21 +17,27 @@ import { EventInfoPanel }     from './EventInfoPanel';
 
 // ── Event-type overlay components ─────────────────────────────────────────────
 import { GeofenceIntrusionOverlay } from './GeofenceIntrusionOverlay';
+import { SpeedBadge }               from './SpeedBadge';
+import { SpeedTimelineEnhancement } from './SpeedTimelineEnhancement';
 
 // ── Event-type mapper/trajectory imports ──────────────────────────────────────
 import {
   mapGeofenceEventFromDetails,
   getGeofenceTrajectoryOverrides,
 } from '../model/geofenceIntrusionMappers';
+import { mapProlongedLowSpeedEventFromDetails }   from '../model/prolongedLowSpeedMappers';
+import { mapProlongedStationaryEventFromDetails } from '../model/prolongedStationaryMappers';
 
 // ── Static dispatch maps ───────────────────────────────────────────────────────
 // To add a new event type: import its overlay component and mappers above,
-// then add one adapter entry to OVERLAY_MAP and one entry to TRAJECTORY_FN_MAP.
+// then add one adapter entry to the relevant map(s).
 //
-// OverlayAdapter: calls the event-specific mapper then renders the overlay,
-// keeping each overlay component purely presentational (receives domain types).
+// Each adapter calls the event-specific mapper before rendering the component,
+// keeping every UI component purely presentational (receives typed domain props).
 
-type OverlayAdapter = (props: EventOverlayProps) => ReactElement | null;
+type OverlayAdapter   = (props: EventOverlayProps)   => ReactElement | null;
+type MarkerAdapter    = (props: EventMarkerProps)     => ReactElement | null;
+type TimelineAdapter  = (props: EventTimelineProps)   => ReactElement | null;
 
 const OVERLAY_MAP: Record<string, OverlayAdapter> = {
   geofence_intrusion: ({ eventDetails, extras, currentTimestampMs, timeWindow }) => (
@@ -48,12 +53,44 @@ const TRAJECTORY_FN_MAP: Record<string, TrajectoryOverrideFn> = {
   geofence_intrusion: getGeofenceTrajectoryOverrides,
 };
 
-const MARKER_MAP: Record<string, ComponentType<EventMarkerProps>> = {
-  // no event types implement marker enhancements yet
+const MARKER_MAP: Record<string, MarkerAdapter> = {
+  prolonged_low_speed: ({ vesselId, position, currentTimestampMs, eventDetails, timeWindow }) => (
+    <SpeedBadge
+      event={mapProlongedLowSpeedEventFromDetails(eventDetails)}
+      vesselId={vesselId}
+      position={position}
+      currentTimestampMs={currentTimestampMs}
+      timeWindow={timeWindow}
+    />
+  ),
+  prolonged_stationary: ({ vesselId, position, currentTimestampMs, eventDetails, timeWindow }) => (
+    <SpeedBadge
+      event={mapProlongedStationaryEventFromDetails(eventDetails)}
+      vesselId={vesselId}
+      position={position}
+      currentTimestampMs={currentTimestampMs}
+      timeWindow={timeWindow}
+    />
+  ),
 };
 
-const TIMELINE_MAP: Record<string, ComponentType<EventTimelineProps>> = {
-  // no event types implement timeline enhancements yet
+const TIMELINE_MAP: Record<string, TimelineAdapter> = {
+  prolonged_low_speed: ({ timeline, currentTimestampMs, eventDetails, timeWindow }) => (
+    <SpeedTimelineEnhancement
+      event={mapProlongedLowSpeedEventFromDetails(eventDetails)}
+      timeline={timeline}
+      currentTimestampMs={currentTimestampMs}
+      timeWindow={timeWindow}
+    />
+  ),
+  prolonged_stationary: ({ timeline, currentTimestampMs, eventDetails, timeWindow }) => (
+    <SpeedTimelineEnhancement
+      event={mapProlongedStationaryEventFromDetails(eventDetails)}
+      timeline={timeline}
+      currentTimestampMs={currentTimestampMs}
+      timeWindow={timeWindow}
+    />
+  ),
 };
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -168,26 +205,26 @@ export function PlaybackPanel({ eventId, eventType, isCompound }: PlaybackPanelP
             />
           );
         })}
-      </PlaybackMap>
 
-      {/* Event-type marker enhancements */}
-      {Object.entries(currentPositions).map(([vesselId, pos]) =>
-        resolvedTypes.map(t => {
-          const MarkerEnhancement = MARKER_MAP[t];
-          const details = resolvedDetails[t];
-          if (!MarkerEnhancement || !details || !details.vessels.includes(vesselId)) return null;
-          return (
-            <MarkerEnhancement
-              key={`${t}-${vesselId}`}
-              vesselId={vesselId}
-              position={pos}
-              currentTimestampMs={currentTimestampMs}
-              eventDetails={details}
-              timeWindow={data.timeWindow}
-            />
-          );
-        }),
-      )}
+        {/* Event-type marker enhancements — rendered inside map for Leaflet context */}
+        {Object.entries(currentPositions).map(([vesselId, pos]) =>
+          resolvedTypes.map(t => {
+            const MarkerEnhancement = MARKER_MAP[t];
+            const details = resolvedDetails[t];
+            if (!MarkerEnhancement || !details || !details.vessels.includes(vesselId)) return null;
+            return (
+              <MarkerEnhancement
+                key={`${t}-${vesselId}`}
+                vesselId={vesselId}
+                position={pos}
+                currentTimestampMs={currentTimestampMs}
+                eventDetails={details}
+                timeWindow={data.timeWindow}
+              />
+            );
+          }),
+        )}
+      </PlaybackMap>
 
       <EventInfoPanel
         eventId={eventId}
