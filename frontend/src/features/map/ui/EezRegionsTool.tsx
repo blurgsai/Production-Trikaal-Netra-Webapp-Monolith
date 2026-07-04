@@ -11,7 +11,7 @@ import {
 import TravelExploreIcon from "@mui/icons-material/TravelExplore";
 import { useMap } from "react-leaflet";
 import L from "leaflet";
-import { useEezRegions } from "../hooks/useEezRegions";
+import { useEezRegions } from "../";
 import type { EezRegion } from "../model/types";
 
 function EezRegionsTool() {

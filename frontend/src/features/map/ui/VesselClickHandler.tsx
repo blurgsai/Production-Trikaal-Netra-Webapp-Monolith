@@ -1,4 +1,4 @@
-import { useVesselInfoAtPoint } from "../hooks/useVesselInfoAtPoint";
+import { useVesselInfoAtPoint } from "../";
 import type { VesselInfo } from "../model/types";
 
 interface VesselClickHandlerProps {

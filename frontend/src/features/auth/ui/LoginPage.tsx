@@ -10,7 +10,7 @@ import {
 } from "@mui/material";
 import { Visibility, VisibilityOff, Person, Lock } from "@mui/icons-material";
 import { useTheme } from "@mui/material/styles";
-import { useLogin } from "../hooks/useLogin";
+import { useLogin } from "../";
 
 function LoginPage() {
   const theme = useTheme();
