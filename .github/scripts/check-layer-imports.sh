@@ -47,10 +47,12 @@ for feature_dir in "$FEATURES_DIR"/*/; do
         ERRORS=$((ERRORS + 1))
       fi
 
-      # Check for raw API type names (e.g., UserApiResponse, PostApiSchema)
-      if grep -qE "import.*[A-Z][a-zA-Z]*Api(Response|Schema|Dto)" "$ui_file" 2>/dev/null; then
+      # Check for raw API type names — matches the guide's illustrative suffix
+      # (*ApiResponse, *ApiSchema, *ApiDto) AND this project's actual convention
+      # (plain *Api suffix, e.g. VesselConfigApi, CustomShapeApi).
+      if grep -qE "import.*[A-Z][a-zA-Z]*Api(Response|Schema|Dto)?\b" "$ui_file" 2>/dev/null; then
         echo "  FAIL: $rel_path imports raw API type — UI must only use domain types"
-        echo "    Raw API types (e.g., *ApiResponse, *ApiSchema) are forbidden in ui/"
+        echo "    Raw API types (e.g., *Api, *ApiResponse, *ApiSchema, *ApiDto) are forbidden in ui/"
         ERRORS=$((ERRORS + 1))
       fi
 

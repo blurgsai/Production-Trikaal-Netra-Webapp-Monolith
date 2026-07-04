@@ -131,6 +131,31 @@ for dir in "$SRC_DIR"/*/; do
   fi
 done
 
+# ─── Also check one level inside src/app/ ───
+# app/ legitimately holds routing, providers, layout, and page-level components
+# (pages/, routes/, components/ for app-shell pieces like Layout/Header/Sidebar
+# are allowed per the guide). But feature/business logic folders must never
+# live under app/ — that would bypass the feature-sliced architecture entirely.
+APP_DIR="${SRC_DIR}/app"
+APP_BLOCKED_FOLDERS=("hooks" "utils" "api" "services" "store" "model" "models" "schemas" "middleware")
+
+if [ -d "$APP_DIR" ]; then
+  for dir in "$APP_DIR"/*/; do
+    [ -d "$dir" ] || continue
+    dirname=$(basename "$dir")
+
+    for blocked in "${APP_BLOCKED_FOLDERS[@]}"; do
+      if [ "$dirname" = "$blocked" ]; then
+        echo "FAIL: Found 'app/$dirname/' folder."
+        echo "  Business/feature logic must not live under src/app/."
+        echo "  Move contents to src/features/<feature>/$dirname/ or src/shared/"
+        echo ""
+        ERRORS=$((ERRORS + 1))
+      fi
+    done
+  done
+fi
+
 echo "=========================================="
 if [ "$ERRORS" -gt 0 ]; then
   echo "FAILED: $ERRORS top-level folder violation(s) found."

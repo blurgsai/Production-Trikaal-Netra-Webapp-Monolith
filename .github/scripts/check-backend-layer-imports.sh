@@ -44,10 +44,12 @@ for feature_dir in "$FEATURES_DIR"/*/; do
       [ -f "$router_file" ] || continue
       rel_path="${router_file#${feature_dir}}"
 
-      # Check for imports of *ApiSchema, *ApiDto types
-      if grep -qE "import.*[A-Z][a-zA-Z]*Api(Schema|Dto)" "$router_file" 2>/dev/null; then
+      # Check for imports of raw schema types — matches the guide's illustrative
+      # suffix (*ApiSchema, *ApiDto) AND this project's actual convention
+      # (plain *Raw* names, e.g. TrajectoryRawRow, PlaybackRawRow).
+      if grep -qE "import.*[A-Z][a-zA-Z]*(Api(Schema|Dto)\b|Raw[A-Z][a-zA-Z]*)" "$router_file" 2>/dev/null; then
         echo "  FAIL: $rel_path imports raw API schema — routers must only use domain models"
-        echo "    Raw schemas (*ApiSchema, *ApiDto) are forbidden in router/"
+        echo "    Raw schemas (*ApiSchema, *ApiDto, *Raw*) are forbidden in router/"
         ERRORS=$((ERRORS + 1))
       fi
 
@@ -83,10 +85,10 @@ for feature_dir in "$FEATURES_DIR"/*/; do
 
       # Services can import from clients/ and models/ — this is correct per the guide
       # But services must NOT import raw schemas directly — they go through mapper
-      if grep -qE "import.*[A-Z][a-zA-Z]*Api(Schema|Dto)" "$service_file" 2>/dev/null; then
+      if grep -qE "import.*[A-Z][a-zA-Z]*(Api(Schema|Dto)\b|Raw[A-Z][a-zA-Z]*)" "$service_file" 2>/dev/null; then
         echo "  FAIL: $rel_path imports raw API schema — services must use domain models only"
         echo "    Services call clients (get raw) → pass through mapper (get domain)"
-        echo "    Services should never reference *ApiSchema or *ApiDto types directly."
+        echo "    Services should never reference *ApiSchema, *ApiDto, or *Raw* types directly."
         ERRORS=$((ERRORS + 1))
       fi
     done < <(find "${feature_dir}services" -name "*.py" 2>/dev/null)

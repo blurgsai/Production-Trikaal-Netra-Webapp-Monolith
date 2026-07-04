@@ -100,7 +100,7 @@ echo ""
 
 # ─── Check 5: No other unexpected directories in backend/ ───
 echo "Check 5: No unexpected directories in backend/ root"
-ALLOWED_DIRS=("src" "tests" ".git" "__pycache__" ".venv" "venv" ".ruff_cache")
+ALLOWED_DIRS=("src" "tests" ".git" "__pycache__" ".venv" "venv" ".ruff_cache" ".pytest_cache" ".import_linter_cache")
 for dir in "$BACKEND_DIR"/*/; do
   [ -d "$dir" ] || continue
   dirname=$(basename "$dir")

@@ -6,13 +6,21 @@ on:
     paths:
       - 'frontend/**'
       - '.github/workflows/frontend-design-pattern-check.yml'
-      - '.github/scripts/**'
+      - '.github/scripts/check-no-nested-features.sh'
+      - '.github/scripts/check-no-top-level-tech-folders.sh'
+      - '.github/scripts/check-layer-imports.sh'
+      - '.github/scripts/check-barrel-exports.sh'
+      - '.github/scripts/validate-feature-structure.sh'
   push:
     branches: [main, develop]
     paths:
       - 'frontend/**'
       - '.github/workflows/frontend-design-pattern-check.yml'
-      - '.github/scripts/**'
+      - '.github/scripts/check-no-nested-features.sh'
+      - '.github/scripts/check-no-top-level-tech-folders.sh'
+      - '.github/scripts/check-layer-imports.sh'
+      - '.github/scripts/check-barrel-exports.sh'
+      - '.github/scripts/validate-feature-structure.sh'
 
 jobs:
   frontend-design-pattern:

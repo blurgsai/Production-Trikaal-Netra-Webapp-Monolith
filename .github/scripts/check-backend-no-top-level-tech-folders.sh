@@ -88,6 +88,9 @@ for dir in "$SRC_DIR"/*/; do
 
   dirname=$(basename "$dir")
 
+  # __pycache__ is a Python runtime artifact, not a top-level folder — skip it.
+  [ "$dirname" = "__pycache__" ] && continue
+
   # Check if it's a valid top-level directory
   is_valid=false
   for valid in "${VALID_TOP_LEVEL[@]}"; do

@@ -27,6 +27,7 @@ if [ ! -d "$FEATURES_DIR" ]; then
 fi
 
 ERRORS=0
+WARNINGS=0
 
 echo "=========================================="
 echo "  Barrel Export Rules Check"
@@ -80,37 +81,42 @@ for feature_dir in "$FEATURES_DIR"/*/; do
     ERRORS=$((ERRORS + 1))
   fi
 
-  # ─── Rule 3: index.ts must export at least one domain type from model/types ───
+  # ─── Rule 3: index.ts should export at least one domain type from model/types (advisory) ───
   if ! grep -qE "export.*from\s+['\"]\.\/model/types" "$barrel_file" 2>/dev/null; then
     echo "  WARN: index.ts does not export any domain types from model/types"
     echo "    Consider: export type { ... } from './model/types'"
-    ERRORS=$((ERRORS + 1))
+    WARNINGS=$((WARNINGS + 1))
   fi
 
-  # ─── Rule 4: index.ts should export hooks ───
+  # ─── Rule 4: index.ts should export hooks (advisory — not all features have hooks) ───
   if ! grep -qE "export.*from\s+['\"]\.\/hooks" "$barrel_file" 2>/dev/null; then
     echo "  WARN: index.ts does not export any hooks"
     echo "    Consider: export { use... } from './hooks/use...'"
-    ERRORS=$((ERRORS + 1))
+    WARNINGS=$((WARNINGS + 1))
   fi
 
-  # ─── Rule 5: index.ts should export UI components ───
+  # ─── Rule 5: index.ts should export UI components (advisory — not all features have UI) ───
   if ! grep -qE "export.*from\s+['\"]\.\/ui" "$barrel_file" 2>/dev/null; then
     echo "  WARN: index.ts does not export any UI components"
     echo "    Consider: export { ... } from './ui/...'"
-    ERRORS=$((ERRORS + 1))
+    WARNINGS=$((WARNINGS + 1))
   fi
 
   # ─── Rule 6: index.ts must NOT export raw API type names ───
-  if grep -qE "export.*[A-Z][a-zA-Z]*Api(Response|Schema|Dto)" "$barrel_file" 2>/dev/null; then
+  # Matches both the guide's illustrative suffix (*ApiResponse/*ApiSchema/*ApiDto)
+  # and this project's actual convention (plain *Api suffix, e.g. VesselConfigApi).
+  if grep -qE "export.*[A-Z][a-zA-Z]*Api(Response|Schema|Dto)?\b" "$barrel_file" 2>/dev/null; then
     echo "  FAIL: index.ts exports raw API type — domain types only in barrel"
-    echo "    Raw API types (*ApiResponse, *ApiSchema) must not be in the public API."
+    echo "    Raw API types (*Api, *ApiResponse, *ApiSchema, *ApiDto) must not be in the public API."
     ERRORS=$((ERRORS + 1))
   fi
 done
 
 echo ""
 echo "=========================================="
+if [ "$WARNINGS" -gt 0 ]; then
+  echo "NOTE: $WARNINGS advisory warning(s) — not blocking, see above."
+fi
 if [ "$ERRORS" -gt 0 ]; then
   echo "FAILED: $ERRORS barrel export violation(s) found."
   echo ""
@@ -124,7 +130,7 @@ if [ "$ERRORS" -gt 0 ]; then
   echo "    - api/types.ts                       (raw API types stay internal)"
   echo "    - model/mappers.ts                   (mappers stay internal)"
   echo "    - api/*Api.ts                        (fetch functions stay internal)"
-  echo "    - Any *ApiResponse or *ApiSchema     (raw API type names)"
+  echo "    - Any *Api, *ApiResponse, *ApiSchema, *ApiDto (raw API type names)"
   exit 1
 else
   echo "PASSED: All barrel exports are valid."
