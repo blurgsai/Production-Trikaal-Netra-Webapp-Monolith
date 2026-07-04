@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Stack, IconButton, Tooltip } from "@mui/material";
+import { alpha, useTheme } from "@mui/material/styles";
 import StraightenIcon from "@mui/icons-material/Straighten";
 import LayersOutlinedIcon from "@mui/icons-material/LayersOutlined";
 import SettingsIcon from "@mui/icons-material/Settings";
@@ -33,6 +34,7 @@ function MapToolbar({
   onFetchColumns,
   onSearchColumnValues,
 }: MapToolbarProps) {
+  const theme = useTheme();
   const [activePanel, setActivePanel] = useState<string | null>(null);
   const [isMeasureMode, setIsMeasureMode] = useState(false);
 
@@ -61,7 +63,7 @@ function MapToolbar({
           borderRadius: 2,
           top: 10,
           right: 10,
-          bgcolor: "#00000093",
+          bgcolor: alpha(theme.palette.background.default, 0.58),
           zIndex: 9000,
         }}
       >

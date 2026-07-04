@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import { defenseColors } from "@/shared/theme";
 
 interface MiniMapControlOptions {
   position?: L.ControlPosition;
@@ -35,12 +36,12 @@ function MiniMapControl({
     const container = L.DomUtil.create("div", "leaflet-minimap-container") as HTMLDivElement;
     container.style.width = `${width}px`;
     container.style.height = `${height}px`;
-    container.style.border = "2px solid rgba(255,255,255,0.6)";
+    container.style.border = `2px solid ${defenseColors.border.strong}`;
     container.style.borderRadius = "4px";
-    container.style.boxShadow = "0 2px 8px rgba(0,0,0,0.4)";
+    container.style.boxShadow = defenseColors.shadow;
     container.style.overflow = "hidden";
     container.style.cursor = "pointer";
-    container.style.backgroundColor = "#1a1a2e";
+    container.style.backgroundColor = defenseColors.background.page;
     containerRef.current = container;
 
     const control = new L.Control({ position });
@@ -70,8 +71,8 @@ function MiniMapControl({
 
     const rect = L.rectangle(parentMap.getBounds(), {
       weight: 2,
-      color: "#4fc3f7",
-      fillColor: "#4fc3f7",
+      color: defenseColors.primary.main,
+      fillColor: defenseColors.primary.main,
       fillOpacity: 0.15,
       interactive: false,
     }).addTo(miniMap);

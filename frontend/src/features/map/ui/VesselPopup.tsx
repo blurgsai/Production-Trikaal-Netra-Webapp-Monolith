@@ -153,7 +153,7 @@ function VesselPopup({ vessel, latlng, popupFields, onClose, onPopupFieldsChange
 
       <CardContent sx={{ display: "flex", flexDirection: "column", gap: 1.2 }}>
         {imageLoading ? (
-          <Box sx={{ width: "100%", height: 150, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 1, bgcolor: "grey.100" }}>
+          <Box sx={{ width: "100%", height: 150, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 1, bgcolor: "action.hover" }}>
             <CircularProgress size={32} />
           </Box>
         ) : image?.imageUrl ? (
@@ -164,9 +164,9 @@ function VesselPopup({ vessel, latlng, popupFields, onClose, onPopupFieldsChange
             alt="Vessel"
           />
         ) : (
-          <Box sx={{ width: "100%", height: 150, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", borderRadius: 1, bgcolor: "grey.300", gap: 1 }}>
-            <BrokenImageIcon sx={{ fontSize: 40, color: "grey.700" }} />
-            <Typography variant="body2" color="grey.700">Image not found</Typography>
+          <Box sx={{ width: "100%", height: 150, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", borderRadius: 1, bgcolor: "action.hover", gap: 1 }}>
+            <BrokenImageIcon sx={{ fontSize: 40, color: "text.secondary" }} />
+            <Typography variant="body2" color="text.secondary">Image not found</Typography>
           </Box>
         )}
 

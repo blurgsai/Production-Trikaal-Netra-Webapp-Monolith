@@ -18,6 +18,7 @@ import {
 import { DataGrid, type GridColDef, type GridSortModel } from "@mui/x-data-grid";
 import CloseIcon from "@mui/icons-material/Close";
 import ViewColumnIcon from "@mui/icons-material/ViewColumn";
+import TableChartOutlinedIcon from "@mui/icons-material/TableChartOutlined";
 import { PAGE_SIZE_OPTIONS } from "../model/config";
 import { formatColumnName } from "@/shared/utils";
 
@@ -115,9 +116,10 @@ function VesselTableTool({
       }}
     >
       <Box display="flex" alignItems="center" justifyContent="space-between" px={2} py={1.5}>
-        <Typography variant="h6" fontWeight={700}>
-          Vessel Table
-        </Typography>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          <TableChartOutlinedIcon sx={{ fontSize: 18, color: "primary.main" }} />
+          <Typography variant="subtitle2" sx={{ fontWeight: 700, letterSpacing: 0.3 }}>Vessel Table</Typography>
+        </Box>
         <Stack direction="row" alignItems="center" spacing={1}>
           <IconButton size="small" onClick={() => setColumnDialogOpen(true)} aria-label="select columns">
             <ViewColumnIcon fontSize="small" />

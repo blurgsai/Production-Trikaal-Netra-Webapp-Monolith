@@ -42,7 +42,8 @@ function tickIcon(rotationDeg: number, tickInfo: string, color: string) {
         padding-left:8px;padding-bottom:16px;
         transform:rotate(${textRotation}deg);
         margin:0;white-space:nowrap;
-        font-size:18px;color:white;text-align:center;
+        font-size:18px;color:black;text-align:center;
+        text-shadow: 0 0 2px rgba(255,255,255,0.7);
       ">${timePart}<br/>(${distancePart}</p>
     </div>`,
     iconSize: [2, 24],

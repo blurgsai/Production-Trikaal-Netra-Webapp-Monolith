@@ -31,6 +31,7 @@ import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 import SortIcon from "@mui/icons-material/Sort";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import SettingsIcon from "@mui/icons-material/Settings";
+import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 
 import CustomiseColumns from "@/shared/ui/table/CustomiseColumns";
 import ProgressiveFilter from "@/shared/ui/table/ProgressiveFilter";
@@ -308,16 +309,18 @@ export default function DynamicTable({
 
   if (loading && !tableData.length) {
     return (
-      <Box sx={{ display: "flex", justifyContent: "center", p: 4 }}>
+      <Box sx={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", p: 4, gap: 1.5 }}>
         <CircularProgress sx={{ color: theme.primaryColor }} />
+        <Typography variant="body2" color="text.secondary">Loading data…</Typography>
       </Box>
     );
   }
 
   if (!metadata) {
     return (
-      <Box sx={{ p: 4 }}>
-        <Typography sx={{ color: theme.textColor }}>
+      <Box sx={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", p: 4, gap: 1 }}>
+        <ErrorOutlineIcon sx={{ fontSize: 32, color: "error.main" }} />
+        <Typography variant="body2" color="error">
           Failed to load table metadata
         </Typography>
       </Box>

@@ -1,6 +1,7 @@
 import L from "leaflet";
 import { useEffect } from "react";
 import { useMap } from "react-leaflet";
+import { defenseColors } from "@/shared/theme";
 
 function roundDisplayValue(value: number) {
   if (value >= 1000) return Math.round(value / 100) * 100;
@@ -23,20 +24,20 @@ function ScaleBar({ unit = "km" }: ScaleBarProps) {
 
     control.onAdd = () => {
       const container = L.DomUtil.create("div", "leaflet-control");
-      container.style.background = "rgba(255,255,255,0.95)";
+      container.style.background = defenseColors.background.surface;
       container.style.padding = "4px 8px";
-      container.style.border = "1px solid rgba(0,0,0,0.2)";
+      container.style.border = `1px solid ${defenseColors.border.strong}`;
       container.style.borderRadius = "4px";
-      container.style.boxShadow = "0 1px 4px rgba(0,0,0,0.2)";
+      container.style.boxShadow = "0 2px 8px rgba(0,0,0,0.4)";
       container.style.fontSize = "12px";
       container.style.fontWeight = "500";
-      container.style.color = "#222";
+      container.style.color = defenseColors.text.primary;
       container.style.minWidth = "90px";
       container.style.pointerEvents = "none";
 
       const bar = L.DomUtil.create("div", "", container);
       bar.style.height = "6px";
-      bar.style.border = "2px solid #333";
+      bar.style.border = `2px solid ${defenseColors.text.primary}`;
       bar.style.borderTop = "none";
       bar.style.marginBottom = "4px";
 
