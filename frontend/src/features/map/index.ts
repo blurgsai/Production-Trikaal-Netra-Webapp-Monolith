@@ -1,13 +1,15 @@
 export { default as BaseMap } from "./ui/BaseMap";
+export { default as MiniMapControl } from "./ui/MiniMapControl";
 export { default as MapNavbar } from "./ui/MapNavbar";
 export { default as VesselTableTool } from "./ui/VesselTableTool";
 export { useMapConfig } from "./hooks/useMapConfig";
 export { useVesselTrajectory } from "./hooks/useVesselTrajectory";
 export { useVesselTable } from "./hooks/useVesselTable";
-export type { BaseMap as BaseMapConfig, OverlayLayerConfig, VesselConfig, CustomShape, StyleDefinition, StyleRule, VesselInfo, VesselDetails, VesselImage, TrajectoryPoint, VesselCountCategory, VesselTableFilter, VesselTableRow, SavedFilterSet, Polygon, PopupFieldConfig } from "./model/types";
+export type { BaseMap as BaseMapConfig, OverlayLayerConfig, VesselConfig, CustomShape, StyleDefinition, StyleRule, VesselInfo, VesselDetails, VesselImage, TrajectoryPoint, VesselCountCategory, VesselTableFilter, VesselTableRow, SavedFilterSet, Polygon, PopupFieldConfig, MapControlSettings } from "./model/types";
 export type { ViewTile } from "./ui/MapNavbar";
 export { default as LayerPanel } from "./ui/LayerPanel";
 export { default as VesselConfigPanel } from "./ui/VesselConfigPanel";
 export { default as EezRegionsTool } from "./ui/EezRegionsTool";
+export { default as MapTileSettings } from "./ui/MapTileSettings";
 export { useEezRegions } from "./hooks/useEezRegions";
 export type { EezRegion } from "./model/types";

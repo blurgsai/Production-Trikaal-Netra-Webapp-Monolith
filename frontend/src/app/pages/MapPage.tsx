@@ -1,5 +1,5 @@
 import { Box } from "@mui/material";
-import { BaseMap, MapNavbar, VesselTableTool, LayerPanel, VesselConfigPanel, useMapConfig, useVesselTrajectory, useVesselTable } from "@/features/map";
+import { BaseMap, MapNavbar, VesselTableTool, LayerPanel, VesselConfigPanel, useMapConfig, useVesselTrajectory, useVesselTable, MapTileSettings } from "@/features/map";
 import type { VesselInfo, VesselConfig, ViewTile, Polygon, PopupFieldConfig } from "@/features/map";
 import { useLocalStorage } from "@/shared";
 import { useState, useEffect } from "react";
@@ -32,6 +32,8 @@ function MapPage() {
     refreshKey,
     selectedVessel,
     setSelectedVessel,
+    mapControlSettings,
+    setMapControlSettings,
   } = useMapConfig();
 
   const [selectedVesselPosition, setSelectedVesselPosition] = useState<{ lat: number; lng: number } | null>(null);
@@ -179,7 +181,16 @@ function MapPage() {
         path={path}
         title={getTileTitle(id)}
         createNode={() => id}
-        toolbarControls={<div />}
+        toolbarControls={
+          id === "map" ? (
+            <MapTileSettings
+              settings={mapControlSettings}
+              onChange={setMapControlSettings}
+            />
+          ) : (
+            <div />
+          )
+        }
       >
         {id === "table" && (
           <VesselTableTool
@@ -219,6 +230,7 @@ function MapPage() {
             onPopupFieldsChange={handlePopupFieldsChange}
             polygonFilters={polygonFilters}
             onPolygonFiltersChange={setPolygonFilters}
+            mapControlSettings={mapControlSettings}
           />
         )}
         {id === "layers" && (

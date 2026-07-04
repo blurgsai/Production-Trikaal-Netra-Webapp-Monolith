@@ -23,8 +23,8 @@ function ZoomControl() {
     <Box
       sx={{
         position: "absolute",
-        bottom: 20,
-        right: 10,
+        top: 10,
+        left: 10,
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
@@ -33,32 +33,35 @@ function ZoomControl() {
         boxShadow: 3,
         overflow: "hidden",
         zIndex: 1000,
-        p: 1,
+        p: 0.5,
       }}
     >
       <IconButton
         size="small"
         onClick={zoomIn}
         sx={{
+          p: 0.25,
           "&:hover": { backgroundColor: "rgba(255,255,255,0.2)" },
         }}
       >
-        <AddIcon fontSize="small" />
+        <AddIcon sx={{ fontSize: 16 }} />
       </IconButton>
 
       <Typography
-        variant="body2"
+        variant="caption"
         sx={{
-          py: 0.5,
+          py: 0.25,
           fontWeight: 600,
           userSelect: "none",
+          fontSize: 11,
+          lineHeight: 1,
         }}
       >
         {zoom}
       </Typography>
 
-      <IconButton size="small" onClick={zoomOut}>
-        <RemoveIcon fontSize="small" />
+      <IconButton size="small" onClick={zoomOut} sx={{ p: 0.25 }}>
+        <RemoveIcon sx={{ fontSize: 16 }} />
       </IconButton>
     </Box>
   );

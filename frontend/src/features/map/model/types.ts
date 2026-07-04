@@ -176,3 +176,10 @@ export interface Polygon {
   id: string;
   points: { lat: number; lng: number }[];
 }
+
+export interface MapControlSettings {
+  toolbar: boolean;
+  zoombar: boolean;
+  minimap: boolean;
+  statusbar: boolean;
+}

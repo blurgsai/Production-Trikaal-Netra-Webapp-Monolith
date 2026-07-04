@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { loadMapConfig, saveMapConfig, applyVesselStyle, validateStyleExists } from "../api";
 import { mapApiToDomain, mapDomainToApi } from "../model/mappers";
 import { baseMaps, overlayLayers, weatherLayers } from "../model/config";
-import type { BaseMap, OverlayLayerConfig, VesselConfig, VesselInfo, ClusterConfig, TrajectoryConfig, DeadReckoningConfig, PopupFieldConfig } from "../model/types";
+import type { BaseMap, OverlayLayerConfig, VesselConfig, VesselInfo, ClusterConfig, TrajectoryConfig, DeadReckoningConfig, PopupFieldConfig, MapControlSettings } from "../model/types";
 
 const DEFAULT_CLUSTER_CONFIG: ClusterConfig = {
   cellSize: 50,
@@ -53,6 +53,13 @@ const DEFAULT_VESSEL_CONFIG: VesselConfig = {
   customShapes: [],
 };
 
+const DEFAULT_MAP_CONTROL_SETTINGS: MapControlSettings = {
+  toolbar: true,
+  zoombar: true,
+  minimap: true,
+  statusbar: true,
+};
+
 export function useMapConfig() {
   const [selectedBaseMap, setSelectedBaseMap] = useState<BaseMap>(() => {
     const api = loadMapConfig();
@@ -78,6 +85,12 @@ export function useMapConfig() {
     const api = loadMapConfig();
     const domain = mapApiToDomain(api);
     return domain.vesselConfig ?? DEFAULT_VESSEL_CONFIG;
+  });
+
+  const [mapControlSettings, setMapControlSettings] = useState<MapControlSettings>(() => {
+    const api = loadMapConfig();
+    const domain = mapApiToDomain(api);
+    return domain.mapControlSettings ?? DEFAULT_MAP_CONTROL_SETTINGS;
   });
 
   const [selectedVessel, setSelectedVessel] = useState<VesselInfo | null>(null);
@@ -145,9 +158,10 @@ export function useMapConfig() {
         activeLayers,
         layerOrder,
         vesselConfig,
+        mapControlSettings,
       })
     );
-  }, [selectedBaseMap, activeLayers, layerOrder, vesselConfig]);
+  }, [selectedBaseMap, activeLayers, layerOrder, vesselConfig, mapControlSettings]);
 
   return {
     baseMaps,
@@ -166,5 +180,7 @@ export function useMapConfig() {
     refreshKey,
     overlayLayers,
     weatherLayers,
+    mapControlSettings,
+    setMapControlSettings,
   };
 }

@@ -1,12 +1,13 @@
 import { baseMaps, defaultBaseMap, overlayLayers } from "../model/config";
-import type { MapConfigApiResponse, CountryPrefixApi, VesselDetailsApi, VesselImageApiResponse, EezRegionApi, CustomShapeApi, StyleDefinitionApi, StyleRuleApi, StyleConditionApi, ClusterConfigApi, TrajectoryConfigApi, DeadReckoningConfigApi, PopupFieldConfigApi } from "../api/types";
-import type { BaseMap, VesselConfig, VesselInfo, CountryPrefix, VesselDetails, VesselImage, EezRegion, CustomShape, StyleDefinition, StyleRule, VesselTableFilter, FilterCombinator, ClusterConfig, TrajectoryConfig, DeadReckoningConfig, PopupFieldConfig } from "./types";
+import type { MapConfigApiResponse, MapControlSettingsApi, CountryPrefixApi, VesselDetailsApi, VesselImageApiResponse, EezRegionApi, CustomShapeApi, StyleDefinitionApi, StyleRuleApi, StyleConditionApi, ClusterConfigApi, TrajectoryConfigApi, DeadReckoningConfigApi, PopupFieldConfigApi } from "../api/types";
+import type { BaseMap, VesselConfig, VesselInfo, CountryPrefix, VesselDetails, VesselImage, EezRegion, CustomShape, StyleDefinition, StyleRule, VesselTableFilter, FilterCombinator, ClusterConfig, TrajectoryConfig, DeadReckoningConfig, PopupFieldConfig, MapControlSettings } from "./types";
 
 export interface MapConfigDomain {
   selectedBaseMap: BaseMap;
   activeLayers: Record<string, boolean>;
   layerOrder: string[];
   vesselConfig: VesselConfig;
+  mapControlSettings: MapControlSettings;
 }
 
 const DEFAULT_CLUSTER_CONFIG: ClusterConfig = {
@@ -58,6 +59,13 @@ const DEFAULT_VESSEL_CONFIG: VesselConfig = {
   customShapes: [],
 };
 
+const DEFAULT_MAP_CONTROL_SETTINGS: MapControlSettings = {
+  toolbar: true,
+  zoombar: true,
+  minimap: true,
+  statusbar: true,
+};
+
 export function mapApiToDomain(api: MapConfigApiResponse): MapConfigDomain {
   const selectedBaseMap =
     baseMaps.find((m) => m.id === api.selected_base_map_id) ?? defaultBaseMap;
@@ -86,7 +94,15 @@ export function mapApiToDomain(api: MapConfigApiResponse): MapConfigDomain {
     customShapes: (vc?.custom_shapes ?? []).map(mapCustomShapeFromApi),
   };
 
-  return { selectedBaseMap, activeLayers, layerOrder, vesselConfig };
+  const mcs = api.map_control_settings;
+  const mapControlSettings: MapControlSettings = {
+    toolbar: mcs?.toolbar ?? DEFAULT_MAP_CONTROL_SETTINGS.toolbar,
+    zoombar: mcs?.zoombar ?? DEFAULT_MAP_CONTROL_SETTINGS.zoombar,
+    minimap: mcs?.minimap ?? DEFAULT_MAP_CONTROL_SETTINGS.minimap,
+    statusbar: mcs?.statusbar ?? DEFAULT_MAP_CONTROL_SETTINGS.statusbar,
+  };
+
+  return { selectedBaseMap, activeLayers, layerOrder, vesselConfig, mapControlSettings };
 }
 
 export function mapDomainToApi(domain: MapConfigDomain): MapConfigApiResponse {
@@ -96,6 +112,7 @@ export function mapDomainToApi(domain: MapConfigDomain): MapConfigApiResponse {
       .filter(([, v]) => v)
       .map(([k]) => k),
     layer_order: domain.layerOrder,
+    map_control_settings: mapControlSettingsToApi(domain.mapControlSettings),
     vessel_config: {
       opacity: domain.vesselConfig.opacity,
       style_name: domain.vesselConfig.styleName,
@@ -319,5 +336,23 @@ export function mapCustomShapeToApi(domain: CustomShape): CustomShapeApi {
     id: domain.id,
     name: domain.name,
     svg: domain.svg,
+  };
+}
+
+export function mapControlSettingsFromApi(raw: MapControlSettingsApi | null | undefined, fallback: MapControlSettings): MapControlSettings {
+  return {
+    toolbar: raw?.toolbar ?? fallback.toolbar,
+    zoombar: raw?.zoombar ?? fallback.zoombar,
+    minimap: raw?.minimap ?? fallback.minimap,
+    statusbar: raw?.statusbar ?? fallback.statusbar,
+  };
+}
+
+export function mapControlSettingsToApi(domain: MapControlSettings): MapControlSettingsApi {
+  return {
+    toolbar: domain.toolbar,
+    zoombar: domain.zoombar,
+    minimap: domain.minimap,
+    statusbar: domain.statusbar,
   };
 }

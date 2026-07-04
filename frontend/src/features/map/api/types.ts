@@ -75,11 +75,19 @@ export interface VesselConfigApi {
   custom_shapes: CustomShapeApi[] | null;
 }
 
+export interface MapControlSettingsApi {
+  toolbar: boolean | null;
+  zoombar: boolean | null;
+  minimap: boolean | null;
+  statusbar: boolean | null;
+}
+
 export interface MapConfigApiResponse {
   selected_base_map_id: string | null;
   active_layer_ids: string[] | null;
   layer_order: string[] | null;
   vessel_config: VesselConfigApi | null;
+  map_control_settings: MapControlSettingsApi | null;
 }
 
 export interface TrajectoryPointApi {

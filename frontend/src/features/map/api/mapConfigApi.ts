@@ -11,6 +11,7 @@ export function loadMapConfig(): MapConfigApiResponse {
         active_layer_ids: null,
         layer_order: null,
         vessel_config: null,
+        map_control_settings: null,
       };
     }
     const parsed = JSON.parse(raw) as MapConfigApiResponse;
@@ -19,6 +20,7 @@ export function loadMapConfig(): MapConfigApiResponse {
       active_layer_ids: parsed.active_layer_ids ?? null,
       layer_order: parsed.layer_order ?? null,
       vessel_config: parsed.vessel_config ?? null,
+      map_control_settings: parsed.map_control_settings ?? null,
     };
   } catch {
     return {
@@ -26,6 +28,7 @@ export function loadMapConfig(): MapConfigApiResponse {
       active_layer_ids: null,
       layer_order: null,
       vessel_config: null,
+      map_control_settings: null,
     };
   }
 }
