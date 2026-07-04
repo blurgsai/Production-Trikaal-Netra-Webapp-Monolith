@@ -5,6 +5,7 @@ import uvicorn
 from dotenv import load_dotenv
 from fastapi import FastAPI
 
+from src.features.users.router import router as user_router
 from src.features.vessels.router import router as vessel_router
 from src.shared.config import setup_cors
 
@@ -24,6 +25,7 @@ app = FastAPI(lifespan=lifespan)
 
 setup_cors(app)
 
+app.include_router(user_router)
 app.include_router(vessel_router)
 
 if __name__ == "__main__":

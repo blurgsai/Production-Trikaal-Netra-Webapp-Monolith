@@ -1,7 +1,7 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import type { VesselTableFilter, SavedFilterSet, Polygon, VesselTableQuery } from "../model/types";
 import { fetchVesselTable, fetchVesselTableColumns, fetchUniqueColumnValues } from "../api/vesselTableApi";
-import { mapVesselTableResponse, type VesselTablePage } from "../model/mappers.vesselTable";
+import { mapVesselTableResponse, type VesselTablePage } from "../model/mappers";
 import { buildWfsCqlFilter, buildPolygonCqlFilter, combineCqlFilters } from "../model/cqlFilter";
 import { loadSavedFilters, saveFilter, deleteSavedFilter } from "../api/vesselFilterStorage";
 import { DEFAULT_TABLE_COLUMNS, DEFAULT_PAGE_SIZE } from "../model/config";
@@ -28,6 +28,8 @@ export function useVesselTable(options: UseVesselTableOptions = {}) {
   const [error, setError] = useState<string>("");
   const [columnOptions, setColumnOptions] = useState<Record<string, string[]>>({});
   const [savedFilters, setSavedFilters] = useState<SavedFilterSet[]>([]);
+  const filtersRef = useRef(filters);
+  const loadRequestIdRef = useRef(0);
 
   const cqlFilter = useMemo(() => {
     const tableFilter = buildWfsCqlFilter(appliedFilters);
@@ -58,15 +60,10 @@ export function useVesselTable(options: UseVesselTableOptions = {}) {
       setPageData({ rows: [], total: 0, returned: 0 });
       return;
     }
+    const currentRequestId = ++loadRequestIdRef.current;
     setLoading(true);
     setError("");
     try {
-      console.log("🔍 Table CQL Debug:", {
-        appliedFilters,
-        polygonFilters,
-        cqlFilter,
-      });
-      
       const query: VesselTableQuery = {
         cqlFilter,
         page,
@@ -75,12 +72,16 @@ export function useVesselTable(options: UseVesselTableOptions = {}) {
         sortOrder,
       };
       const response = await fetchVesselTable(query);
+      if (currentRequestId !== loadRequestIdRef.current) return;
       setPageData(mapVesselTableResponse(response));
     } catch (err) {
+      if (currentRequestId !== loadRequestIdRef.current) return;
       const message = err instanceof Error ? err.message : "Failed to load vessel table";
       setError(message);
     } finally {
-      setLoading(false);
+      if (currentRequestId === loadRequestIdRef.current) {
+        setLoading(false);
+      }
     }
   }, [cqlFilter, page, pageSize, sortBy, sortOrder, showResults]);
 
@@ -89,33 +90,36 @@ export function useVesselTable(options: UseVesselTableOptions = {}) {
   }, [load]);
 
   const applyFilters = useCallback(() => {
-    setAppliedFilters(filters);
+    setAppliedFilters(filtersRef.current);
     setPage(0);
-  }, [filters]);
+  }, []);
 
   const addFilter = useCallback(() => {
-    setFilters((prev) => [
-      ...prev,
-      { column: "identification_mmsi", operator: "=", value: "", combinator: "AND" },
-    ]);
+    const newFilter: VesselTableFilter = { column: "identification_mmsi", operator: "=", value: "", combinator: "AND" };
+    const next = [...filtersRef.current, newFilter];
+    filtersRef.current = next;
+    setFilters(next);
     setPage(0);
   }, []);
 
   const updateFilter = useCallback((index: number, update: Partial<VesselTableFilter>) => {
-    setFilters((prev) => {
-      const next = [...prev];
-      next[index] = { ...next[index], ...update };
-      return next;
-    });
+    if (index < 0 || index >= filtersRef.current.length) return;
+    const next = [...filtersRef.current];
+    next[index] = { ...next[index], ...update };
+    filtersRef.current = next;
+    setFilters(next);
     setPage(0);
   }, []);
 
   const removeFilter = useCallback((index: number) => {
-    setFilters((prev) => prev.filter((_, i) => i !== index));
+    const next = filtersRef.current.filter((_, i) => i !== index);
+    filtersRef.current = next;
+    setFilters(next);
     setPage(0);
   }, []);
 
   const resetFilters = useCallback(() => {
+    filtersRef.current = [];
     setFilters([]);
     setAppliedFilters([]);
     setPage(0);
@@ -197,6 +201,7 @@ export function useVesselTable(options: UseVesselTableOptions = {}) {
     (name: string) => {
       const found = savedFilters.find((s) => s.name === name);
       if (!found) return;
+      filtersRef.current = found.filters;
       setFilters(found.filters);
       setAppliedFilters(found.filters);
       onPolygonFiltersChange?.(found.polygonFilters ?? []);

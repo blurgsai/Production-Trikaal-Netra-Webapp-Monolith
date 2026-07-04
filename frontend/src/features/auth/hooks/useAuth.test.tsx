@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderHook } from "@testing-library/react";
-import AuthProvider, { useAuth } from "./AuthProvider";
+import AuthProvider from "./AuthProvider";
+import { useAuth } from "./useAuth";
 import { BrowserRouter } from "react-router-dom";
 
 vi.mock("@/shared/api", () => ({

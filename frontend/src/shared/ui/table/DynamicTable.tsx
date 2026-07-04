@@ -207,7 +207,7 @@ export default function DynamicTable({
     }));
   }, [metadata]);
 
-  const renderCellValue = (row: any, column: TableColumn) => {
+  const renderCellValue = (row: TableRowData, column: TableColumn) => {
     const value = row[column.field];
     if (columnRenderers[column.field])
       return columnRenderers[column.field](value, row);
@@ -229,20 +229,21 @@ export default function DynamicTable({
     }
 
     if (column.type === "date" || column.type === "datetime") {
-      const ms = new Date(value).getTime();
+      const ms = new Date(value as string | number | Date).getTime();
       if (!Number.isFinite(ms)) return "NA";
       return dayjs(ms).tz(selectedTimezone).format("YYYY-MM-DD HH:mm:ss");
     }
 
-    if (typeof value === "object") {
-      if (value?.lat && value?.lon) return `${value.lat}, ${value.lon}`;
+    if (typeof value === "object" && value !== null) {
+      const obj = value as Record<string, unknown>;
+      if (obj.lat && obj.lon) return `${obj.lat}, ${obj.lon}`;
       return JSON.stringify(value);
     }
 
     return String(value);
   };
 
-  const getRowKey = (row: any, idx: number): string => {
+  const getRowKey = (row: TableRowData, idx: number): string => {
     const rowKey = primaryKeyField ? row[primaryKeyField] : idx;
 
     if (rowKey !== undefined && rowKey !== null) {
@@ -691,14 +692,14 @@ export default function DynamicTable({
 
                 const rowBg = isSelected
                   ? theme.primarySoft
-                  : ((customRowStyle as any)?.backgroundColor ??
+                  : ((customRowStyle as Record<string, unknown>)?.backgroundColor ??
                     theme.rowBackgroundColor);
 
                 return (
                   <TableRow
                     key={rowId}
                     sx={{
-                      ...customRowStyle,
+                      ...(customRowStyle as Record<string, unknown>),
                       backgroundColor: rowBg,
                       "&:hover td": {
                         backgroundColor: theme.hoverBackgroundColor,

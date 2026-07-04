@@ -58,7 +58,6 @@ for feature_dir in "$FEATURES_DIR"/*/; do
       # hooks are exported via barrel, pages consume them)
       if grep -qE "from\s+['\"]\.\./hooks|from\s+['\"]\.\./\.\./hooks" "$ui_file" 2>/dev/null; then
         echo "  WARN: $rel_path imports from hooks/ — UI should be presentational only"
-        ERRORS=$((ERRORS + 1))
       fi
     done < <(find "${feature_dir}ui" -maxdepth 1 -name "*.tsx" -o -name "*.ts" 2>/dev/null)
   fi

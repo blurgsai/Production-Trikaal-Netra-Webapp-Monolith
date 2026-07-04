@@ -17,6 +17,8 @@ interface MapToolbarProps {
   onReorderLayers: (oldIndex: number, newIndex: number) => void;
   vesselConfig: VesselConfig;
   onVesselConfigApply: (config: VesselConfig) => Promise<void>;
+  onFetchColumns: () => Promise<string[]>;
+  onSearchColumnValues: (column: string, query: string, limit: number) => Promise<string[]>;
 }
 
 function MapToolbar({
@@ -28,6 +30,8 @@ function MapToolbar({
   onReorderLayers,
   vesselConfig,
   onVesselConfigApply,
+  onFetchColumns,
+  onSearchColumnValues,
 }: MapToolbarProps) {
   const [activePanel, setActivePanel] = useState<string | null>(null);
   const [isMeasureMode, setIsMeasureMode] = useState(false);
@@ -105,6 +109,8 @@ function MapToolbar({
         <VesselConfigPanel
           config={vesselConfig}
           onApply={onVesselConfigApply}
+          onFetchColumns={onFetchColumns}
+          onSearchColumnValues={onSearchColumnValues}
           onClose={() => setActivePanel(null)}
         />
       )}

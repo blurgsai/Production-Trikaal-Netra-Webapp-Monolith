@@ -1,5 +1,5 @@
 import { Box } from "@mui/material";
-import { BaseMap, MapNavbar, VesselTableTool, LayerPanel, VesselConfigPanel, useMapConfig, useVesselTrajectory, useVesselTable } from "@/features/map";
+import { BaseMap, MapNavbar, VesselTableTool, LayerPanel, VesselConfigPanel, useMapConfig, useVesselTrajectory, useVesselTable, useVesselColumns, MapTileSettings } from "@/features/map";
 import type { VesselInfo, VesselConfig, ViewTile, Polygon, PopupFieldConfig } from "@/features/map";
 import { useLocalStorage } from "@/shared";
 import { useState, useEffect } from "react";
@@ -18,6 +18,7 @@ const DEFAULT_LAYOUT: MosaicNode<ViewTile> = {
 } as unknown as MosaicNode<ViewTile>;
 
 function MapPage() {
+  const { fetchColumns, searchValues } = useVesselColumns();
   const {
     selectedBaseMap,
     setSelectedBaseMap,
@@ -32,6 +33,8 @@ function MapPage() {
     refreshKey,
     selectedVessel,
     setSelectedVessel,
+    mapControlSettings,
+    setMapControlSettings,
   } = useMapConfig();
 
   const [selectedVesselPosition, setSelectedVesselPosition] = useState<{ lat: number; lng: number } | null>(null);
@@ -162,7 +165,7 @@ function MapPage() {
         splitPercentage: 50,
       } as unknown as MosaicNode<ViewTile>);
     }
-  }, [visibleTiles]);
+  }, [visibleTiles, setMosaicLayout]);
 
   const getTileTitle = (id: ViewTile): string => {
     switch (id) {
@@ -179,7 +182,16 @@ function MapPage() {
         path={path}
         title={getTileTitle(id)}
         createNode={() => id}
-        toolbarControls={<div />}
+        toolbarControls={
+          id === "map" ? (
+            <MapTileSettings
+              settings={mapControlSettings}
+              onChange={setMapControlSettings}
+            />
+          ) : (
+            <div />
+          )
+        }
       >
         {id === "table" && (
           <VesselTableTool
@@ -219,6 +231,7 @@ function MapPage() {
             onPopupFieldsChange={handlePopupFieldsChange}
             polygonFilters={polygonFilters}
             onPolygonFiltersChange={setPolygonFilters}
+            mapControlSettings={mapControlSettings}
           />
         )}
         {id === "layers" && (
@@ -235,6 +248,8 @@ function MapPage() {
           <VesselConfigPanel
             config={vesselConfig}
             onApply={handleApplyVesselStyle}
+            onFetchColumns={fetchColumns}
+            onSearchColumnValues={searchValues}
           />
         )}
       </MosaicWindow>

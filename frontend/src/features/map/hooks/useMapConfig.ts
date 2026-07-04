@@ -1,8 +1,9 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { loadMapConfig, saveMapConfig, applyVesselStyle, validateStyleExists } from "../api";
 import { mapApiToDomain, mapDomainToApi } from "../model/mappers";
+import { generateSld } from "../model/sldGenerator";
 import { baseMaps, overlayLayers, weatherLayers } from "../model/config";
-import type { BaseMap, OverlayLayerConfig, VesselConfig, VesselInfo, ClusterConfig, TrajectoryConfig, DeadReckoningConfig, PopupFieldConfig } from "../model/types";
+import type { BaseMap, OverlayLayerConfig, VesselConfig, VesselInfo, ClusterConfig, TrajectoryConfig, DeadReckoningConfig, PopupFieldConfig, MapControlSettings } from "../model/types";
 
 const DEFAULT_CLUSTER_CONFIG: ClusterConfig = {
   cellSize: 50,
@@ -53,6 +54,13 @@ const DEFAULT_VESSEL_CONFIG: VesselConfig = {
   customShapes: [],
 };
 
+const DEFAULT_MAP_CONTROL_SETTINGS: MapControlSettings = {
+  toolbar: true,
+  zoombar: true,
+  minimap: true,
+  statusbar: true,
+};
+
 export function useMapConfig() {
   const [selectedBaseMap, setSelectedBaseMap] = useState<BaseMap>(() => {
     const api = loadMapConfig();
@@ -80,9 +88,16 @@ export function useMapConfig() {
     return domain.vesselConfig ?? DEFAULT_VESSEL_CONFIG;
   });
 
+  const [mapControlSettings, setMapControlSettings] = useState<MapControlSettings>(() => {
+    const api = loadMapConfig();
+    const domain = mapApiToDomain(api);
+    return domain.mapControlSettings ?? DEFAULT_MAP_CONTROL_SETTINGS;
+  });
+
   const [selectedVessel, setSelectedVessel] = useState<VesselInfo | null>(null);
 
   const [refreshKey, setRefreshKey] = useState(0);
+  const styleRequestIdRef = useRef(0);
 
   useEffect(() => {
     if (!vesselConfig.styleName) return;
@@ -105,9 +120,12 @@ export function useMapConfig() {
   const reorderLayers = useCallback(
     (oldIndex: number, newIndex: number) => {
       setLayerOrder((prev) => {
+        if (prev.length === 0) return prev;
+        const clampedOld = Math.max(0, Math.min(oldIndex, prev.length - 1));
+        const clampedNew = Math.max(0, Math.min(newIndex, prev.length - 1));
         const next = [...prev];
-        const [moved] = next.splice(oldIndex, 1);
-        next.splice(newIndex, 0, moved);
+        const [moved] = next.splice(clampedOld, 1);
+        next.splice(clampedNew, 0, moved);
         return next;
       });
     },
@@ -133,7 +151,16 @@ export function useMapConfig() {
   }, []);
 
   const applyVesselStyleCallback = useCallback(async (draft: VesselConfig) => {
-    const styleName = await applyVesselStyle(draft);
+    const currentRequestId = ++styleRequestIdRef.current;
+    const sld = generateSld(
+      draft.styleName,
+      draft.defaultStyle,
+      draft.rules,
+      draft.customShapes,
+      draft.cluster
+    );
+    const styleName = await applyVesselStyle(draft.styleName, sld);
+    if (currentRequestId !== styleRequestIdRef.current) return;
     setVesselConfig({ ...draft, styleName });
     setRefreshKey((prev) => prev + 1);
   }, []);
@@ -145,9 +172,10 @@ export function useMapConfig() {
         activeLayers,
         layerOrder,
         vesselConfig,
+        mapControlSettings,
       })
     );
-  }, [selectedBaseMap, activeLayers, layerOrder, vesselConfig]);
+  }, [selectedBaseMap, activeLayers, layerOrder, vesselConfig, mapControlSettings]);
 
   return {
     baseMaps,
@@ -166,5 +194,7 @@ export function useMapConfig() {
     refreshKey,
     overlayLayers,
     weatherLayers,
+    mapControlSettings,
+    setMapControlSettings,
   };
 }
