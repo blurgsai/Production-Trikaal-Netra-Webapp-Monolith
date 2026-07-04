@@ -17,8 +17,8 @@ import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import SettingsIcon from "@mui/icons-material/Settings";
 import BrokenImageIcon from "@mui/icons-material/BrokenImage";
 import type { VesselInfo, PopupFieldConfig } from "../model/types";
-import { useVesselDetails } from "../";
-import { useVesselImage } from "../";
+import { useVesselDetails } from "../hooks/useVesselDetails";
+import { useVesselImage } from "../hooks/useVesselImage";
 import VesselDetailsDialog from "./VesselDetailsDialog";
 
 interface VesselPopupProps {

@@ -11,7 +11,7 @@ import {
 import DirectionsBoatIcon from "@mui/icons-material/DirectionsBoat";
 import MyLocationIcon from "@mui/icons-material/MyLocation";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
-import { useVesselCount } from "../";
+import { useVesselCount } from "../hooks/useVesselCount";
 
 // ── Coordinate format helpers ──────────────────────────────────────────────
 

@@ -13,8 +13,4 @@ export { default as EezRegionsTool } from "./ui/EezRegionsTool";
 export { default as MapTileSettings } from "./ui/MapTileSettings";
 export { useEezRegions } from "./hooks/useEezRegions";
 export { useVesselColumns } from "./hooks/useVesselColumns";
-export { useVesselDetails } from "./hooks/useVesselDetails";
-export { useVesselImage } from "./hooks/useVesselImage";
-export { useVesselInfoAtPoint } from "./hooks/useVesselInfoAtPoint";
-export { useVesselCount } from "./hooks/useVesselCount";
 export type { EezRegion } from "./model/types";

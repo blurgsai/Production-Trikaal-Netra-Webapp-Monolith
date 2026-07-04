@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Box, Typography, CircularProgress } from "@mui/material";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
-import { useVesselCount } from "../";
+import { useVesselCount } from "../hooks/useVesselCount";
 
 interface VesselCountBadgeProps {
   cqlFilter?: string;

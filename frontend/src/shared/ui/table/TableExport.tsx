@@ -18,10 +18,12 @@ import {
 
 import DownloadIcon from "@mui/icons-material/Download";
 
+import type { TableUiTheme } from "@/shared/theme/tableUiTheme";
+
 interface TableExportProps {
   exporting: boolean;
   disabled?: boolean;
-  theme: any;
+  theme: TableUiTheme;
 
   exportFormats?: ("csv" | "xml" | "xls" | "kml" | "gml")[];
 

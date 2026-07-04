@@ -207,7 +207,7 @@ export default function DynamicTable({
     }));
   }, [metadata]);
 
-  const renderCellValue = (row: any, column: TableColumn) => {
+  const renderCellValue = (row: TableRowData, column: TableColumn) => {
     const value = row[column.field];
     if (columnRenderers[column.field])
       return columnRenderers[column.field](value, row);
@@ -242,7 +242,7 @@ export default function DynamicTable({
     return String(value);
   };
 
-  const getRowKey = (row: any, idx: number): string => {
+  const getRowKey = (row: TableRowData, idx: number): string => {
     const rowKey = primaryKeyField ? row[primaryKeyField] : idx;
 
     if (rowKey !== undefined && rowKey !== null) {
@@ -691,7 +691,7 @@ export default function DynamicTable({
 
                 const rowBg = isSelected
                   ? theme.primarySoft
-                  : ((customRowStyle as any)?.backgroundColor ??
+                  : ((customRowStyle as Record<string, unknown>)?.backgroundColor ??
                     theme.rowBackgroundColor);
 
                 return (

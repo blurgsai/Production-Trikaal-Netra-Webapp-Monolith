@@ -6,7 +6,7 @@ import globals from 'globals'
 import tseslint from 'typescript-eslint'
 
 export default tseslint.config(
-  { ignores: ['dist', 'node_modules'] },
+  { ignores: ['dist', 'node_modules', 'src/vite-env.d.ts'] },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
@@ -54,6 +54,10 @@ export default tseslint.config(
         'warn',
         { allowConstantExport: true },
       ],
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
+      ],
       'boundaries/element-types': [
         'error',
         {
@@ -81,6 +85,10 @@ export default tseslint.config(
             {
               target: 'feature',
               allow: '**/index.ts',
+            },
+            {
+              target: 'feature-internal',
+              allow: '**/*',
             },
             {
               target: 'app',

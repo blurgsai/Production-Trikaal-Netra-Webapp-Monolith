@@ -26,6 +26,7 @@ import { DatePicker, DateTimePicker } from "@mui/x-date-pickers";
 import dayjs from "dayjs";
 
 import { useTableFilters } from "@/shared/hooks/table/useTableFilters";
+import type { AppliedFilter } from "@/shared/hooks/table/useTableFilters";
 import type { TableUiTheme } from "@/shared/theme/tableUiTheme";
 
 export interface ColumnDefinition {
@@ -37,9 +38,9 @@ export interface ColumnDefinition {
 interface ProgressiveFilterProps {
   columns: ColumnDefinition[];
 
-  appliedFilters?: any[];
+  appliedFilters?: AppliedFilter[];
 
-  onApplyFilters: (filters: any[]) => void;
+  onApplyFilters: (filters: AppliedFilter[]) => void;
 
   getOperatorsByType: (type: string) => {
     value: string;
