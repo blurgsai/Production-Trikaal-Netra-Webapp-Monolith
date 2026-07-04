@@ -1,6 +1,11 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { loadSavedFilters, saveFilter, deleteSavedFilter } from "./vesselFilterStorage";
-import type { VesselTableFilter } from "../model/types";
+
+interface VesselTableFilter {
+  column: string;
+  operator: "=" | "!=" | "<" | "<=" | ">" | ">=" | "startsWith" | "endsWith" | "contains";
+  value: string;
+}
 
 beforeEach(() => {
   localStorage.clear();

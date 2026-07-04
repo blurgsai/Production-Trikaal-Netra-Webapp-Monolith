@@ -1,4 +1,4 @@
-import type { StyleDefinition, StyleRule, CustomShape, VesselTableFilter, FilterCombinator, ClusterConfig } from "../model/types";
+import type { StyleDefinition, StyleRule, CustomShape, VesselTableFilter, FilterCombinator, ClusterConfig } from "./types";
 
 const SHAPE_MAP: Record<string, string> = {
   circle: "circle",

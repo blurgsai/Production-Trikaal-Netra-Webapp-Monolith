@@ -1,4 +1,20 @@
-import type { VesselTableFilter, SavedFilterSet, Polygon } from "../model/types";
+interface VesselTableFilter {
+  column: string;
+  operator: "=" | "!=" | "<" | "<=" | ">" | ">=" | "startsWith" | "endsWith" | "contains";
+  value: string;
+}
+
+interface Polygon {
+  id: string;
+  points: { lat: number; lng: number }[];
+}
+
+interface SavedFilterSet {
+  name: string;
+  filters: VesselTableFilter[];
+  polygonFilters?: Polygon[];
+  createdAt: string;
+}
 
 const STORAGE_KEY = "trikaal_saved_vessel_filters";
 

@@ -16,6 +16,13 @@ vi.mock("../api", () => ({
   validateStyleExists: vi.fn().mockResolvedValue(true),
 }));
 
+vi.mock("../model/sldGenerator", () => ({
+  generateSld: vi.fn(() => ({
+    sldXml: "<sld/>",
+    assets: [],
+  })),
+}));
+
 beforeEach(() => {
   vi.clearAllMocks();
   localStorage.clear();

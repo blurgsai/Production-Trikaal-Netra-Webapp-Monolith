@@ -1,5 +1,12 @@
-import type { VesselConfig } from "../model/types";
-import { generateSld } from "./sldGenerator";
+interface SldAsset {
+  resourceName: string;
+  svgContent: string;
+}
+
+interface SldResult {
+  sldXml: string;
+  assets: SldAsset[];
+}
 
 const GEOSERVER_USER = import.meta.env.VITE_GEOSERVER_USER ?? "admin";
 const GEOSERVER_PASS = import.meta.env.VITE_GEOSERVER_PASS ?? "geoserver";
@@ -69,23 +76,15 @@ export async function validateStyleExists(styleName: string): Promise<boolean> {
   }
 }
 
-export async function applyVesselStyle(config: VesselConfig): Promise<string> {
-  const styleName = config.styleName || `user_vessel_style_${Date.now()}`;
+export async function applyVesselStyle(styleName: string, sld: SldResult): Promise<string> {
+  const finalStyleName = styleName || `user_vessel_style_${Date.now()}`;
 
-  const { sldXml, assets } = generateSld(
-    styleName,
-    config.defaultStyle,
-    config.rules,
-    config.customShapes,
-    config.cluster
-  );
-
-  for (const asset of assets) {
+  for (const asset of sld.assets) {
     await uploadSvgResource(asset.resourceName, asset.svgContent);
   }
 
-  await createGeoserverStyle(styleName, sldXml);
+  await createGeoserverStyle(finalStyleName, sld.sldXml);
   await clearGeoserverCache();
 
-  return styleName;
+  return finalStyleName;
 }

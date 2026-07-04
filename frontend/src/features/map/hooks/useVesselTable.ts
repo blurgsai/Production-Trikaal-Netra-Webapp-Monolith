@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import type { VesselTableFilter, SavedFilterSet, Polygon, VesselTableQuery } from "../model/types";
 import { fetchVesselTable, fetchVesselTableColumns, fetchUniqueColumnValues } from "../api/vesselTableApi";
-import { mapVesselTableResponse, type VesselTablePage } from "../model/mappers.vesselTable";
+import { mapVesselTableResponse, type VesselTablePage } from "../model/mappers";
 import { buildWfsCqlFilter, buildPolygonCqlFilter, combineCqlFilters } from "../model/cqlFilter";
 import { loadSavedFilters, saveFilter, deleteSavedFilter } from "../api/vesselFilterStorage";
 import { DEFAULT_TABLE_COLUMNS, DEFAULT_PAGE_SIZE } from "../model/config";

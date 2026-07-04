@@ -1,6 +1,7 @@
 import { baseMaps, defaultBaseMap, overlayLayers } from "../model/config";
 import type { MapConfigApiResponse, MapControlSettingsApi, CountryPrefixApi, VesselDetailsApi, VesselImageApiResponse, EezRegionApi, CustomShapeApi, StyleDefinitionApi, StyleRuleApi, StyleConditionApi, ClusterConfigApi, TrajectoryConfigApi, DeadReckoningConfigApi, PopupFieldConfigApi } from "../api/types";
-import type { BaseMap, VesselConfig, VesselInfo, CountryPrefix, VesselDetails, VesselImage, EezRegion, CustomShape, StyleDefinition, StyleRule, VesselTableFilter, FilterCombinator, ClusterConfig, TrajectoryConfig, DeadReckoningConfig, PopupFieldConfig, MapControlSettings } from "./types";
+import type { VesselTableResponseApi, VesselTableFeatureApi } from "../api/vesselTableApi";
+import type { BaseMap, VesselConfig, VesselInfo, CountryPrefix, VesselDetails, VesselImage, EezRegion, CustomShape, StyleDefinition, StyleRule, VesselTableFilter, FilterCombinator, ClusterConfig, TrajectoryConfig, DeadReckoningConfig, PopupFieldConfig, MapControlSettings, VesselTableRow } from "./types";
 
 export interface MapConfigDomain {
   selectedBaseMap: BaseMap;
@@ -354,5 +355,26 @@ export function mapControlSettingsToApi(domain: MapControlSettings): MapControlS
     zoombar: domain.zoombar,
     minimap: domain.minimap,
     statusbar: domain.statusbar,
+  };
+}
+
+export interface VesselTablePage {
+  rows: VesselTableRow[];
+  total: number;
+  returned: number;
+}
+
+export function mapVesselTableResponse(response: VesselTableResponseApi): VesselTablePage {
+  return {
+    rows: response.features.map(mapVesselTableFeature),
+    total: response.numberMatched ?? response.totalFeatures ?? 0,
+    returned: response.numberReturned ?? response.features.length,
+  };
+}
+
+function mapVesselTableFeature(feature: VesselTableFeatureApi): VesselTableRow {
+  return {
+    id: feature.id,
+    properties: feature.properties,
   };
 }

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { loadMapConfig, saveMapConfig, applyVesselStyle, validateStyleExists } from "../api";
 import { mapApiToDomain, mapDomainToApi } from "../model/mappers";
+import { generateSld } from "../model/sldGenerator";
 import { baseMaps, overlayLayers, weatherLayers } from "../model/config";
 import type { BaseMap, OverlayLayerConfig, VesselConfig, VesselInfo, ClusterConfig, TrajectoryConfig, DeadReckoningConfig, PopupFieldConfig, MapControlSettings } from "../model/types";
 
@@ -146,7 +147,14 @@ export function useMapConfig() {
   }, []);
 
   const applyVesselStyleCallback = useCallback(async (draft: VesselConfig) => {
-    const styleName = await applyVesselStyle(draft);
+    const sld = generateSld(
+      draft.styleName,
+      draft.defaultStyle,
+      draft.rules,
+      draft.customShapes,
+      draft.cluster
+    );
+    const styleName = await applyVesselStyle(draft.styleName, sld);
     setVesselConfig({ ...draft, styleName });
     setRefreshKey((prev) => prev + 1);
   }, []);

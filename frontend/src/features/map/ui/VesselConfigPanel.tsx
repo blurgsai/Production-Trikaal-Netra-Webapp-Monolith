@@ -36,7 +36,6 @@ import type {
   DeadReckoningConfig,
   TimeUnit,
 } from "../model/types";
-import { fetchVesselTableColumns, searchColumnValues } from "../api/vesselTableApi";
 
 function FilledTriangleIcon(props: SvgIconProps) {
   return (
@@ -95,9 +94,12 @@ function isNumericColumn(column: string): boolean {
 interface VesselConfigPanelProps {
   config: VesselConfig;
   onApply: (config: VesselConfig) => Promise<void>;
+  onFetchColumns: () => Promise<string[]>;
+  onSearchColumnValues: (column: string, query: string, limit: number) => Promise<string[]>;
+  onClose?: () => void;
 }
 
-function VesselConfigPanel({ config, onApply }: VesselConfigPanelProps) {
+function VesselConfigPanel({ config, onApply, onFetchColumns, onSearchColumnValues }: VesselConfigPanelProps) {
   const [local, setLocal] = useState<VesselConfig>(config);
   const [isApplying, setIsApplying] = useState(false);
   const [tableColumns, setTableColumns] = useState<string[]>([]);
@@ -105,7 +107,7 @@ function VesselConfigPanel({ config, onApply }: VesselConfigPanelProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useState(() => {
-    fetchVesselTableColumns()
+    onFetchColumns()
       .then(setTableColumns)
       .catch(() => {});
   });
@@ -115,7 +117,7 @@ function VesselConfigPanel({ config, onApply }: VesselConfigPanelProps) {
   const loadColumnOptions = (column: string, query: string = "") => {
     if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
     searchTimerRef.current = setTimeout(() => {
-      searchColumnValues(column, query, 10)
+      onSearchColumnValues(column, query, 10)
         .then((values) => setColumnOptions((prev) => ({ ...prev, [column]: values })))
         .catch(() => {});
     }, 300);

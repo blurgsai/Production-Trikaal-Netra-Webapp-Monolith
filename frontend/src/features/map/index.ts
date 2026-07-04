@@ -12,4 +12,5 @@ export { default as VesselConfigPanel } from "./ui/VesselConfigPanel";
 export { default as EezRegionsTool } from "./ui/EezRegionsTool";
 export { default as MapTileSettings } from "./ui/MapTileSettings";
 export { useEezRegions } from "./hooks/useEezRegions";
+export { useVesselColumns } from "./hooks/useVesselColumns";
 export type { EezRegion } from "./model/types";
