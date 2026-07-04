@@ -234,11 +234,11 @@ describe("useMapConfig", () => {
       expect(result.current.layerOrder).toEqual(expected);
     });
 
-    it("BUG DOCUMENTATION: reordering an empty layerOrder array does not throw, but splice-ing an undefined 'moved' element in inserts a stray `undefined` entry instead of staying empty", () => {
+    it("reordering an empty layerOrder array is a safe no-op (early return guard)", () => {
       setupMockDomain({ layerOrder: [] });
       const { result } = renderHook(() => useMapConfig());
       expect(() => act(() => result.current.reorderLayers(0, 0))).not.toThrow();
-      expect(result.current.layerOrder).toEqual([undefined]);
+      expect(result.current.layerOrder).toEqual([]);
     });
 
     it("reordering a single-element array is a no-op", () => {
@@ -495,6 +495,35 @@ describe("useMapConfig", () => {
       await act(async () => { await result.current.applyVesselStyle(draft); });
       expect(result.current.vesselConfig.rules).toHaveLength(1);
       expect(result.current.vesselConfig.customShapes).toHaveLength(1);
+    });
+
+    it("concurrent applyVesselStyle calls discard stale results — only the latest call's styleName is committed (request-id guard)", async () => {
+      setupMockDomain();
+      vi.mocked(generateSld).mockReturnValue({ sldXml: "<sld/>", assets: [] });
+      let resolveFirst!: (v: string) => void;
+      let resolveSecond!: (v: string) => void;
+      vi.mocked(applyVesselStyle)
+        .mockImplementationOnce(() => new Promise((r) => { resolveFirst = r; }))
+        .mockImplementationOnce(() => new Promise((r) => { resolveSecond = r; }));
+
+      const { result } = renderHook(() => useMapConfig());
+      const draft1 = { ...result.current.vesselConfig, styleName: "first" };
+      const draft2 = { ...result.current.vesselConfig, styleName: "second" };
+
+      let p1!: Promise<void>;
+      let p2!: Promise<void>;
+      act(() => {
+        p1 = result.current.applyVesselStyle(draft1);
+        p2 = result.current.applyVesselStyle(draft2);
+      });
+
+      // Second (latest) call resolves first — its styleName is committed.
+      await act(async () => { resolveSecond("server_second"); await p2; });
+      expect(result.current.vesselConfig.styleName).toBe("server_second");
+
+      // First (stale) call resolves after — its result is discarded by the request-id guard.
+      await act(async () => { resolveFirst("server_first"); await p1; });
+      expect(result.current.vesselConfig.styleName).toBe("server_second");
     });
   });
 

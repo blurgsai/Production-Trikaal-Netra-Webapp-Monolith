@@ -170,12 +170,10 @@ describe("useVesselTable", () => {
       expect(result.current.page).toBe(0);
     });
 
-    it("BUG DOCUMENTATION: updateFilter with an out-of-bounds index does not throw but creates a sparse array with holes (no bounds validation)", () => {
+    it("updateFilter with an out-of-bounds index is a safe no-op (bounds validation)", () => {
       const { result } = renderHook(() => useVesselTable());
       expect(() => act(() => result.current.updateFilter(5, { value: "x" }))).not.toThrow();
-      expect(result.current.filters).toHaveLength(6);
-      expect(result.current.filters[5]).toEqual({ value: "x" });
-      expect(result.current.filters[0]).toBeUndefined();
+      expect(result.current.filters).toEqual([]);
     });
 
     it("removeFilter removes exactly the targeted index, preserving order of the rest", () => {
@@ -222,16 +220,16 @@ describe("useVesselTable", () => {
       expect(result.current.filters[0].value).toBe("B");
     });
 
-    it("STALE CLOSURE BUG DOCUMENTATION: calling applyFilters in the same synchronous batch as addFilter/updateFilter uses the pre-update closure of `filters`, silently dropping the just-added filter", () => {
+    it("calling applyFilters in the same synchronous batch as addFilter/updateFilter correctly applies the latest filters (ref-based closure)", () => {
       const { result } = renderHook(() => useVesselTable());
       act(() => {
         result.current.addFilter();
         result.current.updateFilter(0, { value: "A" });
-        // applyFilters closes over `filters` from this render (still []), NOT the
-        // queued-but-not-yet-committed updates above — appliedFilters ends up empty.
         result.current.applyFilters();
       });
-      expect(result.current.appliedFilters).toEqual([]);
+      expect(result.current.appliedFilters).toEqual([
+        { column: "identification_mmsi", operator: "=", value: "A", combinator: "AND" },
+      ]);
       expect(result.current.filters[0].value).toBe("A");
     });
   });
@@ -644,9 +642,7 @@ describe("useVesselTable", () => {
   // ── Race conditions / concurrent async requests ──────────────────────────
 
   describe("race conditions", () => {
-    it("BUG DOCUMENTATION: rapid consecutive page changes can let a stale (slower) response overwrite the latest page's data (no request sequencing guard)", async () => {
-      // Derive the mapped result from the raw response's own content instead of relying on
-      // mock call-order, so the assertions track *which* request resolved, not queue position.
+    it("rapid consecutive page changes discard stale (slower) responses — latest page's data is preserved (request-id guard)", async () => {
       vi.mocked(mapVesselTableResponse).mockImplementation((resp) => ({
         rows: resp.features.map((f) => ({ id: f.id as string, properties: f.properties })),
         total: resp.totalFeatures,
@@ -683,10 +679,9 @@ describe("useVesselTable", () => {
       await act(async () => { resolveSecond(taggedResponse("page2")); });
       expect(result.current.pageData.rows[0]?.id).toBe("page2");
 
-      // Page 1's stale request resolves after — overwrites page 2's fresher data, since the
-      // hook has no request-id/AbortController guard to discard out-of-order responses.
+      // Page 1's stale request resolves after — its result is discarded by the request-id guard.
       await act(async () => { resolveFirst(taggedResponse("page1")); });
-      expect(result.current.pageData.rows[0]?.id).toBe("page1");
+      expect(result.current.pageData.rows[0]?.id).toBe("page2");
     });
 
     it("concurrent manual refresh() calls all settle without throwing", async () => {

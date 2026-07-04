@@ -319,7 +319,7 @@ describe("useVesselTrajectory", () => {
   // ── Race Condition Analysis / Stale Closure Prevention ─────────────────
 
   describe("race conditions and concurrent requests", () => {
-    it("BUG DOCUMENTATION: a slow first request resolving after a fast second request overwrites fresher data (no request-id guard, no AbortController)", async () => {
+    it("stale (slow) request resolving after a fast second request is discarded — fresher data is preserved (request-id guard)", async () => {
       let resolveFirst!: (v: TrajectoryResponseApi) => void;
       let resolveSecond!: (v: TrajectoryResponseApi) => void;
       vi.mocked(fetchVesselTrajectory)
@@ -338,9 +338,9 @@ describe("useVesselTrajectory", () => {
       await act(async () => { resolveSecond(response(2, 100)); await p2; });
       expect(result.current.trajectory).toHaveLength(2);
 
-      // Slow (first, stale) request resolves after — clobbers the fresher "fast" data.
+      // Slow (first, stale) request resolves after — its result is discarded by the request-id guard.
       await act(async () => { resolveFirst(response(9, 1)); await p1; });
-      expect(result.current.trajectory).toHaveLength(9);
+      expect(result.current.trajectory).toHaveLength(2);
     });
 
     it("multiple concurrent load() calls all settle without throwing (Promise.all)", async () => {
@@ -377,7 +377,7 @@ describe("useVesselTrajectory", () => {
       expect(result.current.loading).toBe(false);
     });
 
-    it("BUG DOCUMENTATION: a still-pending call's later rejection clobbers state already set by an earlier-resolved concurrent call", async () => {
+    it("a still-pending call's later rejection does not clobber state already set by an earlier-resolved concurrent call (request-id guard)", async () => {
       let rejectFirst!: (e: unknown) => void;
       vi.mocked(fetchVesselTrajectory)
         .mockImplementationOnce(() => new Promise((_r, rej) => { rejectFirst = rej; }))
@@ -394,12 +394,10 @@ describe("useVesselTrajectory", () => {
       // The already-resolved "good" call applied its data first.
       expect(result.current.trajectory).toHaveLength(3);
 
-      // The still-pending "bad" call rejects afterward and its catch handler unconditionally
-      // clears trajectory/sets error — overwriting the good, already-applied data. There is no
-      // request-id/AbortController guard preventing a stale in-flight call from stomping on newer state.
+      // The still-pending "bad" call rejects afterward — its error is discarded by the request-id guard.
       await act(async () => { rejectFirst(new Error("bad request")); await p1; });
-      expect(result.current.error).toBe("Failed to load trajectory");
-      expect(result.current.trajectory).toEqual([]);
+      expect(result.current.error).toBe("");
+      expect(result.current.trajectory).toHaveLength(3);
     });
   });
 

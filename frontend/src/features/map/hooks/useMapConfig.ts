@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { loadMapConfig, saveMapConfig, applyVesselStyle, validateStyleExists } from "../api";
 import { mapApiToDomain, mapDomainToApi } from "../model/mappers";
 import { generateSld } from "../model/sldGenerator";
@@ -97,6 +97,7 @@ export function useMapConfig() {
   const [selectedVessel, setSelectedVessel] = useState<VesselInfo | null>(null);
 
   const [refreshKey, setRefreshKey] = useState(0);
+  const styleRequestIdRef = useRef(0);
 
   useEffect(() => {
     if (!vesselConfig.styleName) return;
@@ -119,9 +120,12 @@ export function useMapConfig() {
   const reorderLayers = useCallback(
     (oldIndex: number, newIndex: number) => {
       setLayerOrder((prev) => {
+        if (prev.length === 0) return prev;
+        const clampedOld = Math.max(0, Math.min(oldIndex, prev.length - 1));
+        const clampedNew = Math.max(0, Math.min(newIndex, prev.length - 1));
         const next = [...prev];
-        const [moved] = next.splice(oldIndex, 1);
-        next.splice(newIndex, 0, moved);
+        const [moved] = next.splice(clampedOld, 1);
+        next.splice(clampedNew, 0, moved);
         return next;
       });
     },
@@ -147,6 +151,7 @@ export function useMapConfig() {
   }, []);
 
   const applyVesselStyleCallback = useCallback(async (draft: VesselConfig) => {
+    const currentRequestId = ++styleRequestIdRef.current;
     const sld = generateSld(
       draft.styleName,
       draft.defaultStyle,
@@ -155,6 +160,7 @@ export function useMapConfig() {
       draft.cluster
     );
     const styleName = await applyVesselStyle(draft.styleName, sld);
+    if (currentRequestId !== styleRequestIdRef.current) return;
     setVesselConfig({ ...draft, styleName });
     setRefreshKey((prev) => prev + 1);
   }, []);
