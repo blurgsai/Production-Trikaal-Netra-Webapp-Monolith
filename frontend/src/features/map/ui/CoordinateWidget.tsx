@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Box, Typography, ButtonGroup, Button } from "@mui/material";
+import { alpha, useTheme } from "@mui/material/styles";
 import { useMapEvents } from "react-leaflet";
 
 // Coordinate Conversion Helpers
@@ -50,6 +51,7 @@ function formatDMS(decimal: number, isLat: boolean) {
 type FormatType = "DD" | "DM" | "DMS";
 
 function CoordinateWidget() {
+  const theme = useTheme();
   const [coords, setCoords] = useState({ lat: 0, lng: 0 });
   const [format, setFormat] = useState<FormatType>("DM");
 
@@ -79,7 +81,7 @@ function CoordinateWidget() {
         position: "absolute",
         bottom: 20,
         right: 70,
-        bgcolor: "#000000bb",
+        bgcolor: alpha(theme.palette.background.default, 0.73),
         p: 1.5,
         borderRadius: 1,
         boxShadow: 3,

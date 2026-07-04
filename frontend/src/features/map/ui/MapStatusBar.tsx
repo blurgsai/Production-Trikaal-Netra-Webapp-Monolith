@@ -8,6 +8,7 @@ import {
   IconButton,
   Divider,
 } from "@mui/material";
+import { alpha, useTheme } from "@mui/material/styles";
 import DirectionsBoatIcon from "@mui/icons-material/DirectionsBoat";
 import MyLocationIcon from "@mui/icons-material/MyLocation";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
@@ -75,6 +76,7 @@ interface MapStatusBarProps {
 }
 
 function MapStatusBar({ vesselCqlFilter, coords }: MapStatusBarProps) {
+  const theme = useTheme();
   const { total, categories, loading, error } = useVesselCount(vesselCqlFilter);
   const [format, setFormat] = useState<FormatType>("DM");
   const [catAnchor, setCatAnchor] = useState<HTMLElement | null>(null);
@@ -102,8 +104,8 @@ function MapStatusBar({ vesselCqlFilter, coords }: MapStatusBarProps) {
         gap: 1.5,
         px: 2,
         py: 0.5,
-        bgcolor: "#1a1a2e",
-        borderBottom: "1px solid rgba(255,255,255,0.06)",
+        bgcolor: theme.palette.background.elevated,
+        borderBottom: `1px solid ${theme.palette.divider}`,
         zIndex: 1000,
         flexShrink: 0,
         minHeight: 40,
@@ -113,9 +115,9 @@ function MapStatusBar({ vesselCqlFilter, coords }: MapStatusBarProps) {
       <Chip
         icon={
           loading ? (
-            <CircularProgress size={14} sx={{ color: "#8b8b9e" }} />
+            <CircularProgress size={14} sx={{ color: theme.palette.text.secondary }} />
           ) : (
-            <DirectionsBoatIcon sx={{ fontSize: 16, color: "#8b8b9e" }} />
+            <DirectionsBoatIcon sx={{ fontSize: 16, color: theme.palette.text.secondary }} />
           )
         }
         label={
@@ -135,7 +137,7 @@ function MapStatusBar({ vesselCqlFilter, coords }: MapStatusBarProps) {
           <KeyboardArrowDownIcon
             sx={{
               fontSize: 18,
-              color: "#8b8b9e",
+              color: theme.palette.text.secondary,
               transform: catAnchor ? "rotate(180deg)" : "none",
               transition: "transform 0.2s ease",
             }}
@@ -143,14 +145,15 @@ function MapStatusBar({ vesselCqlFilter, coords }: MapStatusBarProps) {
         }
         size="small"
         sx={{
-          bgcolor: "rgba(255,255,255,0.06)",
-          color: "#e0e0e8",
+          bgcolor: theme.palette.background.surface,
+          color: theme.palette.text.primary,
           fontWeight: 500,
           fontSize: "0.8rem",
           height: 28,
-          "& .MuiChip-icon": { ml: 0.75 },
-          "& .MuiChip-deleteIcon": { mr: 0.5 },
-          "&:hover": { bgcolor: "rgba(255,255,255,0.1)" },
+          border: `1px solid ${theme.palette.divider}`,
+          "& .MuiChip-icon": { ml: 0.75, color: theme.palette.primary.main },
+          "& .MuiChip-deleteIcon": { mr: 0.5, color: theme.palette.text.secondary },
+          "&:hover": { bgcolor: theme.palette.background.surfaceAlt },
         }}
       />
 
@@ -164,27 +167,27 @@ function MapStatusBar({ vesselCqlFilter, coords }: MapStatusBarProps) {
         slotProps={{
           paper: {
             sx: {
-              bgcolor: "#1a1a2e",
-              border: "1px solid rgba(255,255,255,0.08)",
+              bgcolor: theme.palette.background.surfaceAlt,
+              border: `1px solid ${theme.palette.divider}`,
               p: 1.5,
               minWidth: 240,
               maxHeight: 280,
               overflowY: "auto",
               borderRadius: 1.5,
-              boxShadow: "0 8px 32px rgba(0,0,0,0.4)",
+              boxShadow: theme.shadows[8],
             },
           },
         }}
       >
-        <Typography variant="caption" sx={{ color: "#8b8b9e", fontWeight: 600, mb: 1, display: "block", textTransform: "uppercase", letterSpacing: 0.5 }}>
+        <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 600, mb: 1, display: "block", textTransform: "uppercase", letterSpacing: 0.5 }}>
           Vessel Categories
         </Typography>
         {error ? (
-          <Typography variant="body2" sx={{ color: "#ff6b6b" }}>
+          <Typography variant="body2" sx={{ color: theme.palette.error.main }}>
             {error}
           </Typography>
         ) : categories.length === 0 ? (
-          <Typography variant="body2" sx={{ color: "#8b8b9e" }}>
+          <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
             No categories found
           </Typography>
         ) : (
@@ -199,13 +202,13 @@ function MapStatusBar({ vesselCqlFilter, coords }: MapStatusBarProps) {
                 py: 0.6,
                 px: 1,
                 borderRadius: 1,
-                "&:hover": { bgcolor: "rgba(255,255,255,0.04)" },
+                "&:hover": { bgcolor: theme.palette.background.hover },
               }}
             >
-              <Typography variant="body2" sx={{ color: "#c0c0d0" }}>
+              <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
                 {item.category || "Unknown"}
               </Typography>
-              <Typography variant="body2" sx={{ color: "#e0e0e8", fontWeight: 600 }}>
+              <Typography variant="body2" sx={{ color: theme.palette.text.primary, fontWeight: 600 }}>
                 {item.count.toLocaleString()}
               </Typography>
             </Box>
@@ -213,21 +216,21 @@ function MapStatusBar({ vesselCqlFilter, coords }: MapStatusBarProps) {
         )}
       </Popover>
 
-      <Divider orientation="vertical" flexItem sx={{ borderColor: "rgba(255,255,255,0.08)" }} />
+      <Divider orientation="vertical" flexItem sx={{ borderColor: alpha(theme.palette.text.primary, 0.08) }} />
 
       {/* ── Coordinates ── */}
       <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
-        <MyLocationIcon sx={{ fontSize: 15, color: "#8b8b9e" }} />
-        <Typography variant="body2" sx={{ color: "#8b8b9e", fontSize: "0.75rem" }}>
+        <MyLocationIcon sx={{ fontSize: 15, color: theme.palette.text.secondary }} />
+        <Typography variant="body2" sx={{ color: theme.palette.text.secondary, fontSize: "0.75rem" }}>
           Lat
         </Typography>
-        <Typography variant="body2" sx={{ color: "#e0e0e8", whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums", minWidth: 120 }}>
+        <Typography variant="body2" sx={{ color: theme.palette.text.primary, whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums", minWidth: 120 }}>
           {latFormatted}
         </Typography>
-        <Typography variant="body2" sx={{ color: "#8b8b9e", fontSize: "0.75rem", ml: 0.5 }}>
+        <Typography variant="body2" sx={{ color: theme.palette.text.secondary, fontSize: "0.75rem", ml: 0.5 }}>
           Lng
         </Typography>
-        <Typography variant="body2" sx={{ color: "#e0e0e8", whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums", minWidth: 120 }}>
+        <Typography variant="body2" sx={{ color: theme.palette.text.primary, whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums", minWidth: 120 }}>
           {lngFormatted}
         </Typography>
       </Box>
@@ -240,8 +243,9 @@ function MapStatusBar({ vesselCqlFilter, coords }: MapStatusBarProps) {
           setFmtAnchor(e.currentTarget);
         }}
         sx={{
-          color: "#8b8b9e",
-          border: "1px solid rgba(255,255,255,0.1)",
+          color: theme.palette.text.secondary,
+          bgcolor: theme.palette.background.surface,
+          border: `1px solid ${theme.palette.divider}`,
           borderRadius: 1,
           px: 0.75,
           py: 0.25,
@@ -249,7 +253,7 @@ function MapStatusBar({ vesselCqlFilter, coords }: MapStatusBarProps) {
           fontWeight: 600,
           gap: 0.5,
           display: "flex",
-          "&:hover": { bgcolor: "rgba(255,255,255,0.06)", borderColor: "rgba(255,255,255,0.2)" },
+          "&:hover": { bgcolor: theme.palette.background.surfaceAlt, borderColor: alpha(theme.palette.text.primary, 0.2) },
         }}
       >
         {format}
@@ -271,11 +275,11 @@ function MapStatusBar({ vesselCqlFilter, coords }: MapStatusBarProps) {
         slotProps={{
           paper: {
             sx: {
-              bgcolor: "#1a1a2e",
-              border: "1px solid rgba(255,255,255,0.08)",
+              bgcolor: theme.palette.background.surfaceAlt,
+              border: `1px solid ${theme.palette.divider}`,
               p: 0.5,
               borderRadius: 1.5,
-              boxShadow: "0 8px 32px rgba(0,0,0,0.4)",
+              boxShadow: theme.shadows[8],
             },
           },
         }}
@@ -297,15 +301,15 @@ function MapStatusBar({ vesselCqlFilter, coords }: MapStatusBarProps) {
               justifyContent: "space-between",
               gap: 2,
               minWidth: 140,
-              bgcolor: format === opt.value ? "rgba(255,255,255,0.08)" : "transparent",
-              "&:hover": { bgcolor: "rgba(255,255,255,0.06)" },
+              bgcolor: format === opt.value ? theme.palette.background.active : "transparent",
+              "&:hover": { bgcolor: theme.palette.background.hover },
             }}
           >
-            <Typography variant="body2" sx={{ color: "#e0e0e8", fontWeight: 500 }}>
+            <Typography variant="body2" sx={{ color: theme.palette.text.primary, fontWeight: 500 }}>
               {opt.label}
             </Typography>
             {format === opt.value && (
-              <Typography variant="caption" sx={{ color: "#6c9eff" }}>
+              <Typography variant="caption" sx={{ color: theme.palette.primary.main }}>
                 ●
               </Typography>
             )}

@@ -10,6 +10,9 @@ import {
   Radio,
 } from "@mui/material";
 import DragHandleIcon from "@mui/icons-material/DragHandle";
+import MapOutlinedIcon from "@mui/icons-material/MapOutlined";
+import LayersOutlinedIcon from "@mui/icons-material/LayersOutlined";
+import CloudOutlinedIcon from "@mui/icons-material/CloudOutlined";
 import {
   DndContext,
   closestCenter,
@@ -70,19 +73,26 @@ function SortableLayerItem({
       display="flex"
       alignItems="center"
       justifyContent="space-between"
+      sx={{
+        px: 1,
+        py: 0.5,
+        borderRadius: 1,
+        transition: "background-color 0.15s",
+        "&:hover": { bgcolor: "action.hover" },
+      }}
     >
       <FormControlLabel
         control={
-          <Switch checked={checked} onChange={onToggle} color="primary" />
+          <Switch checked={checked} onChange={onToggle} color="primary" size="small" />
         }
-        label={title}
+        label={<Typography variant="body2">{title}</Typography>}
         sx={{ flex: 1, mr: 0 }}
       />
       <IconButton
         size="small"
         {...attributes}
         {...listeners}
-        sx={{ cursor: "grab", p: 0.5 }}
+        sx={{ cursor: "grab", p: 0.5, color: "text.disabled", "&:hover": { color: "text.secondary" } }}
       >
         <DragHandleIcon fontSize="small" />
       </IconButton>
@@ -135,22 +145,34 @@ function LayerPanel({
       }}
     >
         {/* Base Map */}
-        <Typography variant="subtitle2" sx={{ mb: 1.2, fontWeight: 600 }}>
-          Base Map
-        </Typography>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1.5 }}>
+          <MapOutlinedIcon sx={{ fontSize: 18, color: "primary.main" }} />
+          <Typography variant="subtitle2" sx={{ fontWeight: 700, letterSpacing: 0.3 }}>
+            Base Map
+          </Typography>
+        </Box>
         <RadioGroup
           value={selectedBaseMap.id}
           onChange={(e) => {
             const selected = baseMaps.find((m) => m.id === e.target.value);
             if (selected) onSelectBaseMap(selected);
           }}
+          sx={{ gap: 0.5 }}
         >
           {baseMaps.map((map) => (
             <FormControlLabel
               key={map.id}
               value={map.id}
-              control={<Radio />}
-              label={map.title}
+              control={<Radio size="small" />}
+              label={<Typography variant="body2">{map.title}</Typography>}
+              sx={{
+                m: 0,
+                px: 1,
+                py: 0.5,
+                borderRadius: 1,
+                transition: "background-color 0.15s",
+                "&:hover": { bgcolor: "action.hover" },
+              }}
             />
           ))}
         </RadioGroup>
@@ -158,9 +180,12 @@ function LayerPanel({
         <Divider sx={{ my: 2 }} />
 
         {/* Layers */}
-        <Typography variant="subtitle2" sx={{ mb: 1.2, fontWeight: 600 }}>
-          Layers
-        </Typography>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1.5 }}>
+          <LayersOutlinedIcon sx={{ fontSize: 18, color: "primary.main" }} />
+          <Typography variant="subtitle2" sx={{ fontWeight: 700, letterSpacing: 0.3 }}>
+            Overlay Layers
+          </Typography>
+        </Box>
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
@@ -187,10 +212,13 @@ function LayerPanel({
         <Divider sx={{ my: 2 }} />
 
         {/* Weather */}
-        <Typography variant="subtitle2" sx={{ mb: 1.2, fontWeight: 600 }}>
-          Weather
-        </Typography>
-        <FormGroup>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1.5 }}>
+          <CloudOutlinedIcon sx={{ fontSize: 18, color: "primary.main" }} />
+          <Typography variant="subtitle2" sx={{ fontWeight: 700, letterSpacing: 0.3 }}>
+            Weather
+          </Typography>
+        </Box>
+        <FormGroup sx={{ gap: 0.5 }}>
           {weatherLayers.map((layer) => (
             <FormControlLabel
               key={layer.id}
@@ -199,9 +227,18 @@ function LayerPanel({
                   checked={Boolean(activeLayers?.[layer.id])}
                   onChange={() => onToggle(layer.id)}
                   color="primary"
+                  size="small"
                 />
               }
-              label={layer.title}
+              label={<Typography variant="body2">{layer.title}</Typography>}
+              sx={{
+                m: 0,
+                px: 1,
+                py: 0.5,
+                borderRadius: 1,
+                transition: "background-color 0.15s",
+                "&:hover": { bgcolor: "action.hover" },
+              }}
             />
           ))}
         </FormGroup>

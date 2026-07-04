@@ -4,6 +4,7 @@ import "leaflet-draw";
 import "leaflet-draw/dist/leaflet.draw.css";
 import { useMap } from "react-leaflet";
 import { Paper, Button } from "@mui/material";
+import { defenseColors } from "@/shared/theme";
 import type { Polygon } from "../model/types";
 
 interface PolygonToolProps {
@@ -77,7 +78,7 @@ function PolygonTool({ enabled, polygons, onChange, onDrawComplete }: PolygonToo
     polygonsRef.current.forEach((polygon) => {
       const latlngs = polygon.points.map((point) => [point.lat, point.lng]);
       const layer = L.polygon(latlngs as L.LatLngExpression[], {
-        color: "#0ba5ff",
+        color: defenseColors.primary.main,
         weight: 2,
         fillOpacity: 0.15,
         bubblingMouseEvents: false,
@@ -130,7 +131,7 @@ function PolygonTool({ enabled, polygons, onChange, onDrawComplete }: PolygonToo
       allowIntersection: false,
       repeatMode: true,
       shapeOptions: {
-        color: "#0ba5ff",
+        color: defenseColors.primary.main,
         weight: 2,
         fillOpacity: 0.15,
       },

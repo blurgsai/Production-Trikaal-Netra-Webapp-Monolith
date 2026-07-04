@@ -14,9 +14,11 @@ import {
   TextField,
   Typography,
   Autocomplete,
+  Chip,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
+import FilterListOutlinedIcon from "@mui/icons-material/FilterListOutlined";
 import type { VesselTableFilter, FilterCombinator, SavedFilterSet } from "../model/types";
 import { formatColumnName } from "@/shared/utils";
 
@@ -112,12 +114,13 @@ function FilterDialog({
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <span>Filters</span>
+      <DialogTitle sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: 1, borderColor: "divider" }}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          <FilterListOutlinedIcon sx={{ fontSize: 20, color: "primary.main" }} />
+          <span>Filters</span>
+        </Box>
         {filters.length > 0 && (
-          <Typography variant="caption" color="textSecondary">
-            {filters.length} active
-          </Typography>
+          <Chip label={`${filters.length} active`} size="small" color="primary" variant="outlined" sx={{ height: 22, fontSize: "0.7rem" }} />
         )}
       </DialogTitle>
       <DialogContent sx={{ p: 0 }}>

@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
 import { Box, IconButton, Typography } from "@mui/material";
+import { alpha, useTheme } from "@mui/material/styles";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
 import { useMap } from "react-leaflet";
 
 function ZoomControl() {
+  const theme = useTheme();
   const map = useMap();
   const [zoom, setZoom] = useState(map.getZoom());
 
@@ -28,7 +30,7 @@ function ZoomControl() {
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        backgroundColor: "#000000bb",
+        backgroundColor: alpha(theme.palette.background.default, 0.73),
         borderRadius: 2,
         boxShadow: 3,
         overflow: "hidden",
@@ -41,7 +43,7 @@ function ZoomControl() {
         onClick={zoomIn}
         sx={{
           p: 0.25,
-          "&:hover": { backgroundColor: "rgba(255,255,255,0.2)" },
+          "&:hover": { backgroundColor: alpha(theme.palette.text.primary, 0.2) },
         }}
       >
         <AddIcon sx={{ fontSize: 16 }} />

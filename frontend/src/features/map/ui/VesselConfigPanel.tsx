@@ -24,6 +24,13 @@ import AddIcon from "@mui/icons-material/Add";
 import CircleIcon from "@mui/icons-material/Circle";
 import SquareIcon from "@mui/icons-material/Square";
 import SvgIcon, { type SvgIconProps } from "@mui/material/SvgIcon";
+import PaletteOutlinedIcon from "@mui/icons-material/PaletteOutlined";
+import OpacityIcon from "@mui/icons-material/Opacity";
+import HubOutlinedIcon from "@mui/icons-material/HubOutlined";
+import RuleOutlinedIcon from "@mui/icons-material/RuleOutlined";
+import TimelineIcon from "@mui/icons-material/Timeline";
+import TrendingUpIcon from "@mui/icons-material/TrendingUp";
+import { defenseColors as c } from "@/shared/theme";
 import type {
   VesselConfig,
   CustomShape,
@@ -51,12 +58,13 @@ function CustomGradientShapeIcon(props: SvgIconProps) {
       <polygon
         points="12,2 20,18 12,15 4,18"
         fill="currentColor"
-        stroke="#789"
+        stroke="currentColor"
         strokeWidth="1.5"
         strokeLinejoin="round"
+        opacity="0.5"
       />
-      <circle cx="12" cy="10" r="2" fill="#FFF" opacity="0.8" />
-      <line x1="12" y1="6" x2="12" y2="14" stroke="#FFF" strokeWidth="1" opacity="0.7" />
+      <circle cx="12" cy="10" r="2" fill="currentColor" opacity="0.8" />
+      <line x1="12" y1="6" x2="12" y2="14" stroke="currentColor" strokeWidth="1" opacity="0.7" />
     </SvgIcon>
   );
 }
@@ -195,7 +203,7 @@ function VesselConfigPanel({ config, onApply, onFetchColumns, onSearchColumnValu
       name: `Rule ${local.rules.length + 1}`,
       conditions: [{ column: "identification_mmsi", operator: "=", value: "", combinator: "AND" }],
       combinator: "AND",
-      style: { shape: "circle", color: "#ff0000", size: 20 },
+      style: { shape: "circle", color: c.status.error, size: 20 },
     };
     setLocal((prev) => ({ ...prev, rules: [...prev.rules, newRule] }));
   };
@@ -277,9 +285,9 @@ function VesselConfigPanel({ config, onApply, onFetchColumns, onSearchColumnValu
             key={s}
             value={s}
             aria-label={s}
-            sx={{ px: 1.5, py: 1, border: "1px solid #789", borderRadius: 1 }}
+            sx={{ px: 1.5, py: 1, border: `1px solid ${c.border.strong}`, borderRadius: 1 }}
           >
-            <Icon sx={{ color: value === s ? color : "#789", fontSize: 24 }} />
+            <Icon sx={{ color: value === s ? color : c.text.muted, fontSize: 24 }} />
           </ToggleButton>
         ))}
       </ToggleButtonGroup>
@@ -290,7 +298,7 @@ function VesselConfigPanel({ config, onApply, onFetchColumns, onSearchColumnValu
             selected={value === cs.id}
             onClick={() => onChange(cs.id)}
             size="small"
-            sx={{ px: 1.5, py: 1, border: "1px solid #789", borderRadius: 1 }}
+            sx={{ px: 1.5, py: 1, border: `1px solid ${c.border.strong}`, borderRadius: 1 }}
           >
             <Box
               component="span"
@@ -449,10 +457,13 @@ function VesselConfigPanel({ config, onApply, onFetchColumns, onSearchColumnValu
     >
       <Box sx={{ flex: 1, overflowY: "auto", p: 2 }}>
         {/* Default Style Section */}
-        <Box sx={{ mb: 2, p: 1.5, border: "1px solid", borderColor: "divider", borderRadius: 1 }}>
-          <Typography variant="subtitle2" fontWeight={600} gutterBottom>
-            Default Style
-          </Typography>
+        <Box sx={{ mb: 2, p: 1.5, border: "1px solid", borderColor: "divider", borderRadius: 1.5 }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
+            <PaletteOutlinedIcon sx={{ fontSize: 18, color: "primary.main" }} />
+            <Typography variant="subtitle2" sx={{ fontWeight: 700, letterSpacing: 0.3 }}>
+              Default Style
+            </Typography>
+          </Box>
           <Typography variant="caption" color="textSecondary" sx={{ display: "block", mb: 1 }}>
             Applied to vessels not matching any rule.
           </Typography>
@@ -478,13 +489,16 @@ function VesselConfigPanel({ config, onApply, onFetchColumns, onSearchColumnValu
         </Box>
 
         {/* Opacity Section */}
-        <Box sx={{ mb: 2, p: 1.5, border: "1px solid", borderColor: "divider", borderRadius: 1 }}>
-          <Typography variant="subtitle2" fontWeight={600}>
-            Layer Opacity{" "}
-            <Typography component="span" variant="caption" color="textSecondary" fontWeight={400}>
-              ({Math.round(local.opacity * 100)}%)
+        <Box sx={{ mb: 2, p: 1.5, border: "1px solid", borderColor: "divider", borderRadius: 1.5 }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
+            <OpacityIcon sx={{ fontSize: 18, color: "primary.main" }} />
+            <Typography variant="subtitle2" sx={{ fontWeight: 700, letterSpacing: 0.3 }}>
+              Layer Opacity{" "}
+              <Typography component="span" variant="caption" color="textSecondary" fontWeight={400}>
+                ({Math.round(local.opacity * 100)}%)
+              </Typography>
             </Typography>
-          </Typography>
+          </Box>
           <Box display="flex" alignItems="center" gap={2} mt={1}>
             <Typography variant="caption" color="textSecondary">0%</Typography>
             <Slider
@@ -500,10 +514,13 @@ function VesselConfigPanel({ config, onApply, onFetchColumns, onSearchColumnValu
         </Box>
 
         {/* Clustering Section */}
-        <Box sx={{ mb: 2, p: 1.5, border: "1px solid", borderColor: "divider", borderRadius: 1 }}>
-          <Typography variant="subtitle2" fontWeight={600} gutterBottom>
-            Clustering
-          </Typography>
+        <Box sx={{ mb: 2, p: 1.5, border: "1px solid", borderColor: "divider", borderRadius: 1.5 }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
+            <HubOutlinedIcon sx={{ fontSize: 18, color: "primary.main" }} />
+            <Typography variant="subtitle2" sx={{ fontWeight: 700, letterSpacing: 0.3 }}>
+              Clustering
+            </Typography>
+          </Box>
           <Typography variant="caption" color="textSecondary" sx={{ display: "block", mb: 1 }}>
             GeoServer PointStacker settings for zoomed-out views.
           </Typography>
@@ -619,9 +636,12 @@ function VesselConfigPanel({ config, onApply, onFetchColumns, onSearchColumnValu
         </Box>
 
         {/* Style Rules Section */}
-        <Typography variant="subtitle2" fontWeight={600} gutterBottom>
-          Style Rules
-        </Typography>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
+          <RuleOutlinedIcon sx={{ fontSize: 18, color: "primary.main" }} />
+          <Typography variant="subtitle2" sx={{ fontWeight: 700, letterSpacing: 0.3 }}>
+            Style Rules
+          </Typography>
+        </Box>
         <Typography variant="caption" color="textSecondary" sx={{ display: "block", mb: 1 }}>
           Rules are evaluated in order; the first match wins.
         </Typography>
@@ -652,7 +672,7 @@ function VesselConfigPanel({ config, onApply, onFetchColumns, onSearchColumnValu
                     height: 16,
                     borderRadius: "50%",
                     bgcolor: rule.style.color,
-                    border: "1px solid #000",
+                    border: `1px solid ${c.border.strong}`,
                     flexShrink: 0,
                   }}
                 />
@@ -733,10 +753,13 @@ function VesselConfigPanel({ config, onApply, onFetchColumns, onSearchColumnValu
         )}
 
         {/* Trajectory Section */}
-        <Box sx={{ mb: 2, p: 1.5, border: "1px solid", borderColor: "divider", borderRadius: 1 }}>
-          <Typography variant="subtitle2" fontWeight={600} gutterBottom>
-            Trajectory
-          </Typography>
+        <Box sx={{ mb: 2, p: 1.5, border: "1px solid", borderColor: "divider", borderRadius: 1.5 }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
+            <TimelineIcon sx={{ fontSize: 18, color: "primary.main" }} />
+            <Typography variant="subtitle2" sx={{ fontWeight: 700, letterSpacing: 0.3 }}>
+              Trajectory
+            </Typography>
+          </Box>
           <Typography variant="caption" color="textSecondary" sx={{ display: "block", mb: 1 }}>
             Vessel path visualization settings on click.
           </Typography>
@@ -851,13 +874,16 @@ function VesselConfigPanel({ config, onApply, onFetchColumns, onSearchColumnValu
         </Box>
 
         {/* Dead Reckoning Section */}
-        <Typography variant="subtitle2" fontWeight={600} gutterBottom>
-          Dead Reckoning
-        </Typography>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
+          <TrendingUpIcon sx={{ fontSize: 18, color: "primary.main" }} />
+          <Typography variant="subtitle2" sx={{ fontWeight: 700, letterSpacing: 0.3 }}>
+            Dead Reckoning
+          </Typography>
+        </Box>
         <Typography variant="caption" color="textSecondary" sx={{ display: "block", mb: 1 }}>
           Future projection points from current position
         </Typography>
-        <Box sx={{ p: 1.5, border: 1, borderColor: "divider", borderRadius: 1, mb: 2 }}>
+        <Box sx={{ p: 1.5, border: 1, borderColor: "divider", borderRadius: 1.5, mb: 2 }}>
           <Stack spacing={1}>
             {local.deadReckoning.intervals.map((iv, idx) => (
               <Stack key={idx} direction="row" spacing={1} alignItems="center">
@@ -967,8 +993,8 @@ function VesselConfigPanel({ config, onApply, onFetchColumns, onSearchColumnValu
       </Box>
 
       {/* Sticky Apply */}
-      <Box sx={{ p: 1, borderTop: "1px solid", borderColor: "divider", bgcolor: "background.paper", flexShrink: 0, display: "flex", justifyContent: "flex-end" }}>
-        <Button variant="contained" size="small" onClick={handleApply} disabled={isApplying}>
+      <Box sx={{ p: 1.5, borderTop: "1px solid", borderColor: "divider", bgcolor: "background.paper", flexShrink: 0, display: "flex", justifyContent: "flex-end" }}>
+        <Button variant="contained" size="small" onClick={handleApply} disabled={isApplying} sx={{ borderRadius: 1.5, fontWeight: 700, px: 3 }}>
           {isApplying ? "Applying…" : "Apply Style"}
         </Button>
       </Box>

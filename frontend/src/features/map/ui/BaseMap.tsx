@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { MapContainer, TileLayer, WMSTileLayer, useMap } from "react-leaflet";
 import { Stack, IconButton, Tooltip, Box } from "@mui/material";
+import { alpha, useTheme } from "@mui/material/styles";
 import StraightenIcon from "@mui/icons-material/Straighten";
 import PentagonIcon from "@mui/icons-material/Pentagon";
 import "leaflet/dist/leaflet.css";
@@ -82,6 +83,7 @@ function BaseMap({
   onPolygonFiltersChange,
   mapControlSettings,
 }: BaseMapProps) {
+  const theme = useTheme();
   const [isMeasureMode, setIsMeasureMode] = useState(false);
   const [isPolygonMode, setIsPolygonMode] = useState(false);
   const [coords, setCoords] = useState({ lat: 0, lng: 0 });
@@ -157,7 +159,7 @@ function BaseMap({
             borderRadius: 2,
             top: 10,
             right: 10,
-            bgcolor: "#00000093",
+            bgcolor: alpha(theme.palette.background.default, 0.58),
             zIndex: 9000,
           }}
         >

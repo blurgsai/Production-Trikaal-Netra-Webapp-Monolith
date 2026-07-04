@@ -3,7 +3,7 @@ import { ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import "../app.css";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { darkTheme } from "@/shared/theme";
+import { defenseTheme } from "@/shared/theme";
 import { AuthProvider } from "@/features/auth";
 import LoginPage from "./pages/LoginPage";
 import MapPage from "./pages/MapPage";
@@ -16,7 +16,7 @@ const queryClient = new QueryClient();
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider theme={darkTheme}>
+      <ThemeProvider theme={defenseTheme}>
         <CssBaseline />
         <BrowserRouter>
           <AuthProvider>

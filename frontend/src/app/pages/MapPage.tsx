@@ -1,8 +1,8 @@
 import { Box } from "@mui/material";
-import { BaseMap, MapNavbar, VesselTableTool, LayerPanel, VesselConfigPanel, useMapConfig, useVesselTrajectory, useVesselTable, useVesselColumns, MapTileSettings } from "@/features/map";
-import type { VesselInfo, VesselConfig, ViewTile, Polygon, PopupFieldConfig } from "@/features/map";
+import { BaseMap, MapNavbar, VesselTableTool, LayerPanel, VesselConfigPanel, ChartHouse, useMapConfig, useVesselTrajectory, useVesselTable, useVesselColumns, MapTileSettings } from "@/features/map";
+import type { VesselInfo, VesselConfig, ViewTile, Polygon, PopupFieldConfig, ChartConfig } from "@/features/map";
 import { useLocalStorage } from "@/shared";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Mosaic, MosaicWindow, type MosaicNode } from "react-mosaic-component";
 import "react-mosaic-component/react-mosaic-component.css";
 import "./MapPage.css";
@@ -41,6 +41,19 @@ function MapPage() {
   const [polygonFilters, setPolygonFilters] = useState<Polygon[]>([]);
   const [visibleTiles, setVisibleTiles] = useLocalStorage<ViewTile[]>("trikaal_mosaic_tiles", DEFAULT_TILES);
   const [mosaicLayout, setMosaicLayout] = useLocalStorage<MosaicNode<ViewTile>>("trikaal_mosaic_layout", DEFAULT_LAYOUT);
+  const [chartConfigs, setChartConfigs] = useLocalStorage<ChartConfig[]>("trikaal_chart_configs", []);
+
+  const handleCreateChart = useCallback((chart: ChartConfig) => {
+    setChartConfigs((prev) => [...prev, chart]);
+  }, [setChartConfigs]);
+
+  const handleUpdateChart = useCallback((id: string, updated: ChartConfig) => {
+    setChartConfigs((prev) => prev.map((c) => (c.id === id ? updated : c)));
+  }, [setChartConfigs]);
+
+  const handleDeleteChart = useCallback((id: string) => {
+    setChartConfigs((prev) => prev.filter((c) => c.id !== id));
+  }, [setChartConfigs]);
 
   const {
     filters,
@@ -164,6 +177,28 @@ function MapPage() {
         },
         splitPercentage: 50,
       } as unknown as MosaicNode<ViewTile>);
+    } else if (visibleTiles.length === 5) {
+      setMosaicLayout({
+        direction: "row",
+        first: visibleTiles[0],
+        second: {
+          direction: "column",
+          first: {
+            direction: "row",
+            first: visibleTiles[1],
+            second: visibleTiles[2],
+            splitPercentage: 50,
+          },
+          second: {
+            direction: "row",
+            first: visibleTiles[3],
+            second: visibleTiles[4],
+            splitPercentage: 50,
+          },
+          splitPercentage: 50,
+        },
+        splitPercentage: 50,
+      } as unknown as MosaicNode<ViewTile>);
     }
   }, [visibleTiles, setMosaicLayout]);
 
@@ -173,6 +208,7 @@ function MapPage() {
       case "table": return "Vessel Table";
       case "layers": return "Map Config";
       case "vessel": return "Vessel Config";
+      case "charts": return "Chart House";
     }
   };
 
@@ -250,6 +286,16 @@ function MapPage() {
             onApply={handleApplyVesselStyle}
             onFetchColumns={fetchColumns}
             onSearchColumnValues={searchValues}
+          />
+        )}
+        {id === "charts" && (
+          <ChartHouse
+            charts={chartConfigs}
+            columns={allTableColumns}
+            cqlFilter={cqlFilter}
+            onCreateChart={handleCreateChart}
+            onUpdateChart={handleUpdateChart}
+            onDeleteChart={handleDeleteChart}
           />
         )}
       </MosaicWindow>

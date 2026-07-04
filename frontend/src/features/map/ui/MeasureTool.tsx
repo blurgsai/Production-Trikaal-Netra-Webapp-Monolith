@@ -3,6 +3,7 @@ import L from "leaflet";
 import "leaflet-draw";
 import "leaflet-draw/dist/leaflet.draw.css";
 import { useMap } from "react-leaflet";
+import { defenseColors } from "@/shared/theme";
 import { distanceToNm, formatNmLabel } from "../model/measure";
 
 interface MeasureToolProps {
@@ -72,7 +73,7 @@ function MeasureTool({ enabled }: MeasureToolProps) {
       showLength: true,
       maxPoints: 2,
       repeatMode: true,
-      shapeOptions: { color: "#0ba5ff", weight: 3, dashArray: "6,4" },
+      shapeOptions: { color: defenseColors.primary.main, weight: 3, dashArray: "6,4" },
     });
     drawMap.on(L.Draw.Event.CREATED, handleLineCreated as unknown as L.LeafletEventHandlerFn);
     drawControl.enable();
