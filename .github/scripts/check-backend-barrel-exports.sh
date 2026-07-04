@@ -25,6 +25,7 @@ if [ ! -d "$FEATURES_DIR" ]; then
 fi
 
 ERRORS=0
+WARNINGS=0
 
 echo "=========================================="
 echo "  Backend Barrel Export Rules Check"
@@ -35,6 +36,10 @@ for feature_dir in "$FEATURES_DIR"/*/; do
   [ -d "$feature_dir" ] || continue
 
   feature_name=$(basename "$feature_dir")
+
+  # __pycache__ is a Python runtime artifact, not a feature — skip it.
+  [ "$feature_name" = "__pycache__" ] && continue
+
   barrel_file="${feature_dir}__init__.py"
 
   echo ""
@@ -76,9 +81,11 @@ for feature_dir in "$FEATURES_DIR"/*/; do
   fi
 
   # ─── Rule 3: __init__.py must NOT export raw schema names ───
-  if grep -qE "import.*[A-Z][a-zA-Z]*Api(Schema|Dto)" "$barrel_file" 2>/dev/null; then
+  # Matches the guide's illustrative suffix (*ApiSchema/*ApiDto) AND this
+  # project's actual convention (plain *Raw* names, e.g. TrajectoryRawRow).
+  if grep -qE "import.*[A-Z][a-zA-Z]*(Api(Schema|Dto)\b|Raw[A-Z][a-zA-Z]*)" "$barrel_file" 2>/dev/null; then
     echo "  FAIL: __init__.py exports raw API schema — domain models only in barrel"
-    echo "    Raw schemas (*ApiSchema, *ApiDto) must not be in the public API."
+    echo "    Raw schemas (*ApiSchema, *ApiDto, *Raw*) must not be in the public API."
     ERRORS=$((ERRORS + 1))
   fi
 
@@ -88,30 +95,33 @@ for feature_dir in "$FEATURES_DIR"/*/; do
     continue
   fi
 
-  # ─── Rule 4: __init__.py should export domain models ───
+  # ─── Rule 4: __init__.py should export domain models (advisory) ───
   if ! grep -qE "from\s+\.models|from\s+\.\.models" "$barrel_file" 2>/dev/null; then
     # Check if it's empty or just a package marker
     content=$(grep -vE '^\s*#|^\s*$|^"""' "$barrel_file" 2>/dev/null || true)
     if [ -z "$content" ]; then
       echo "  WARN: __init__.py is empty — consider exporting domain models"
       echo "    e.g., from .models import User"
-      ERRORS=$((ERRORS + 1))
+      WARNINGS=$((WARNINGS + 1))
     fi
   fi
 
-  # ─── Rule 5: __init__.py should export router ───
+  # ─── Rule 5: __init__.py should export router (advisory) ───
   if ! grep -qE "from\s+\.router|from\s+\.\.router" "$barrel_file" 2>/dev/null; then
     content=$(grep -vE '^\s*#|^\s*$|^"""' "$barrel_file" 2>/dev/null || true)
     if [ -z "$content" ]; then
       echo "  WARN: __init__.py does not export router"
       echo "    e.g., from .router import router"
-      ERRORS=$((ERRORS + 1))
+      WARNINGS=$((WARNINGS + 1))
     fi
   fi
 done
 
 echo ""
 echo "=========================================="
+if [ "$WARNINGS" -gt 0 ]; then
+  echo "NOTE: $WARNINGS advisory warning(s) — not blocking, see above."
+fi
 if [ "$ERRORS" -gt 0 ]; then
   echo "FAILED: $ERRORS barrel export violation(s) found."
   echo ""

@@ -31,6 +31,10 @@ for feature_dir in "$FEATURES_DIR"/*/; do
   [ -d "$feature_dir" ] || continue
 
   feature_name=$(basename "$feature_dir")
+
+  # __pycache__ is a Python runtime artifact, not a feature — skip it.
+  [ "$feature_name" = "__pycache__" ] && continue
+
   echo ""
   echo "Feature: $feature_name"
 

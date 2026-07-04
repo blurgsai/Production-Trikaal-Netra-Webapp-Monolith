@@ -45,6 +45,12 @@ for feature_dir in "$FEATURES_DIR"/*/; do
 
     subdir_name=$(basename "$subdir")
 
+    # __pycache__ is a Python runtime artifact, not a layer or feature folder —
+    # ignore it here (it's already excluded from git via .gitignore).
+    if [ "$subdir_name" = "__pycache__" ]; then
+      continue
+    fi
+
     # Is this a valid layer?
     is_valid=false
     for valid in "${VALID_LAYERS[@]}"; do
@@ -62,8 +68,9 @@ for feature_dir in "$FEATURES_DIR"/*/; do
     fi
 
     # Check for nested directories inside layer folders
-    # Layers (clients/, models/, services/, router/) must be flat
-    nested_dirs=$(find "$subdir" -mindepth 1 -maxdepth 1 -type d 2>/dev/null || true)
+    # Layers (clients/, models/, services/, router/) must be flat.
+    # __pycache__ is a Python runtime artifact, not a real nested folder — excluded.
+    nested_dirs=$(find "$subdir" -mindepth 1 -maxdepth 1 -type d -not -name "__pycache__" 2>/dev/null || true)
     if [ -n "$nested_dirs" ]; then
       echo "  FAIL: Found nested directories inside '$feature_name/$subdir_name/'"
       echo "    Layers must be flat — no subdirectories."

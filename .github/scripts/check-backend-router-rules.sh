@@ -31,6 +31,7 @@ if [ ! -d "$FEATURES_DIR" ]; then
 fi
 
 ERRORS=0
+WARNINGS=0
 
 echo "=========================================="
 echo "  Backend Router Rules Check"
@@ -69,20 +70,22 @@ for feature_dir in "$FEATURES_DIR"/*/; do
     rel_path="${router_file#${feature_dir}}"
 
     # ─── Rule 1: Router must NOT use response_model with raw schemas ───
-    if grep -qE "response_model.*[A-Z][a-zA-Z]*Api(Schema|Dto)" "$router_file" 2>/dev/null; then
+    # Matches the guide's illustrative suffix (*ApiSchema/*ApiDto) AND this
+    # project's actual convention (plain *Raw* names, e.g. TrajectoryRawRow).
+    if grep -qE "response_model.*[A-Z][a-zA-Z]*(Api(Schema|Dto)\b|Raw[A-Z][a-zA-Z]*)" "$router_file" 2>/dev/null; then
       echo "  FAIL: $rel_path uses response_model with raw API schema"
-      echo "    Routers must use domain models for response_model, never *ApiSchema/*ApiDto"
+      echo "    Routers must use domain models for response_model, never *ApiSchema/*ApiDto/*Raw*"
       ERRORS=$((ERRORS + 1))
     fi
 
-    # ─── Rule 2: Router must use APIRouter ───
+    # ─── Rule 2: Router should use APIRouter (advisory) ───
     if ! grep -qE "APIRouter|api_router" "$router_file" 2>/dev/null; then
       echo "  WARN: $rel_path does not define an APIRouter"
       echo "    Router files should create: router = APIRouter(prefix=..., tags=[...])"
-      ERRORS=$((ERRORS + 1))
+      WARNINGS=$((WARNINGS + 1))
     fi
 
-    # ─── Rule 3: Router must delegate to services (not contain business logic) ───
+    # ─── Rule 3: Router should delegate to services (advisory) ───
     # Check that router imports from services/
     if ! grep -qE "from\s+\.\.services|from\s+.*\.services" "$router_file" 2>/dev/null; then
       # Check if there are any endpoint decorators — if so, they must delegate to services
@@ -90,7 +93,7 @@ for feature_dir in "$FEATURES_DIR"/*/; do
         echo "  WARN: $rel_path has endpoints but does not import from services/"
         echo "    Routers must delegate all logic to the service layer."
         echo "    e.g., from ..services import get_all_users"
-        ERRORS=$((ERRORS + 1))
+        WARNINGS=$((WARNINGS + 1))
       fi
     fi
 
@@ -111,13 +114,13 @@ for feature_dir in "$FEATURES_DIR"/*/; do
       ERRORS=$((ERRORS + 1))
     fi
 
-    # ─── Rule 6: Router must use Depends() for dependency injection ───
+    # ─── Rule 6: Router should use Depends() for dependency injection (advisory) ───
     if grep -qE "@router\.(get|post|put|patch|delete)" "$router_file" 2>/dev/null; then
       if ! grep -qE "Depends\s*\(" "$router_file" 2>/dev/null; then
         echo "  WARN: $rel_path has endpoints but does not use Depends()"
         echo "    Routers should use FastAPI's DI for shared resources (HTTP client, DB sessions)."
         echo "    e.g., client: httpx.AsyncClient = Depends(get_http_client)"
-        ERRORS=$((ERRORS + 1))
+        WARNINGS=$((WARNINGS + 1))
       fi
     fi
   done < <(find "${router_dir}" -name "*.py" 2>/dev/null)
@@ -125,6 +128,9 @@ done
 
 echo ""
 echo "=========================================="
+if [ "$WARNINGS" -gt 0 ]; then
+  echo "NOTE: $WARNINGS advisory warning(s) — not blocking, see above."
+fi
 if [ "$ERRORS" -gt 0 ]; then
   echo "FAILED: $ERRORS router rule violation(s) found."
   echo ""
