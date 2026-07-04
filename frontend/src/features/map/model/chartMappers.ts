@@ -1,5 +1,4 @@
-import type { ChartDataFeatureApi } from "../api/chartDataApi";
-import type { ChartAggregation, ChartConfig, ChartDataPoint, ChartDataResult } from "./chartTypes";
+import type { ChartAggregation, ChartConfig, ChartDataFeature, ChartDataPoint, ChartDataResult } from "./chartTypes";
 
 function toNumber(value: unknown): number | null {
   if (value === null || value === undefined || value === "") return null;
@@ -20,7 +19,7 @@ function aggregateValues(values: number[], aggregation: ChartAggregation): numbe
 }
 
 export function mapFeaturesToChartData(
-  features: ChartDataFeatureApi[],
+  features: ChartDataFeature[],
   config: ChartConfig
 ): ChartDataResult {
   const groups = new Map<string, number[]>();

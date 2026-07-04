@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useCallback, useMemo } from "react";
 import { fetchChartData } from "../api/chartDataApi";
 import { mapFeaturesToChartData } from "../model/chartMappers";
-import type { ChartConfig, ChartDataResult } from "../model/chartTypes";
+import type { ChartConfig, ChartDataFeature, ChartDataResult } from "../model/chartTypes";
 
 export function useChartData(config: ChartConfig | null, cqlFilter?: string) {
   const queryKey = useMemo(
@@ -25,7 +25,7 @@ export function useChartData(config: ChartConfig | null, cqlFilter?: string) {
         maxFeatures: 5000,
       });
 
-      return mapFeaturesToChartData(response.features, config);
+      return mapFeaturesToChartData(response.features as ChartDataFeature[], config);
     },
     enabled: config !== null,
   });

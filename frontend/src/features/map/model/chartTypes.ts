@@ -17,6 +17,10 @@ export interface ChartDataPoint {
   value: number;
 }
 
+export interface ChartDataFeature {
+  properties: Record<string, unknown>;
+}
+
 export interface ChartDataResult {
   points: ChartDataPoint[];
   total: number;
