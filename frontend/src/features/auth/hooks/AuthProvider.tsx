@@ -1,24 +1,8 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { axiosInstance } from "@/shared/api";
+import { AuthContext, type AuthContextValue } from "./AuthContext";
 import type { UserSession } from "../model/types";
-
-interface AuthContextValue {
-  isAuthenticated: boolean;
-  token: string | null;
-  username: string | null;
-  role: string | null;
-  logoutUser: () => void;
-  login: (session: UserSession) => void;
-}
-
-export const AuthContext = createContext<AuthContextValue | null>(null);
-
-export const useAuth = () => {
-  const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error("useAuth must be used within AuthProvider");
-  return ctx;
-};
 
 interface AuthProviderProps {
   children: ReactNode;
@@ -38,28 +22,28 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
     setToken(session.token);
   };
 
-  const logoutUser = () => {
+  const logoutUser = useCallback(() => {
     localStorage.removeItem("token");
     localStorage.removeItem("role");
     localStorage.removeItem("user_id");
     localStorage.removeItem("username");
     setToken(null);
     navigate("/login", { replace: true });
-  };
+  }, [navigate]);
 
-  const authenticateUser = async () => {
+  const authenticateUser = useCallback(async () => {
     try {
       await axiosInstance.get("/users/auth");
     } catch {
       logoutUser();
     }
-  };
+  }, [logoutUser]);
 
   useEffect(() => {
     if (token) {
       authenticateUser();
     }
-  }, []);
+  }, [token, authenticateUser]);
 
   const value: AuthContextValue = {
     isAuthenticated: !!token && token !== "undefined" && token !== "null",

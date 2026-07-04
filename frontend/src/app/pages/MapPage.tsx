@@ -165,7 +165,7 @@ function MapPage() {
         splitPercentage: 50,
       } as unknown as MosaicNode<ViewTile>);
     }
-  }, [visibleTiles]);
+  }, [visibleTiles, setMosaicLayout]);
 
   const getTileTitle = (id: ViewTile): string => {
     switch (id) {
