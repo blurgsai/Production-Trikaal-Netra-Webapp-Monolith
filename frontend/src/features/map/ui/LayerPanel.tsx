@@ -34,6 +34,7 @@ interface LayerPanelProps {
   onToggle: (layerId: string) => void;
   layerOrder: string[];
   onReorderLayers: (oldIndex: number, newIndex: number) => void;
+  onClose?: () => void;
 }
 
 function SortableLayerItem({

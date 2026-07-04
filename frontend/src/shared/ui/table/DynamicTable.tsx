@@ -229,13 +229,14 @@ export default function DynamicTable({
     }
 
     if (column.type === "date" || column.type === "datetime") {
-      const ms = new Date(value).getTime();
+      const ms = new Date(value as string | number | Date).getTime();
       if (!Number.isFinite(ms)) return "NA";
       return dayjs(ms).tz(selectedTimezone).format("YYYY-MM-DD HH:mm:ss");
     }
 
-    if (typeof value === "object") {
-      if (value?.lat && value?.lon) return `${value.lat}, ${value.lon}`;
+    if (typeof value === "object" && value !== null) {
+      const obj = value as Record<string, unknown>;
+      if (obj.lat && obj.lon) return `${obj.lat}, ${obj.lon}`;
       return JSON.stringify(value);
     }
 
@@ -698,7 +699,7 @@ export default function DynamicTable({
                   <TableRow
                     key={rowId}
                     sx={{
-                      ...customRowStyle,
+                      ...(customRowStyle as Record<string, unknown>),
                       backgroundColor: rowBg,
                       "&:hover td": {
                         backgroundColor: theme.hoverBackgroundColor,

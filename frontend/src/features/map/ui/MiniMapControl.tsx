@@ -43,7 +43,7 @@ function MiniMapControl({
     container.style.backgroundColor = "#1a1a2e";
     containerRef.current = container;
 
-    const control = L.control({ position });
+    const control = new L.Control({ position });
     control.onAdd = () => container;
     control.onRemove = () => {
       if (miniRef.current) {
