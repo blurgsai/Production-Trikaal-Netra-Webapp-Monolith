@@ -333,4 +333,158 @@ describe("useVesselDetails", () => {
       expect(result.current.details?.vesselName).toBe("Third");
     });
   });
+
+  // ── Additional edge cases / State Transition / Error Guessing ────────────
+
+  describe("additional edge cases", () => {
+    it("return object has exactly the expected keys", async () => {
+      vi.mocked(fetchVesselDetails).mockResolvedValue(apiDetails());
+      const { result } = renderHook(() => useVesselDetails("v1"));
+      await waitFor(() => expect(result.current.loading).toBe(false));
+      expect(Object.keys(result.current).sort()).toEqual(["details", "error", "loading", "refresh"]);
+    });
+
+    it("details are replaced (not merged) on a subsequent successful load", async () => {
+      vi.mocked(fetchVesselDetails).mockResolvedValueOnce(apiDetails({ vessel_name: "First", flag: "India" }));
+      const { result } = renderHook(() => useVesselDetails("v1"));
+      await waitFor(() => expect(result.current.details?.vesselName).toBe("First"));
+      vi.mocked(fetchVesselDetails).mockResolvedValueOnce(apiDetails({ vessel_name: "Second", flag: "USA" }));
+      await act(async () => { await result.current.refresh(); });
+      expect(result.current.details?.vesselName).toBe("Second");
+      expect(result.current.details?.flag).toBe("USA");
+    });
+
+    it("error is cleared at the start of a new load (before resolution)", async () => {
+      vi.mocked(fetchVesselDetails).mockRejectedValueOnce(new Error("fail"));
+      const { result } = renderHook(() => useVesselDetails("v1"));
+      await waitFor(() => expect(result.current.error).toBe("Failed to load vessel details"));
+      let resolveFn!: (v: VesselDetailsApi) => void;
+      vi.mocked(fetchVesselDetails).mockImplementationOnce(() => new Promise((r) => { resolveFn = r; }));
+      let p!: Promise<void>;
+      act(() => { p = result.current.refresh(); });
+      expect(result.current.error).toBe("");
+      await act(async () => { resolveFn(apiDetails()); await p; });
+    });
+
+    it("loading is true while a refresh is pending, then false after resolution", async () => {
+      vi.mocked(fetchVesselDetails).mockResolvedValueOnce(apiDetails());
+      const { result } = renderHook(() => useVesselDetails("v1"));
+      await waitFor(() => expect(result.current.loading).toBe(false));
+      let resolveFn!: (v: VesselDetailsApi) => void;
+      vi.mocked(fetchVesselDetails).mockImplementationOnce(() => new Promise((r) => { resolveFn = r; }));
+      let p!: Promise<void>;
+      act(() => { p = result.current.refresh(); });
+      expect(result.current.loading).toBe(true);
+      await act(async () => { resolveFn(apiDetails()); await p; });
+      expect(result.current.loading).toBe(false);
+    });
+
+    it("handles rejection with null", async () => {
+      vi.mocked(fetchVesselDetails).mockRejectedValue(null);
+      const { result } = renderHook(() => useVesselDetails("v1"));
+      await waitFor(() => expect(result.current.error).toBe("Failed to load vessel details"));
+    });
+
+    it("handles rejection with undefined", async () => {
+      vi.mocked(fetchVesselDetails).mockRejectedValue(undefined);
+      const { result } = renderHook(() => useVesselDetails("v1"));
+      await waitFor(() => expect(result.current.error).toBe("Failed to load vessel details"));
+    });
+
+    it("handles rejection with a number", async () => {
+      vi.mocked(fetchVesselDetails).mockRejectedValue(42);
+      const { result } = renderHook(() => useVesselDetails("v1"));
+      await waitFor(() => expect(result.current.error).toBe("Failed to load vessel details"));
+    });
+
+    it("handles rejection with a boolean", async () => {
+      vi.mocked(fetchVesselDetails).mockRejectedValue(true);
+      const { result } = renderHook(() => useVesselDetails("v1"));
+      await waitFor(() => expect(result.current.error).toBe("Failed to load vessel details"));
+    });
+
+    it("handles vessel with all fields undefined in the vessel sub-object", async () => {
+      vi.mocked(fetchVesselDetails).mockResolvedValue({ vessel: {} });
+      const { result } = renderHook(() => useVesselDetails("v1"));
+      await waitFor(() => expect(result.current.loading).toBe(false));
+      expect(result.current.details).toEqual({
+        vesselType: "Unknown", vesselName: "Unknown Vessel", flag: "Unknown",
+        length: undefined, width: undefined, grossTonnage: undefined,
+      });
+    });
+
+    it("handles vessel with negative length/width/grossTonnage", async () => {
+      vi.mocked(fetchVesselDetails).mockResolvedValue(apiDetails({ length: -50, width: -10, gross_tonnage: -1000 }));
+      const { result } = renderHook(() => useVesselDetails("v1"));
+      await waitFor(() => expect(result.current.details?.length).toBe(-50));
+      expect(result.current.details?.width).toBe(-10);
+      expect(result.current.details?.grossTonnage).toBe(-1000);
+    });
+
+    it("handles vessel with fractional length/width", async () => {
+      vi.mocked(fetchVesselDetails).mockResolvedValue(apiDetails({ length: 199.99, width: 30.5 }));
+      const { result } = renderHook(() => useVesselDetails("v1"));
+      await waitFor(() => expect(result.current.details?.length).toBe(199.99));
+      expect(result.current.details?.width).toBe(30.5);
+    });
+
+    it("handles vessel with very long name (1000 chars)", async () => {
+      const longName = "V".repeat(1000);
+      vi.mocked(fetchVesselDetails).mockResolvedValue(apiDetails({ vessel_name: longName }));
+      const { result } = renderHook(() => useVesselDetails("v1"));
+      await waitFor(() => expect(result.current.details?.vesselName).toBe(longName));
+    });
+
+    it("handles vessel with special characters in name", async () => {
+      vi.mocked(fetchVesselDetails).mockResolvedValue(apiDetails({ vessel_name: "Ship's \"Name\" <script>" }));
+      const { result } = renderHook(() => useVesselDetails("v1"));
+      await waitFor(() => expect(result.current.details?.vesselName).toBe("Ship's \"Name\" <script>"));
+    });
+
+    it("handles vessel with empty-string flag", async () => {
+      vi.mocked(fetchVesselDetails).mockResolvedValue(apiDetails({ flag: "" }));
+      const { result } = renderHook(() => useVesselDetails("v1"));
+      await waitFor(() => expect(result.current.details?.flag).toBe(""));
+    });
+
+    it("handles vessel with empty-string vessel_type", async () => {
+      vi.mocked(fetchVesselDetails).mockResolvedValue(apiDetails({ vessel_type: "" }));
+      const { result } = renderHook(() => useVesselDetails("v1"));
+      await waitFor(() => expect(result.current.details?.vesselType).toBe(""));
+    });
+
+    it("handles vessel with numeric string gross_tonnage passed as number", async () => {
+      vi.mocked(fetchVesselDetails).mockResolvedValue(apiDetails({ gross_tonnage: 0 }));
+      const { result } = renderHook(() => useVesselDetails("v1"));
+      await waitFor(() => expect(result.current.details?.grossTonnage).toBe(0));
+    });
+
+    it("transitioning from valid id to empty string clears details and error", async () => {
+      vi.mocked(fetchVesselDetails).mockResolvedValue(apiDetails());
+      const { result, rerender } = renderHook(({ id }) => useVesselDetails(id), {
+        initialProps: { id: "v1" as string | undefined },
+      });
+      await waitFor(() => expect(result.current.details).not.toBeNull());
+      rerender({ id: "" });
+      await waitFor(() => expect(result.current.details).toBeNull());
+      expect(result.current.error).toBe("");
+    });
+
+    it("concurrent refresh calls resolve without throwing (Promise.all)", async () => {
+      vi.mocked(fetchVesselDetails).mockResolvedValue(apiDetails());
+      const { result } = renderHook(() => useVesselDetails("v1"));
+      await waitFor(() => expect(result.current.loading).toBe(false));
+      await act(async () => {
+        await Promise.all([result.current.refresh(), result.current.refresh()]);
+      });
+      expect(result.current.loading).toBe(false);
+    });
+
+    it("mapper is called with the raw API response (not just the vessel sub-object)", async () => {
+      const raw = apiDetails();
+      vi.mocked(fetchVesselDetails).mockResolvedValue(raw);
+      renderHook(() => useVesselDetails("v1"));
+      await waitFor(() => expect(mapVesselDetailsFromApi).toHaveBeenCalledWith(raw));
+    });
+  });
 });

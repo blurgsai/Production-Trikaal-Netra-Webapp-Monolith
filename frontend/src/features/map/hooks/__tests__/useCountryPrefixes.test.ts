@@ -389,4 +389,129 @@ describe("useCountryPrefixes", () => {
       await waitFor(() => expect(result.current.countries).toEqual([domainPrefix("", "")]));
     });
   });
+
+  // ── Additional edge cases / State Transition / Boundary ──────────────────
+
+  describe("additional edge cases", () => {
+    it("return object has exactly the expected keys", async () => {
+      vi.mocked(fetchCountryPrefixes).mockResolvedValue([]);
+      const { result } = renderHook(() => useCountryPrefixes());
+      await waitFor(() => expect(result.current.loading).toBe(false));
+      expect(Object.keys(result.current).sort()).toEqual(["countries", "error", "loading", "refresh"]);
+    });
+
+    it("loading transitions true -> false on a successful refresh cycle", async () => {
+      let resolveFn!: (v: CountryPrefixApi[]) => void;
+      vi.mocked(fetchCountryPrefixes).mockResolvedValueOnce([]);
+      const { result } = renderHook(() => useCountryPrefixes());
+      await waitFor(() => expect(result.current.loading).toBe(false));
+
+      vi.mocked(fetchCountryPrefixes).mockImplementationOnce(() => new Promise((r) => { resolveFn = r; }));
+      let p!: Promise<void>;
+      act(() => { p = result.current.refresh(); });
+      expect(result.current.loading).toBe(true);
+      await act(async () => { resolveFn([apiPrefix("X", "+1")]); await p; });
+      expect(result.current.loading).toBe(false);
+    });
+
+    it("error transitions to empty string on a successful refresh after failure (ERR->SUCCESS)", async () => {
+      vi.mocked(fetchCountryPrefixes).mockRejectedValueOnce(new Error("fail"));
+      const { result } = renderHook(() => useCountryPrefixes());
+      await waitFor(() => expect(result.current.error).toBe("Failed to load country prefixes"));
+      vi.mocked(fetchCountryPrefixes).mockResolvedValueOnce([apiPrefix("A", "+1")]);
+      await act(async () => { await result.current.refresh(); });
+      expect(result.current.error).toBe("");
+    });
+
+    it("countries are replaced (not appended) on a subsequent successful load", async () => {
+      vi.mocked(fetchCountryPrefixes).mockResolvedValueOnce([apiPrefix("A", "+1"), apiPrefix("B", "+2")]);
+      const { result } = renderHook(() => useCountryPrefixes());
+      await waitFor(() => expect(result.current.countries).toHaveLength(2));
+      vi.mocked(fetchCountryPrefixes).mockResolvedValueOnce([apiPrefix("C", "+3")]);
+      await act(async () => { await result.current.refresh(); });
+      expect(result.current.countries).toEqual([domainPrefix("C", "+3")]);
+    });
+
+    it("handles a mapper returning an empty array from a non-empty API payload", async () => {
+      vi.mocked(fetchCountryPrefixes).mockResolvedValue([apiPrefix("A", "+1")]);
+      vi.mocked(mapCountryPrefixesFromApi).mockReturnValue([]);
+      const { result } = renderHook(() => useCountryPrefixes());
+      await waitFor(() => expect(result.current.countries).toEqual([]));
+    });
+
+    it("handles a mapper returning more entries than the API payload (mapper adds entries)", async () => {
+      vi.mocked(fetchCountryPrefixes).mockResolvedValue([apiPrefix("A", "+1")]);
+      vi.mocked(mapCountryPrefixesFromApi).mockReturnValue([domainPrefix("A", "+1"), domainPrefix("B", "+2")]);
+      const { result } = renderHook(() => useCountryPrefixes());
+      await waitFor(() => expect(result.current.countries).toHaveLength(2));
+    });
+
+    it("handles a rejection with a number value", async () => {
+      vi.mocked(fetchCountryPrefixes).mockRejectedValue(42);
+      const { result } = renderHook(() => useCountryPrefixes());
+      await waitFor(() => expect(result.current.error).toBe("Failed to load country prefixes"));
+    });
+
+    it("handles a rejection with a plain object", async () => {
+      vi.mocked(fetchCountryPrefixes).mockRejectedValue({ code: 500, message: "server error" });
+      const { result } = renderHook(() => useCountryPrefixes());
+      await waitFor(() => expect(result.current.error).toBe("Failed to load country prefixes"));
+    });
+
+    it("multiple sequential refreshes each trigger a separate API call", async () => {
+      vi.mocked(fetchCountryPrefixes).mockResolvedValue([apiPrefix("A", "+1")]);
+      const { result } = renderHook(() => useCountryPrefixes());
+      await waitFor(() => expect(fetchCountryPrefixes).toHaveBeenCalledTimes(1));
+      await act(async () => { await result.current.refresh(); });
+      await act(async () => { await result.current.refresh(); });
+      await act(async () => { await result.current.refresh(); });
+      expect(fetchCountryPrefixes).toHaveBeenCalledTimes(4);
+    });
+
+    it("loading is true while a refresh is pending, then false after resolution", async () => {
+      let resolveFn!: (v: CountryPrefixApi[]) => void;
+      vi.mocked(fetchCountryPrefixes).mockResolvedValueOnce([]);
+      const { result } = renderHook(() => useCountryPrefixes());
+      await waitFor(() => expect(result.current.loading).toBe(false));
+      vi.mocked(fetchCountryPrefixes).mockImplementationOnce(() => new Promise((r) => { resolveFn = r; }));
+      let p!: Promise<void>;
+      act(() => { p = result.current.refresh(); });
+      expect(result.current.loading).toBe(true);
+      await act(async () => { resolveFn([]); await p; });
+      expect(result.current.loading).toBe(false);
+    });
+
+    it("error remains empty string when fetch succeeds with empty array (no false error)", async () => {
+      vi.mocked(fetchCountryPrefixes).mockResolvedValue([]);
+      const { result } = renderHook(() => useCountryPrefixes());
+      await waitFor(() => expect(result.current.loading).toBe(false));
+      expect(result.current.error).toBe("");
+    });
+
+    it("error is cleared at the start of a new load (before resolution)", async () => {
+      vi.mocked(fetchCountryPrefixes).mockRejectedValueOnce(new Error("fail"));
+      const { result } = renderHook(() => useCountryPrefixes());
+      await waitFor(() => expect(result.current.error).toBe("Failed to load country prefixes"));
+      let resolveFn!: (v: CountryPrefixApi[]) => void;
+      vi.mocked(fetchCountryPrefixes).mockImplementationOnce(() => new Promise((r) => { resolveFn = r; }));
+      let p!: Promise<void>;
+      act(() => { p = result.current.refresh(); });
+      expect(result.current.error).toBe("");
+      await act(async () => { resolveFn([]); await p; });
+    });
+
+    it("handles extremely long country name (500 chars)", async () => {
+      const longName = "A".repeat(500);
+      vi.mocked(fetchCountryPrefixes).mockResolvedValue([apiPrefix(longName, "+1")]);
+      const { result } = renderHook(() => useCountryPrefixes());
+      await waitFor(() => expect(result.current.countries[0].country).toBe(longName));
+    });
+
+    it("handles extremely long prefix (200 chars)", async () => {
+      const longPrefix = "+".repeat(200);
+      vi.mocked(fetchCountryPrefixes).mockResolvedValue([apiPrefix("X", longPrefix)]);
+      const { result } = renderHook(() => useCountryPrefixes());
+      await waitFor(() => expect(result.current.countries[0].prefix).toBe(longPrefix));
+    });
+  });
 });
