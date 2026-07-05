@@ -461,8 +461,8 @@ describe("useVesselInfoAtPoint", () => {
       const onVesselSelect = vi.fn();
       vi.mocked(fetchVesselInfo).mockResolvedValue(null);
       renderHook(() => useVesselInfoAtPoint({ onVesselSelect }));
-      const lat = 19.076000123456789;
-      const lng = 72.877700987654321;
+      const lat = 19.07600012345678;
+      const lng = 72.87770098765432;
       await act(async () => { await getRegisteredClickHandler()(makeClickEvent(lat, lng)); });
       expect(onVesselSelect).toHaveBeenCalledWith(null, { lat, lng });
     });
