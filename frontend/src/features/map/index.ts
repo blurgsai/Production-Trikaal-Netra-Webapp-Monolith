@@ -14,6 +14,7 @@ export { default as MapTileSettings } from "./ui/MapTileSettings";
 export { useEezRegions } from "./hooks/useEezRegions";
 export { useVesselColumns } from "./hooks/useVesselColumns";
 export { useChartData } from "./hooks/useChartData";
+export { useChartConfigs } from "./hooks/useChartConfigs";
 export type { EezRegion } from "./model/types";
 export type { ChartConfig, ChartType, ChartAggregation, ChartDataPoint, ChartDataResult } from "./model/chartTypes";
 export { default as ChartHouse } from "./ui/ChartHouse";

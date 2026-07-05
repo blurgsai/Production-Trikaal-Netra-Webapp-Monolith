@@ -11,6 +11,10 @@ on:
       - '.github/scripts/check-layer-imports.sh'
       - '.github/scripts/check-barrel-exports.sh'
       - '.github/scripts/validate-feature-structure.sh'
+      - '.github/scripts/check-hooks-no-tests-directly.sh'
+      - '.github/scripts/check-hooks-single-function-per-file.sh'
+      - '.github/scripts/check-hooks-test-coverage.sh'
+      - '.github/scripts/check-hooks-test-minimum.sh'
   push:
     branches: [main, develop]
     paths:
@@ -21,6 +25,10 @@ on:
       - '.github/scripts/check-layer-imports.sh'
       - '.github/scripts/check-barrel-exports.sh'
       - '.github/scripts/validate-feature-structure.sh'
+      - '.github/scripts/check-hooks-no-tests-directly.sh'
+      - '.github/scripts/check-hooks-single-function-per-file.sh'
+      - '.github/scripts/check-hooks-test-coverage.sh'
+      - '.github/scripts/check-hooks-test-minimum.sh'
 
 jobs:
   frontend-design-pattern:
@@ -74,10 +82,34 @@ jobs:
           chmod +x ../.github/scripts/check-barrel-exports.sh
           ../.github/scripts/check-barrel-exports.sh src/features
 
-      # ─── Check 6: ESLint Boundary Rules ───
+      # ─── Check 6: Hooks Test Placement ───
+      - name: Check hooks test placement (no tests directly in hooks/)
+        run: |
+          chmod +x ../.github/scripts/check-hooks-no-tests-directly.sh
+          ../.github/scripts/check-hooks-no-tests-directly.sh src/features
+
+      # ─── Check 7: Hooks Single Function Per File ───
+      - name: Check hooks single function per file
+        run: |
+          chmod +x ../.github/scripts/check-hooks-single-function-per-file.sh
+          ../.github/scripts/check-hooks-single-function-per-file.sh src/features
+
+      # ─── Check 8: Hooks Test Coverage ───
+      - name: Check hooks test coverage (every hook has a test file)
+        run: |
+          chmod +x ../.github/scripts/check-hooks-test-coverage.sh
+          ../.github/scripts/check-hooks-test-coverage.sh src/features
+
+      # ─── Check 9: Hooks Test Minimum ───
+      - name: Check hooks test minimum (each test file has >= 50 tests)
+        run: |
+          chmod +x ../.github/scripts/check-hooks-test-minimum.sh
+          ../.github/scripts/check-hooks-test-minimum.sh src/features 50
+
+      # ─── Check 10: ESLint Boundary Rules ───
       - name: Run ESLint boundary checks
         run: npx eslint src/ --max-warnings=0
 
-      # ─── Check 7: TypeScript Type Check ───
+      # ─── Check 11: TypeScript Type Check ───
       - name: TypeScript type check
         run: npx tsc -b --noEmit

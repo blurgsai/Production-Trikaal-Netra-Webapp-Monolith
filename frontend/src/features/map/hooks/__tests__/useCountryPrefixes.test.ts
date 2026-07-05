@@ -1,19 +1,19 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderHook, act, waitFor } from "@testing-library/react";
-import { useCountryPrefixes } from "./useCountryPrefixes";
-import type { CountryPrefixApi } from "../api/types";
-import type { CountryPrefix } from "../model/types";
+import { useCountryPrefixes } from "../useCountryPrefixes";
+import type { CountryPrefixApi } from "../../api/types";
+import type { CountryPrefix } from "../../model/types";
 
-vi.mock("../api", () => ({
+vi.mock("../../api", () => ({
   fetchCountryPrefixes: vi.fn(),
 }));
 
-vi.mock("../model/mappers", () => ({
+vi.mock("../../model/mappers", () => ({
   mapCountryPrefixesFromApi: vi.fn(),
 }));
 
-import { fetchCountryPrefixes } from "../api";
-import { mapCountryPrefixesFromApi } from "../model/mappers";
+import { fetchCountryPrefixes } from "../../api";
+import { mapCountryPrefixesFromApi } from "../../model/mappers";
 
 function apiPrefix(country: string, prefix: string): CountryPrefixApi {
   return { country, prefix };

@@ -1,18 +1,18 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderHook, act, waitFor } from "@testing-library/react";
-import { useEezRegions } from "./useEezRegions";
-import type { EezRegionApi } from "../api/eezRegionsApi";
+import { useEezRegions } from "../useEezRegions";
+import type { EezRegionApi } from "../../api/eezRegionsApi";
 
-vi.mock("../api/eezRegionsApi", () => ({
+vi.mock("../../api/eezRegionsApi", () => ({
   fetchEezRegions: vi.fn(),
 }));
 
-vi.mock("../model/mappers", () => ({
+vi.mock("../../model/mappers", () => ({
   mapEezRegionFromApi: vi.fn(),
 }));
 
-import { fetchEezRegions } from "../api/eezRegionsApi";
-import { mapEezRegionFromApi } from "../model/mappers";
+import { fetchEezRegions } from "../../api/eezRegionsApi";
+import { mapEezRegionFromApi } from "../../model/mappers";
 
 function apiRegion(id: string, name: string, bounds: [number, number, number, number] = [0, 0, 1, 1]): EezRegionApi {
   return { id, name, bounds };

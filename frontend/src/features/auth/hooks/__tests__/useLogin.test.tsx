@@ -1,13 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderHook, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
-import { useLogin } from "./useLogin";
-import * as authApi from "../api/authApi";
+import { useLogin } from "../useLogin";
+import * as authApi from "../../api/authApi";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import AuthProvider from "./AuthProvider";
+import AuthProvider from "../AuthProvider";
 import type { ReactNode } from "react";
 
-vi.mock("../api/authApi", () => ({
+vi.mock("../../api/authApi", () => ({
   loginUser: vi.fn(),
 }));
 

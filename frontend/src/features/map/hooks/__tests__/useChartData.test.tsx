@@ -2,20 +2,21 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { renderHook, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { ReactNode } from "react";
-import type { ChartConfig, ChartDataResult, ChartType, ChartAggregation } from "../model/chartTypes";
-import type { ChartDataResponseApi } from "../api/chartDataApi";
+import type { ChartConfig, ChartDataResult, ChartType, ChartAggregation } from "../../model/chartTypes";
+import type { ChartDataResponseApi } from "../../api/chartDataApi";
 
-vi.mock("../api/chartDataApi", () => ({
+vi.mock("../../api/chartDataApi", () => ({
   fetchChartData: vi.fn(),
 }));
 
-vi.mock("../model/chartMappers", () => ({
+vi.mock("../../model/chartMappers", () => ({
   mapFeaturesToChartData: vi.fn(),
 }));
 
-import { useChartData, useChartConfigs } from "./useChartData";
-import { fetchChartData } from "../api/chartDataApi";
-import { mapFeaturesToChartData } from "../model/chartMappers";
+import { useChartData } from "../useChartData";
+import { useChartConfigs } from "../useChartConfigs";
+import { fetchChartData } from "../../api/chartDataApi";
+import { mapFeaturesToChartData } from "../../model/chartMappers";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 

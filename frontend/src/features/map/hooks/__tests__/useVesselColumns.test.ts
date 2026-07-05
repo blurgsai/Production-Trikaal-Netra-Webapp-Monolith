@@ -1,13 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderHook, act } from "@testing-library/react";
-import { useVesselColumns } from "./useVesselColumns";
+import { useVesselColumns } from "../useVesselColumns";
 
-vi.mock("../api/vesselTableApi", () => ({
+vi.mock("../../api/vesselTableApi", () => ({
   fetchVesselTableColumns: vi.fn(),
   searchColumnValues: vi.fn(),
 }));
 
-import { fetchVesselTableColumns, searchColumnValues } from "../api/vesselTableApi";
+import { fetchVesselTableColumns, searchColumnValues } from "../../api/vesselTableApi";
 
 describe("useVesselColumns", () => {
   beforeEach(() => {

@@ -1,18 +1,18 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderHook, act, waitFor } from "@testing-library/react";
-import { useVesselDetails } from "./useVesselDetails";
-import type { VesselDetailsApi } from "../api/types";
+import { useVesselDetails } from "../useVesselDetails";
+import type { VesselDetailsApi } from "../../api/types";
 
-vi.mock("../api", () => ({
+vi.mock("../../api", () => ({
   fetchVesselDetails: vi.fn(),
 }));
 
-vi.mock("../model/mappers", () => ({
+vi.mock("../../model/mappers", () => ({
   mapVesselDetailsFromApi: vi.fn(),
 }));
 
-import { fetchVesselDetails } from "../api";
-import { mapVesselDetailsFromApi } from "../model/mappers";
+import { fetchVesselDetails } from "../../api";
+import { mapVesselDetailsFromApi } from "../../model/mappers";
 
 function apiDetails(overrides?: Partial<NonNullable<VesselDetailsApi["vessel"]>>): VesselDetailsApi {
   return {

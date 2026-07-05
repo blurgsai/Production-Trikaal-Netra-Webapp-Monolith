@@ -1,18 +1,18 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderHook, act, waitFor } from "@testing-library/react";
-import { useVesselImage } from "./useVesselImage";
-import type { VesselImageApiResponse } from "../api/types";
+import { useVesselImage } from "../useVesselImage";
+import type { VesselImageApiResponse } from "../../api/types";
 
-vi.mock("../api", () => ({
+vi.mock("../../api", () => ({
   fetchVesselImage: vi.fn(),
 }));
 
-vi.mock("../model/mappers", () => ({
+vi.mock("../../model/mappers", () => ({
   mapVesselImageFromApi: vi.fn(),
 }));
 
-import { fetchVesselImage } from "../api";
-import { mapVesselImageFromApi } from "../model/mappers";
+import { fetchVesselImage } from "../../api";
+import { mapVesselImageFromApi } from "../../model/mappers";
 
 function apiImage(url = "https://cdn.test/img.jpg"): VesselImageApiResponse {
   return { image_url: url };

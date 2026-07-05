@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderHook, act } from "@testing-library/react";
-import { useVesselInfoAtPoint } from "./useVesselInfoAtPoint";
-import type { VesselInfo } from "../model/types";
-import type { RawVesselFeature } from "../api/vesselInfoApi";
+import { useVesselInfoAtPoint } from "../useVesselInfoAtPoint";
+import type { VesselInfo } from "../../model/types";
+import type { RawVesselFeature } from "../../api/vesselInfoApi";
 
 // Capture the handlers object passed to react-leaflet's useMapEvents so we can
 // invoke the "click" handler directly without mounting a real Leaflet map.
@@ -11,16 +11,16 @@ vi.mock("react-leaflet", () => ({
   useMapEvents: (handlers: Record<string, (...args: unknown[]) => unknown>) => useMapEventsMock(handlers),
 }));
 
-vi.mock("../api/vesselInfoApi", () => ({
+vi.mock("../../api/vesselInfoApi", () => ({
   fetchVesselInfo: vi.fn(),
 }));
 
-vi.mock("../model/mappers", () => ({
+vi.mock("../../model/mappers", () => ({
   mapRawVesselToInfo: vi.fn(),
 }));
 
-import { fetchVesselInfo } from "../api/vesselInfoApi";
-import { mapRawVesselToInfo } from "../model/mappers";
+import { fetchVesselInfo } from "../../api/vesselInfoApi";
+import { mapRawVesselToInfo } from "../../model/mappers";
 
 type ClickHandler = (e: unknown) => Promise<void> | void;
 

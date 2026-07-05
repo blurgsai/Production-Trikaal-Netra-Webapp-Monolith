@@ -1,14 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderHook, act, waitFor } from "@testing-library/react";
-import { useVesselCount } from "./useVesselCount";
-import type { VesselCountCategory } from "../model/types";
+import { useVesselCount } from "../useVesselCount";
+import type { VesselCountCategory } from "../../model/types";
 
-vi.mock("../api", () => ({
+vi.mock("../../api", () => ({
   fetchVesselCount: vi.fn(),
   fetchVesselCategoryCounts: vi.fn(),
 }));
 
-import { fetchVesselCount, fetchVesselCategoryCounts } from "../api";
+import { fetchVesselCount, fetchVesselCategoryCounts } from "../../api";
 
 function categories(...pairs: [string, number][]): VesselCountCategory[] {
   return pairs.map(([category, count]) => ({ category, count }));

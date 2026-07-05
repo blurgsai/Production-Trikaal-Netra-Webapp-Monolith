@@ -1,26 +1,26 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { renderHook, act } from "@testing-library/react";
-import { useMapConfig } from "./useMapConfig";
-import type { MapConfigApiResponse } from "../api/types";
-import type { MapConfigDomain } from "../model/mappers";
+import { useMapConfig } from "../useMapConfig";
+import type { MapConfigApiResponse } from "../../api/types";
+import type { MapConfigDomain } from "../../model/mappers";
 
-vi.mock("../api", () => ({
+vi.mock("../../api", () => ({
   loadMapConfig: vi.fn(),
   saveMapConfig: vi.fn(),
   applyVesselStyle: vi.fn(),
   validateStyleExists: vi.fn(),
 }));
 
-vi.mock("../model/mappers", () => ({
+vi.mock("../../model/mappers", () => ({
   mapApiToDomain: vi.fn(),
   mapDomainToApi: vi.fn(),
 }));
 
-vi.mock("../model/sldGenerator", () => ({
+vi.mock("../../model/sldGenerator", () => ({
   generateSld: vi.fn(),
 }));
 
-vi.mock("../model/config", () => ({
+vi.mock("../../model/config", () => ({
   baseMaps: [
     { id: "osm", title: "Light Map", url: "https://osm.test/{z}/{x}/{y}.png", attribution: "OSM" },
     { id: "dark", title: "Dark Map", url: "https://dark.test/{z}/{x}/{y}.png", attribution: "Dark" },
@@ -36,9 +36,9 @@ vi.mock("../model/config", () => ({
   ],
 }));
 
-import { loadMapConfig, saveMapConfig, applyVesselStyle, validateStyleExists } from "../api";
-import { mapApiToDomain, mapDomainToApi } from "../model/mappers";
-import { generateSld } from "../model/sldGenerator";
+import { loadMapConfig, saveMapConfig, applyVesselStyle, validateStyleExists } from "../../api";
+import { mapApiToDomain, mapDomainToApi } from "../../model/mappers";
+import { generateSld } from "../../model/sldGenerator";
 
 function makeDefaultDomain(overrides?: Partial<MapConfigDomain>): MapConfigDomain {
   return {

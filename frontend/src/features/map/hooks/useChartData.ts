@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useCallback, useMemo } from "react";
+import { useMemo } from "react";
 import { fetchChartData } from "../api/chartDataApi";
 import { mapFeaturesToChartData } from "../model/chartMappers";
 import type { ChartConfig, ChartDataFeature, ChartDataResult } from "../model/chartTypes";
@@ -35,19 +35,4 @@ export function useChartData(config: ChartConfig | null, cqlFilter?: string) {
     loading: isLoading,
     error: error instanceof Error ? error.message : null,
   };
-}
-
-export function useChartConfigs() {
-  const generateId = useCallback(() => {
-    return `chart-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-  }, []);
-
-  const createChartConfig = useCallback(
-    (partial: Omit<ChartConfig, "id">): ChartConfig => {
-      return { ...partial, id: generateId() };
-    },
-    [generateId]
-  );
-
-  return { createChartConfig };
 }

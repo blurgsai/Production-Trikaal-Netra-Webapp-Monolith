@@ -1,14 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderHook, act } from "@testing-library/react";
-import { useVesselTrajectory } from "./useVesselTrajectory";
-import type { FetchTrajectoryParams } from "../api/trajectoryApi";
-import type { TrajectoryResponseApi } from "../api/types";
+import { useVesselTrajectory } from "../useVesselTrajectory";
+import type { FetchTrajectoryParams } from "../../api/trajectoryApi";
+import type { TrajectoryResponseApi } from "../../api/types";
 
-vi.mock("../api", () => ({
+vi.mock("../../api", () => ({
   fetchVesselTrajectory: vi.fn(),
 }));
 
-import { fetchVesselTrajectory } from "../api";
+import { fetchVesselTrajectory } from "../../api";
 
 function makeParams(overrides?: Partial<FetchTrajectoryParams>): FetchTrajectoryParams {
   return { vesselId: "vessel-1", lat: 19.076, lon: 72.8777, heading: 90, speed: 12.5, timeSeconds: 3600, ...overrides };
