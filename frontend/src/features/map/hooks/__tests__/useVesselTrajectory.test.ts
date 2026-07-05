@@ -1,14 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderHook, act } from "@testing-library/react";
-import { useVesselTrajectory } from "./useVesselTrajectory";
-import type { FetchTrajectoryParams } from "../api/trajectoryApi";
-import type { TrajectoryResponseApi } from "../api/types";
+import { useVesselTrajectory } from "../useVesselTrajectory";
+import type { FetchTrajectoryParams } from "../../api/trajectoryApi";
+import type { TrajectoryResponseApi } from "../../api/types";
 
-vi.mock("../api", () => ({
+vi.mock("../../api", () => ({
   fetchVesselTrajectory: vi.fn(),
 }));
 
-import { fetchVesselTrajectory } from "../api";
+import { fetchVesselTrajectory } from "../../api";
 
 function makeParams(overrides?: Partial<FetchTrajectoryParams>): FetchTrajectoryParams {
   return { vesselId: "vessel-1", lat: 19.076, lon: 72.8777, heading: 90, speed: 12.5, timeSeconds: 3600, ...overrides };
@@ -488,6 +488,100 @@ describe("useVesselTrajectory", () => {
       const { timeSeconds: _omit, ...rest } = makeParams();
       await act(async () => { await result.current.load(rest); });
       expect(fetchVesselTrajectory).toHaveBeenCalledWith(rest);
+    });
+  });
+
+  // ── Additional edge cases / State Transition / Negative Testing ──────────
+
+  describe("additional edge cases", () => {
+    it("clear() does not call the API", () => {
+      const { result } = renderHook(() => useVesselTrajectory());
+      act(() => result.current.clear());
+      expect(fetchVesselTrajectory).not.toHaveBeenCalled();
+    });
+
+    it("load() after clear() starts from a clean slate (no residual error)", async () => {
+      vi.mocked(fetchVesselTrajectory).mockRejectedValueOnce(new Error("fail"));
+      const { result } = renderHook(() => useVesselTrajectory());
+      await act(async () => { await result.current.load(makeParams()); });
+      expect(result.current.error).toBe("Failed to load trajectory");
+      act(() => result.current.clear());
+      expect(result.current.error).toBe("");
+      vi.mocked(fetchVesselTrajectory).mockResolvedValueOnce(response(2));
+      await act(async () => { await result.current.load(makeParams()); });
+      expect(result.current.error).toBe("");
+      expect(result.current.trajectory).toHaveLength(2);
+    });
+
+    it("loading transitions true on a second call even if the first is still pending (no lock)", async () => {
+      let resolveFirst!: (v: TrajectoryResponseApi) => void;
+      vi.mocked(fetchVesselTrajectory).mockImplementationOnce(() => new Promise((r) => { resolveFirst = r; }));
+      vi.mocked(fetchVesselTrajectory).mockResolvedValueOnce(response(1));
+      const { result } = renderHook(() => useVesselTrajectory());
+      let p1!: Promise<void>;
+      act(() => { p1 = result.current.load(makeParams()); });
+      expect(result.current.loading).toBe(true);
+      let p2!: Promise<void>;
+      act(() => { p2 = result.current.load(makeParams()); });
+      expect(result.current.loading).toBe(true);
+      await act(async () => { await p2; });
+      await act(async () => { resolveFirst(response(1)); await p1; });
+    });
+
+    it("NaN latitude in params is passed through to the API without validation", async () => {
+      vi.mocked(fetchVesselTrajectory).mockResolvedValue(response(1));
+      const { result } = renderHook(() => useVesselTrajectory());
+      await act(async () => { await result.current.load(makeParams({ lat: NaN })); });
+      expect(fetchVesselTrajectory).toHaveBeenCalledWith(expect.objectContaining({ lat: NaN }));
+    });
+
+    it("Infinity speed value is passed through without validation", async () => {
+      vi.mocked(fetchVesselTrajectory).mockResolvedValue(response(1));
+      const { result } = renderHook(() => useVesselTrajectory());
+      await act(async () => { await result.current.load(makeParams({ speed: Infinity })); });
+      expect(fetchVesselTrajectory).toHaveBeenCalledWith(expect.objectContaining({ speed: Infinity }));
+    });
+
+    it("negative timeSeconds is passed through without validation", async () => {
+      vi.mocked(fetchVesselTrajectory).mockResolvedValue(response(1));
+      const { result } = renderHook(() => useVesselTrajectory());
+      await act(async () => { await result.current.load(makeParams({ timeSeconds: -100 })); });
+      expect(fetchVesselTrajectory).toHaveBeenCalledWith(expect.objectContaining({ timeSeconds: -100 }));
+    });
+
+    it("trajectory points with future timestamps are stored verbatim (no time validation)", async () => {
+      vi.mocked(fetchVesselTrajectory).mockResolvedValue({
+        trajectory: [{ lat: 1, lng: 1, timestamp: "2099-12-31T23:59:59Z" }],
+      });
+      const { result } = renderHook(() => useVesselTrajectory());
+      await act(async () => { await result.current.load(makeParams()); });
+      expect(result.current.trajectory[0].timestamp).toBe("2099-12-31T23:59:59Z");
+    });
+
+    it("trajectory with missing timestamp field is stored as-is (no field validation)", async () => {
+      vi.mocked(fetchVesselTrajectory).mockResolvedValue({
+        trajectory: [{ lat: 1, lng: 1 } as unknown as { lat: number; lng: number; timestamp: string }],
+      });
+      const { result } = renderHook(() => useVesselTrajectory());
+      await act(async () => { await result.current.load(makeParams()); });
+      expect(result.current.trajectory).toHaveLength(1);
+    });
+
+    it("error state followed by clear followed by error produces the correct error message (ERR->CLEAR->ERR)", async () => {
+      vi.mocked(fetchVesselTrajectory).mockRejectedValueOnce(new Error("e1"));
+      const { result } = renderHook(() => useVesselTrajectory());
+      await act(async () => { await result.current.load(makeParams()); });
+      expect(result.current.error).toBe("Failed to load trajectory");
+      act(() => result.current.clear());
+      expect(result.current.error).toBe("");
+      vi.mocked(fetchVesselTrajectory).mockRejectedValueOnce(new Error("e2"));
+      await act(async () => { await result.current.load(makeParams()); });
+      expect(result.current.error).toBe("Failed to load trajectory");
+    });
+
+    it("return object has exactly the expected keys", () => {
+      const { result } = renderHook(() => useVesselTrajectory());
+      expect(Object.keys(result.current).sort()).toEqual(["clear", "error", "load", "loading", "trajectory"]);
     });
   });
 });

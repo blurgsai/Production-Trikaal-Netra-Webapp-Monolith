@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderHook, act } from "@testing-library/react";
-import { useVesselInfoAtPoint } from "./useVesselInfoAtPoint";
-import type { VesselInfo } from "../model/types";
-import type { RawVesselFeature } from "../api/vesselInfoApi";
+import { useVesselInfoAtPoint } from "../useVesselInfoAtPoint";
+import type { VesselInfo } from "../../model/types";
+import type { RawVesselFeature } from "../../api/vesselInfoApi";
 
 // Capture the handlers object passed to react-leaflet's useMapEvents so we can
 // invoke the "click" handler directly without mounting a real Leaflet map.
@@ -11,16 +11,16 @@ vi.mock("react-leaflet", () => ({
   useMapEvents: (handlers: Record<string, (...args: unknown[]) => unknown>) => useMapEventsMock(handlers),
 }));
 
-vi.mock("../api/vesselInfoApi", () => ({
+vi.mock("../../api/vesselInfoApi", () => ({
   fetchVesselInfo: vi.fn(),
 }));
 
-vi.mock("../model/mappers", () => ({
+vi.mock("../../model/mappers", () => ({
   mapRawVesselToInfo: vi.fn(),
 }));
 
-import { fetchVesselInfo } from "../api/vesselInfoApi";
-import { mapRawVesselToInfo } from "../model/mappers";
+import { fetchVesselInfo } from "../../api/vesselInfoApi";
+import { mapRawVesselToInfo } from "../../model/mappers";
 
 type ClickHandler = (e: unknown) => Promise<void> | void;
 
@@ -371,6 +371,222 @@ describe("useVesselInfoAtPoint", () => {
       renderHook(() => useVesselInfoAtPoint({ onVesselSelect }));
       await act(async () => { await getRegisteredClickHandler()(makeClickEvent(19.0760001234, 72.8777009876)); });
       expect(onVesselSelect).toHaveBeenCalledWith(null, { lat: 19.0760001234, lng: 72.8777009876 });
+    });
+  });
+
+  // ── Additional edge cases / State Transition / Error Guessing ────────────
+
+  describe("additional edge cases", () => {
+    it("return value is undefined (hook returns void)", () => {
+      const { result } = renderHook(() => useVesselInfoAtPoint({ onVesselSelect: vi.fn() }));
+      expect(result.current).toBeUndefined();
+    });
+
+    it("passes the click latlng to fetchVesselInfo as the first argument", async () => {
+      vi.mocked(fetchVesselInfo).mockResolvedValue(null);
+      renderHook(() => useVesselInfoAtPoint({ onVesselSelect: vi.fn() }));
+      await act(async () => { await getRegisteredClickHandler()(makeClickEvent(42, -99)); });
+      expect(fetchVesselInfo).toHaveBeenCalledWith(
+        { lat: 42, lng: -99 },
+        expect.any(Object),
+        expect.any(Object),
+        expect.any(Object)
+      );
+    });
+
+    it("calls onVesselSelect with latlng containing the exact lat and lng from the event", async () => {
+      const onVesselSelect = vi.fn();
+      vi.mocked(fetchVesselInfo).mockResolvedValue(null);
+      renderHook(() => useVesselInfoAtPoint({ onVesselSelect }));
+      await act(async () => { await getRegisteredClickHandler()(makeClickEvent(12.345, 67.89)); });
+      expect(onVesselSelect).toHaveBeenCalledWith(null, { lat: 12.345, lng: 67.89 });
+    });
+
+    it("onVesselSelect is called exactly once per click", async () => {
+      const onVesselSelect = vi.fn();
+      vi.mocked(fetchVesselInfo).mockResolvedValue(rawFeature());
+      vi.mocked(mapRawVesselToInfo).mockReturnValue(vesselInfo());
+      renderHook(() => useVesselInfoAtPoint({ onVesselSelect }));
+      await act(async () => { await getRegisteredClickHandler()(makeClickEvent()); });
+      expect(onVesselSelect).toHaveBeenCalledTimes(1);
+    });
+
+    it("onVesselClick is called exactly once when a vessel is found", async () => {
+      const onVesselClick = vi.fn();
+      vi.mocked(fetchVesselInfo).mockResolvedValue(rawFeature());
+      vi.mocked(mapRawVesselToInfo).mockReturnValue(vesselInfo());
+      renderHook(() => useVesselInfoAtPoint({ onVesselSelect: vi.fn(), onVesselClick }));
+      await act(async () => { await getRegisteredClickHandler()(makeClickEvent()); });
+      expect(onVesselClick).toHaveBeenCalledTimes(1);
+    });
+
+    it("fetchVesselInfo is called exactly once per click", async () => {
+      vi.mocked(fetchVesselInfo).mockResolvedValue(null);
+      renderHook(() => useVesselInfoAtPoint({ onVesselSelect: vi.fn() }));
+      await act(async () => { await getRegisteredClickHandler()(makeClickEvent()); });
+      expect(fetchVesselInfo).toHaveBeenCalledTimes(1);
+    });
+
+    it("map.latLngToContainerPoint is called exactly once per click", async () => {
+      vi.mocked(fetchVesselInfo).mockResolvedValue(null);
+      renderHook(() => useVesselInfoAtPoint({ onVesselSelect: vi.fn() }));
+      const map = makeFakeMap();
+      await act(async () => { await getRegisteredClickHandler()(makeClickEvent(1, 2, map)); });
+      expect(map.latLngToContainerPoint).toHaveBeenCalledTimes(1);
+    });
+
+    it("map.getSize is called exactly once per click", async () => {
+      vi.mocked(fetchVesselInfo).mockResolvedValue(null);
+      renderHook(() => useVesselInfoAtPoint({ onVesselSelect: vi.fn() }));
+      const map = makeFakeMap();
+      await act(async () => { await getRegisteredClickHandler()(makeClickEvent(1, 2, map)); });
+      expect(map.getSize).toHaveBeenCalledTimes(1);
+    });
+
+    it("map.getBounds is called exactly once per click", async () => {
+      vi.mocked(fetchVesselInfo).mockResolvedValue(null);
+      renderHook(() => useVesselInfoAtPoint({ onVesselSelect: vi.fn() }));
+      const map = makeFakeMap();
+      await act(async () => { await getRegisteredClickHandler()(makeClickEvent(1, 2, map)); });
+      expect(map.getBounds).toHaveBeenCalledTimes(1);
+    });
+
+    it("handles a click event with negative lat and lng without throwing", async () => {
+      vi.mocked(fetchVesselInfo).mockResolvedValue(null);
+      renderHook(() => useVesselInfoAtPoint({ onVesselSelect: vi.fn() }));
+      await expect(act(async () => { await getRegisteredClickHandler()(makeClickEvent(-45.678, -123.456)); })).resolves.toBeUndefined();
+    });
+
+    it("handles a click event with very high precision coordinates", async () => {
+      const onVesselSelect = vi.fn();
+      vi.mocked(fetchVesselInfo).mockResolvedValue(null);
+      renderHook(() => useVesselInfoAtPoint({ onVesselSelect }));
+      const lat = 19.07600012345678;
+      const lng = 72.87770098765432;
+      await act(async () => { await getRegisteredClickHandler()(makeClickEvent(lat, lng)); });
+      expect(onVesselSelect).toHaveBeenCalledWith(null, { lat, lng });
+    });
+
+    it("handles rejection with null", async () => {
+      const onVesselSelect = vi.fn();
+      vi.mocked(fetchVesselInfo).mockRejectedValue(null);
+      renderHook(() => useVesselInfoAtPoint({ onVesselSelect }));
+      await act(async () => { await getRegisteredClickHandler()(makeClickEvent()); });
+      expect(onVesselSelect).toHaveBeenCalledWith(null);
+    });
+
+    it("handles rejection with undefined", async () => {
+      const onVesselSelect = vi.fn();
+      vi.mocked(fetchVesselInfo).mockRejectedValue(undefined);
+      renderHook(() => useVesselInfoAtPoint({ onVesselSelect }));
+      await act(async () => { await getRegisteredClickHandler()(makeClickEvent()); });
+      expect(onVesselSelect).toHaveBeenCalledWith(null);
+    });
+
+    it("handles rejection with a number", async () => {
+      const onVesselSelect = vi.fn();
+      vi.mocked(fetchVesselInfo).mockRejectedValue(42);
+      renderHook(() => useVesselInfoAtPoint({ onVesselSelect }));
+      await act(async () => { await getRegisteredClickHandler()(makeClickEvent()); });
+      expect(onVesselSelect).toHaveBeenCalledWith(null);
+    });
+
+    it("handles rejection with a plain object", async () => {
+      const onVesselSelect = vi.fn();
+      vi.mocked(fetchVesselInfo).mockRejectedValue({ status: 500 });
+      renderHook(() => useVesselInfoAtPoint({ onVesselSelect }));
+      await act(async () => { await getRegisteredClickHandler()(makeClickEvent()); });
+      expect(onVesselSelect).toHaveBeenCalledWith(null);
+    });
+
+    it("the click handler identity changes when onVesselClick changes", () => {
+      const onVesselClick1 = vi.fn();
+      const onVesselClick2 = vi.fn();
+      const { rerender } = renderHook(
+        ({ cb }) => useVesselInfoAtPoint({ onVesselSelect: vi.fn(), onVesselClick: cb }),
+        { initialProps: { cb: onVesselClick1 } }
+      );
+      const handler1 = useMapEventsMock.mock.calls[0][0].click;
+      rerender({ cb: onVesselClick2 });
+      const handler2 = useMapEventsMock.mock.calls[1][0].click;
+      expect(handler1).not.toBe(handler2);
+    });
+
+    it("the click handler identity is stable when only onVesselClick changes but onVesselSelect stays the same (dep array includes both)", () => {
+      const onVesselSelect = vi.fn();
+      const onVesselClick1 = vi.fn();
+      const onVesselClick2 = vi.fn();
+      const { rerender } = renderHook(
+        ({ cb }) => useVesselInfoAtPoint({ onVesselSelect, onVesselClick: cb }),
+        { initialProps: { cb: onVesselClick1 } }
+      );
+      const handler1 = useMapEventsMock.mock.calls[0][0].click;
+      rerender({ cb: onVesselClick2 });
+      const handler2 = useMapEventsMock.mock.calls[1][0].click;
+      expect(handler1).not.toBe(handler2);
+    });
+
+    it("uses the latest onVesselClick after a callback swap (no stale closure)", async () => {
+      const onVesselClickOld = vi.fn();
+      const onVesselClickNew = vi.fn();
+      vi.mocked(fetchVesselInfo).mockResolvedValue(rawFeature());
+      vi.mocked(mapRawVesselToInfo).mockReturnValue(vesselInfo());
+      const { rerender } = renderHook(
+        ({ cb }) => useVesselInfoAtPoint({ onVesselSelect: vi.fn(), onVesselClick: cb }),
+        { initialProps: { cb: onVesselClickOld } }
+      );
+      rerender({ cb: onVesselClickNew });
+      await act(async () => { await getRegisteredClickHandler()(makeClickEvent()); });
+      expect(onVesselClickNew).toHaveBeenCalled();
+      expect(onVesselClickOld).not.toHaveBeenCalled();
+    });
+
+    it("three rapid clicks each invoke onVesselSelect once", async () => {
+      const onVesselSelect = vi.fn();
+      vi.mocked(fetchVesselInfo).mockResolvedValue(null);
+      renderHook(() => useVesselInfoAtPoint({ onVesselSelect }));
+      const handler = getRegisteredClickHandler();
+      await act(async () => {
+        await Promise.all([handler(makeClickEvent(1, 1)), handler(makeClickEvent(2, 2)), handler(makeClickEvent(3, 3))]);
+      });
+      expect(onVesselSelect).toHaveBeenCalledTimes(3);
+    });
+
+    it("does not call mapRawVesselToInfo when fetchVesselInfo resolves null", async () => {
+      vi.mocked(fetchVesselInfo).mockResolvedValue(null);
+      renderHook(() => useVesselInfoAtPoint({ onVesselSelect: vi.fn() }));
+      await act(async () => { await getRegisteredClickHandler()(makeClickEvent()); });
+      expect(mapRawVesselToInfo).not.toHaveBeenCalled();
+    });
+
+    it("does not call mapRawVesselToInfo when fetchVesselInfo rejects", async () => {
+      vi.mocked(fetchVesselInfo).mockRejectedValue(new Error("fail"));
+      renderHook(() => useVesselInfoAtPoint({ onVesselSelect: vi.fn() }));
+      await act(async () => { await getRegisteredClickHandler()(makeClickEvent()); });
+      expect(mapRawVesselToInfo).not.toHaveBeenCalled();
+    });
+
+    it("passes the bounds object (with toBBoxString) to fetchVesselInfo", async () => {
+      vi.mocked(fetchVesselInfo).mockResolvedValue(null);
+      renderHook(() => useVesselInfoAtPoint({ onVesselSelect: vi.fn() }));
+      const boundsObj = { toBBoxString: vi.fn(() => "custom_bbox") };
+      const map = makeFakeMap({ getBounds: () => boundsObj });
+      await act(async () => { await getRegisteredClickHandler()(makeClickEvent(1, 2, map)); });
+      expect(fetchVesselInfo).toHaveBeenCalledWith(
+        expect.any(Object),
+        expect.any(Object),
+        expect.any(Object),
+        boundsObj
+      );
+    });
+
+    it("does not call mapRawVesselToInfo when fetchVesselInfo returns null and onVesselSelect is called with null", async () => {
+      vi.mocked(fetchVesselInfo).mockResolvedValue(null);
+      const onVesselSelect = vi.fn();
+      renderHook(() => useVesselInfoAtPoint({ onVesselSelect }));
+      await act(async () => { await getRegisteredClickHandler()(makeClickEvent()); });
+      expect(onVesselSelect).toHaveBeenCalledWith(null, expect.any(Object));
+      expect(mapRawVesselToInfo).not.toHaveBeenCalled();
     });
   });
 });

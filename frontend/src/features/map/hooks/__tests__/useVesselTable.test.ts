@@ -1,36 +1,36 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderHook, act, waitFor } from "@testing-library/react";
-import { useVesselTable } from "./useVesselTable";
-import type { VesselTableResponseApi } from "../api/vesselTableApi";
-import type { VesselTableFilter, Polygon, SavedFilterSet } from "../model/types";
+import { useVesselTable } from "../useVesselTable";
+import type { VesselTableResponseApi } from "../../api/vesselTableApi";
+import type { VesselTableFilter, Polygon, SavedFilterSet } from "../../model/types";
 
-vi.mock("../api/vesselTableApi", () => ({
+vi.mock("../../api/vesselTableApi", () => ({
   fetchVesselTable: vi.fn(),
   fetchVesselTableColumns: vi.fn(),
   fetchUniqueColumnValues: vi.fn(),
   searchColumnValues: vi.fn(),
 }));
 
-vi.mock("../api/vesselFilterStorage", () => ({
+vi.mock("../../api/vesselFilterStorage", () => ({
   loadSavedFilters: vi.fn(),
   saveFilter: vi.fn(),
   deleteSavedFilter: vi.fn(),
 }));
 
-vi.mock("../model/cqlFilter", () => ({
+vi.mock("../../model/cqlFilter", () => ({
   buildWfsCqlFilter: vi.fn(),
   buildPolygonCqlFilter: vi.fn(),
   combineCqlFilters: vi.fn(),
 }));
 
-vi.mock("../model/mappers", () => ({
+vi.mock("../../model/mappers", () => ({
   mapVesselTableResponse: vi.fn(),
 }));
 
-import { fetchVesselTable, fetchVesselTableColumns, fetchUniqueColumnValues } from "../api/vesselTableApi";
-import { loadSavedFilters, saveFilter, deleteSavedFilter } from "../api/vesselFilterStorage";
-import { buildWfsCqlFilter, buildPolygonCqlFilter, combineCqlFilters } from "../model/cqlFilter";
-import { mapVesselTableResponse } from "../model/mappers";
+import { fetchVesselTable, fetchVesselTableColumns, fetchUniqueColumnValues } from "../../api/vesselTableApi";
+import { loadSavedFilters, saveFilter, deleteSavedFilter } from "../../api/vesselFilterStorage";
+import { buildWfsCqlFilter, buildPolygonCqlFilter, combineCqlFilters } from "../../model/cqlFilter";
+import { mapVesselTableResponse } from "../../model/mappers";
 
 const DEFAULT_COLUMNS = [
   "identification_mmsi", "identification_imo", "identification_shipname",

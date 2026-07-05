@@ -4,7 +4,8 @@ import InsertChartIcon from "@mui/icons-material/InsertChart";
 import EditIcon from "@mui/icons-material/Edit";
 import ChartRenderer from "./ChartRenderer";
 import ChartEditor from "./ChartEditor";
-import { useChartData, useChartConfigs } from "../hooks/useChartData";
+import { useChartData } from "../hooks/useChartData";
+import { useChartConfigs } from "../hooks/useChartConfigs";
 import type { ChartConfig } from "../model/chartTypes";
 import { formatColumnName } from "@/shared/utils";
 

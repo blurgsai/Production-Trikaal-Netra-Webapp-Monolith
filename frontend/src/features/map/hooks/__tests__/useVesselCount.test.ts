@@ -1,14 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderHook, act, waitFor } from "@testing-library/react";
-import { useVesselCount } from "./useVesselCount";
-import type { VesselCountCategory } from "../model/types";
+import { useVesselCount } from "../useVesselCount";
+import type { VesselCountCategory } from "../../model/types";
 
-vi.mock("../api", () => ({
+vi.mock("../../api", () => ({
   fetchVesselCount: vi.fn(),
   fetchVesselCategoryCounts: vi.fn(),
 }));
 
-import { fetchVesselCount, fetchVesselCategoryCounts } from "../api";
+import { fetchVesselCount, fetchVesselCategoryCounts } from "../../api";
 
 function categories(...pairs: [string, number][]): VesselCountCategory[] {
   return pairs.map(([category, count]) => ({ category, count }));
@@ -381,6 +381,134 @@ describe("useVesselCount", () => {
       const { result: r2 } = renderHook(() => useVesselCount());
       await waitFor(() => expect(r2.current.loading).toBe(false));
       expect(r2.current.total).toBe(42);
+    });
+  });
+
+  // ── Additional edge cases / Boundary / Error Guessing ───────────────────
+
+  describe("additional edge cases", () => {
+    it("return object has exactly the expected keys", async () => {
+      vi.mocked(fetchVesselCount).mockResolvedValue(0);
+      vi.mocked(fetchVesselCategoryCounts).mockResolvedValue([]);
+      const { result } = renderHook(() => useVesselCount());
+      await waitFor(() => expect(result.current.loading).toBe(false));
+      expect(Object.keys(result.current).sort()).toEqual(["categories", "error", "loading", "refresh", "total"]);
+    });
+
+    it("negative total count is stored as-is (no validation)", async () => {
+      vi.mocked(fetchVesselCount).mockResolvedValue(-1);
+      vi.mocked(fetchVesselCategoryCounts).mockResolvedValue([]);
+      const { result } = renderHook(() => useVesselCount());
+      await waitFor(() => expect(result.current.total).toBe(-1));
+    });
+
+    it("negative category count is stored as-is (no validation)", async () => {
+      vi.mocked(fetchVesselCount).mockResolvedValue(0);
+      vi.mocked(fetchVesselCategoryCounts).mockResolvedValue(categories(["Negative", -5]));
+      const { result } = renderHook(() => useVesselCount());
+      await waitFor(() => expect(result.current.categories[0].count).toBe(-5));
+    });
+
+    it("fractional total count is stored as-is (no rounding)", async () => {
+      vi.mocked(fetchVesselCount).mockResolvedValue(42.5);
+      vi.mocked(fetchVesselCategoryCounts).mockResolvedValue([]);
+      const { result } = renderHook(() => useVesselCount());
+      await waitFor(() => expect(result.current.total).toBe(42.5));
+    });
+
+    it("total is replaced (not accumulated) on a subsequent successful load", async () => {
+      vi.mocked(fetchVesselCount).mockResolvedValueOnce(100);
+      vi.mocked(fetchVesselCategoryCounts).mockResolvedValueOnce(categories(["A", 100]));
+      const { result } = renderHook(() => useVesselCount());
+      await waitFor(() => expect(result.current.total).toBe(100));
+      vi.mocked(fetchVesselCount).mockResolvedValueOnce(50);
+      vi.mocked(fetchVesselCategoryCounts).mockResolvedValueOnce(categories(["B", 50]));
+      await act(async () => { await result.current.refresh(); });
+      expect(result.current.total).toBe(50);
+    });
+
+    it("categories are replaced (not merged) on a subsequent successful load", async () => {
+      vi.mocked(fetchVesselCount).mockResolvedValueOnce(2);
+      vi.mocked(fetchVesselCategoryCounts).mockResolvedValueOnce(categories(["A", 1], ["B", 1]));
+      const { result } = renderHook(() => useVesselCount());
+      await waitFor(() => expect(result.current.categories).toHaveLength(2));
+      vi.mocked(fetchVesselCount).mockResolvedValueOnce(1);
+      vi.mocked(fetchVesselCategoryCounts).mockResolvedValueOnce(categories(["C", 1]));
+      await act(async () => { await result.current.refresh(); });
+      expect(result.current.categories).toEqual(categories(["C", 1]));
+    });
+
+    it("error is cleared at the start of a new load (before resolution)", async () => {
+      vi.mocked(fetchVesselCount).mockRejectedValueOnce(new Error("fail"));
+      vi.mocked(fetchVesselCategoryCounts).mockRejectedValueOnce(new Error("fail"));
+      const { result } = renderHook(() => useVesselCount());
+      await waitFor(() => expect(result.current.error).toBe("Failed to load vessel count data"));
+      let resolveCount!: (v: number) => void;
+      let resolveCats!: (v: VesselCountCategory[]) => void;
+      vi.mocked(fetchVesselCount).mockImplementationOnce(() => new Promise((r) => { resolveCount = r; }));
+      vi.mocked(fetchVesselCategoryCounts).mockImplementationOnce(() => new Promise((r) => { resolveCats = r; }));
+      let p!: Promise<void>;
+      act(() => { p = result.current.refresh(); });
+      expect(result.current.error).toBe("");
+      await act(async () => { resolveCount(1); resolveCats([]); await p; });
+    });
+
+    it("handles NaN total from the API (stored as-is)", async () => {
+      vi.mocked(fetchVesselCount).mockResolvedValue(NaN);
+      vi.mocked(fetchVesselCategoryCounts).mockResolvedValue([]);
+      const { result } = renderHook(() => useVesselCount());
+      await waitFor(() => expect(result.current.loading).toBe(false));
+      expect(result.current.total).toBeNaN();
+    });
+
+    it("handles Infinity total from the API (stored as-is)", async () => {
+      vi.mocked(fetchVesselCount).mockResolvedValue(Infinity);
+      vi.mocked(fetchVesselCategoryCounts).mockResolvedValue([]);
+      const { result } = renderHook(() => useVesselCount());
+      await waitFor(() => expect(result.current.total).toBe(Infinity));
+    });
+
+    it("handles category with empty-string name", async () => {
+      vi.mocked(fetchVesselCount).mockResolvedValue(1);
+      vi.mocked(fetchVesselCategoryCounts).mockResolvedValue(categories(["", 1]));
+      const { result } = renderHook(() => useVesselCount());
+      await waitFor(() => expect(result.current.categories[0].category).toBe(""));
+    });
+
+    it("handles category with very long name (500 chars)", async () => {
+      const longName = "Z".repeat(500);
+      vi.mocked(fetchVesselCount).mockResolvedValue(1);
+      vi.mocked(fetchVesselCategoryCounts).mockResolvedValue(categories([longName, 1]));
+      const { result } = renderHook(() => useVesselCount());
+      await waitFor(() => expect(result.current.categories[0].category).toBe(longName));
+    });
+
+    it("handles category with special characters in name", async () => {
+      vi.mocked(fetchVesselCount).mockResolvedValue(1);
+      vi.mocked(fetchVesselCategoryCounts).mockResolvedValue(categories(["Cargo/Tanker (Mixed)", 1]));
+      const { result } = renderHook(() => useVesselCount());
+      await waitFor(() => expect(result.current.categories[0].category).toBe("Cargo/Tanker (Mixed)"));
+    });
+
+    it("handles category with unicode name", async () => {
+      vi.mocked(fetchVesselCount).mockResolvedValue(1);
+      vi.mocked(fetchVesselCategoryCounts).mockResolvedValue(categories(["貨物船", 1]));
+      const { result } = renderHook(() => useVesselCount());
+      await waitFor(() => expect(result.current.categories[0].category).toBe("貨物船"));
+    });
+
+    it("handles rejection with null from both API calls", async () => {
+      vi.mocked(fetchVesselCount).mockRejectedValue(null);
+      vi.mocked(fetchVesselCategoryCounts).mockRejectedValue(null);
+      const { result } = renderHook(() => useVesselCount());
+      await waitFor(() => expect(result.current.error).toBe("Failed to load vessel count data"));
+    });
+
+    it("handles rejection with undefined from both API calls", async () => {
+      vi.mocked(fetchVesselCount).mockRejectedValue(undefined);
+      vi.mocked(fetchVesselCategoryCounts).mockRejectedValue(undefined);
+      const { result } = renderHook(() => useVesselCount());
+      await waitFor(() => expect(result.current.error).toBe("Failed to load vessel count data"));
     });
   });
 });
