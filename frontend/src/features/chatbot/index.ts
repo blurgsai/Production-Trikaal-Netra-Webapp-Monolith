@@ -5,4 +5,3 @@ export { useChatbot } from "./hooks/useChatbot";
 export { useChatSession } from "./hooks/useChatSession";
 export { useChatMessages } from "./hooks/useChatMessages";
 export type { Message, MessageRole, ChatSession, StreamChunk } from "./model/types";
-export * from "./model/mappers";
