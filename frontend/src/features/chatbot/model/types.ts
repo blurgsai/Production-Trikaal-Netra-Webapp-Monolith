@@ -1,23 +1,24 @@
+// Domain types - YOUR types, YOUR naming
 export type MessageRole = "user" | "assistant";
 
 export interface Message {
-  message_id: number;
+  messageId: number;
   role: MessageRole;
   navigationLink: string | null;
   content: string;
 }
 
 export interface ChatSession {
-  session_id: string;
+  sessionId: string;
   title: string;
 }
 
-export interface CreateSessionResponse {
-  session_id: string;
+export interface CreateSessionResult {
+  sessionId: string;
 }
 
 export interface StreamChunk {
-  p: string;
-  o: string;
-  v: string;
+  part: string;
+  operation: string;
+  value: string;
 }

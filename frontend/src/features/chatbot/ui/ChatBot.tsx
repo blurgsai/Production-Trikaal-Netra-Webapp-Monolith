@@ -98,7 +98,7 @@ export default function Chatbot({ open, onClose }: ChatbotProps) {
     if (!input.trim()) return;
 
     const userMsg: Message = {
-      message_id: Date.now(),
+      messageId: Date.now(),
       role: "user",
       navigationLink: null,
       content: input,
@@ -114,19 +114,19 @@ export default function Chatbot({ open, onClose }: ChatbotProps) {
       sessionId!,
       input,
       (parsed) => {
-        const { p, o, v } = parsed;
+        const { part, operation, value } = parsed;
 
         // Only process content path
-        if (!p?.startsWith("/messsage/content")) return;
+        if (!part?.startsWith("/messsage/content")) return;
 
-        if (o !== "append") return;
+        if (operation !== "append") return;
 
-        const text = v || "";
+        const text = value || "";
 
         // CREATE assistant message (first chunk)
         if (latestIndexRef.current === null) {
           const newMsg: Message = {
-            message_id: Date.now() + 1,
+            messageId: Date.now() + 1,
             role: "assistant",
             navigationLink: null,
             content: text,
@@ -303,7 +303,6 @@ export default function Chatbot({ open, onClose }: ChatbotProps) {
                   setSessionId={setSessionId}
                   open={showHistory}
                   chatHistory={chatHistory}
-                  setChatHistory={setChatHistory}
                   fetchChatHistory={async () => {
                     const history = await fetchChatHistory();
                     setChatHistory(history);
@@ -442,7 +441,7 @@ export default function Chatbot({ open, onClose }: ChatbotProps) {
 
                   {!isLoading && !error && messages.map((msg) => (
                     <Box
-                      key={msg.message_id}
+                      key={msg.messageId}
                       sx={{
                         width: "100%",
                         display: "flex",

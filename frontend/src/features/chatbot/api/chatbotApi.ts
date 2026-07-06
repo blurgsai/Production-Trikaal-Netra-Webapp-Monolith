@@ -1,8 +1,20 @@
 import axios from "axios";
 import type {
   CreateSessionResponse,
-  ChatSession,
+  MessageResponse,
+  ChatSessionResponse,
+  StreamChunk as RawStreamChunk,
+} from "./types";
+import {
+  mapCreateSessionResponse,
+  mapMessageResponse,
+  mapChatSessionResponse,
+  mapStreamChunk,
+} from "../model/mappers";
+import type {
   Message,
+  ChatSession,
+  StreamChunk,
 } from "../model/types";
 
 const chatbotBaseUrl = import.meta.env.VITE_CHATBOT_BASE_URL;
@@ -17,33 +29,34 @@ export async function createSession(): Promise<string> {
       headers: { Authorization: getAuthToken() },
     }
   );
-  return data.session_id;
+  const result = mapCreateSessionResponse(data);
+  return result.sessionId;
 }
 
 export async function fetchMessages(sessionId: string): Promise<Message[]> {
-  const { data } = await axios.get<Message[]>(
+  const { data } = await axios.get<MessageResponse[]>(
     `${chatbotBaseUrl}/sessions/${sessionId}/messages`,
     {
       headers: { Authorization: getAuthToken() },
     }
   );
-  return data || [];
+  return (data || []).map(mapMessageResponse);
 }
 
 export async function fetchChatHistory(): Promise<ChatSession[]> {
-  const { data } = await axios.get<ChatSession[]>(
+  const { data } = await axios.get<ChatSessionResponse[]>(
     `${chatbotBaseUrl}/sessions`,
     {
       headers: { Authorization: getAuthToken() },
     }
   );
-  return data;
+  return data.map(mapChatSessionResponse);
 }
 
 export async function streamMessage(
   sessionId: string,
   message: string,
-  onChunk: (chunk: { p: string; o: string; v: string }) => void,
+  onChunk: (chunk: StreamChunk) => void,
   onError: (error: Error) => void
 ): Promise<void> {
   try {
@@ -89,8 +102,8 @@ export async function streamMessage(
         }
 
         try {
-          const parsed = JSON.parse(dataStr);
-          onChunk(parsed);
+          const parsed: RawStreamChunk = JSON.parse(dataStr);
+          onChunk(mapStreamChunk(parsed));
         } catch (err) {
           console.error("Parse error:", err, dataStr);
         }

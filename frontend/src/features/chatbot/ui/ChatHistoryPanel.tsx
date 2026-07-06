@@ -17,7 +17,6 @@ interface ChatHistoryPanelProps {
   setSessionId: (sessionId: string) => void;
   open: boolean;
   chatHistory: ChatSession[];
-  setChatHistory: (history: ChatSession[]) => void;
   fetchChatHistory: () => Promise<void>;
   createNewSession: () => Promise<void>;
 }
@@ -27,7 +26,6 @@ export default function ChatHistoryPanel({
   setSessionId,
   open,
   chatHistory,
-  setChatHistory,
   fetchChatHistory,
   createNewSession,
 }: ChatHistoryPanelProps) {
@@ -113,8 +111,8 @@ export default function ChatHistoryPanel({
 
         {chatHistory?.map((msg) => (
           <ListItem
-            key={msg.session_id}
-            onClick={() => setSessionId(msg.session_id)}
+            key={msg.sessionId}
+            onClick={() => setSessionId(msg.sessionId)}
             sx={{
               mb: 1,
               borderRadius: 2,
@@ -122,11 +120,11 @@ export default function ChatHistoryPanel({
               cursor: "pointer",
               transition: "all 0.2s ease",
               bgcolor:
-                msg?.session_id === sessionId
+                msg?.sessionId === sessionId
                   ? (theme) => alpha(theme.palette.primary.main, 0.15)
                   : "transparent",
               border:
-                msg?.session_id === sessionId
+                msg?.sessionId === sessionId
                   ? (theme) => `1px solid ${alpha(theme.palette.primary.main, 0.3)}`
                   : "1px solid transparent",
               "&:hover": {
@@ -140,7 +138,7 @@ export default function ChatHistoryPanel({
                 minWidth: 40,
                 mr: 1.5,
                 p: 0,
-                color: msg?.session_id === sessionId ? "primary.main" : "text.secondary",
+                color: msg?.sessionId === sessionId ? "primary.main" : "text.secondary",
               }}
             >
               <ChatIcon fontSize="small" />
@@ -150,7 +148,7 @@ export default function ChatHistoryPanel({
               primary={msg.title}
               primaryTypographyProps={{
                 variant: "body2",
-                fontWeight: msg?.session_id === sessionId ? 600 : 400,
+                fontWeight: msg?.sessionId === sessionId ? 600 : 400,
                 noWrap: true,
                 color: "text.primary",
               }}
