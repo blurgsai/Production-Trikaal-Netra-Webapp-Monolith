@@ -22,13 +22,9 @@ import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import ChatHistoryPanel from "./ChatHistoryPanel";
 import { useChatbot } from "../hooks/useChatbot";
-import {
-  createSession,
-  fetchMessages,
-  fetchChatHistory,
-  streamMessage,
-} from "../api/chatbotApi";
-import type { Message, ChatSession } from "../model/types";
+import { useChatSession } from "../hooks/useChatSession";
+import { useChatMessages } from "../hooks/useChatMessages";
+import type { Message } from "../model/types";
 
 interface ChatbotProps {
   open: boolean;
@@ -41,13 +37,14 @@ export default function Chatbot({ open, onClose }: ChatbotProps) {
   const [showHistory, setShowHistory] = useState(true);
   const [input, setInput] = useState("");
   const [isNewSession, setIsNewSession] = useState(false);
-  const [chatHistory, setChatHistory] = useState<ChatSession[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const latestIndexRef = useRef<number | null>(null);
   const { messages, setMessages } = useChatbot();
+  const { chatHistory, createSession, fetchChatHistory } = useChatSession();
+  const { fetchMessages, streamMessage } = useChatMessages();
   const navigate = useNavigate();
 
   // Auto scroll
@@ -84,11 +81,8 @@ export default function Chatbot({ open, onClose }: ChatbotProps) {
 
   const createNewSession = async () => {
     try {
-      const sessionId = await createSession();
-      setSessionId(sessionId);
-
-      // Re-fetch session chat history on creation of new session
-      fetchChatHistory().then(setChatHistory).catch(console.log);
+      const newSessionId = await createSession();
+      setSessionId(newSessionId);
     } catch (error) {
       console.log(error);
     }
@@ -150,7 +144,7 @@ export default function Chatbot({ open, onClose }: ChatbotProps) {
           setMessages(updated);
         }
       },
-      (error) => {
+      (error: Error) => {
         console.error("Streaming error:", error);
 
         const idx = latestIndexRef.current;
@@ -303,10 +297,7 @@ export default function Chatbot({ open, onClose }: ChatbotProps) {
                   setSessionId={setSessionId}
                   open={showHistory}
                   chatHistory={chatHistory}
-                  fetchChatHistory={async () => {
-                    const history = await fetchChatHistory();
-                    setChatHistory(history);
-                  }}
+                  fetchChatHistory={fetchChatHistory}
                   createNewSession={createNewSession}
                 />
               )}

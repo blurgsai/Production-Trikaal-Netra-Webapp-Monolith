@@ -3,25 +3,14 @@ import type {
   CreateSessionResponse,
   MessageResponse,
   ChatSessionResponse,
-  StreamChunk as RawStreamChunk,
-} from "./types";
-import {
-  mapCreateSessionResponse,
-  mapMessageResponse,
-  mapChatSessionResponse,
-  mapStreamChunk,
-} from "../model/mappers";
-import type {
-  Message,
-  ChatSession,
   StreamChunk,
-} from "../model/types";
+} from "./types";
 
 const chatbotBaseUrl = import.meta.env.VITE_CHATBOT_BASE_URL;
 
 const getAuthToken = () => `Bearer ${localStorage.getItem("token")}`;
 
-export async function createSession(): Promise<string> {
+export async function createSession(): Promise<CreateSessionResponse> {
   const { data } = await axios.post<CreateSessionResponse>(
     `${chatbotBaseUrl}/sessions`,
     {},
@@ -29,28 +18,29 @@ export async function createSession(): Promise<string> {
       headers: { Authorization: getAuthToken() },
     }
   );
-  const result = mapCreateSessionResponse(data);
-  return result.sessionId;
+  return data;
 }
 
-export async function fetchMessages(sessionId: string): Promise<Message[]> {
+export async function fetchMessages(
+  sessionId: string
+): Promise<MessageResponse[]> {
   const { data } = await axios.get<MessageResponse[]>(
     `${chatbotBaseUrl}/sessions/${sessionId}/messages`,
     {
       headers: { Authorization: getAuthToken() },
     }
   );
-  return (data || []).map(mapMessageResponse);
+  return data || [];
 }
 
-export async function fetchChatHistory(): Promise<ChatSession[]> {
+export async function fetchChatHistory(): Promise<ChatSessionResponse[]> {
   const { data } = await axios.get<ChatSessionResponse[]>(
     `${chatbotBaseUrl}/sessions`,
     {
       headers: { Authorization: getAuthToken() },
     }
   );
-  return data.map(mapChatSessionResponse);
+  return data;
 }
 
 export async function streamMessage(
@@ -102,8 +92,8 @@ export async function streamMessage(
         }
 
         try {
-          const parsed: RawStreamChunk = JSON.parse(dataStr);
-          onChunk(mapStreamChunk(parsed));
+          const parsed: StreamChunk = JSON.parse(dataStr);
+          onChunk(parsed);
         } catch (err) {
           console.error("Parse error:", err, dataStr);
         }
