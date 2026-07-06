@@ -10,6 +10,7 @@ import {
   Button,
   alpha,
   Fade,
+  CircularProgress,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import FullscreenIcon from "@mui/icons-material/Fullscreen";
@@ -17,6 +18,8 @@ import FullscreenExitIcon from "@mui/icons-material/FullscreenExit";
 import HistoryIcon from "@mui/icons-material/History";
 import SendIcon from "@mui/icons-material/Send";
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
+import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
+import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import ChatHistoryPanel from "./ChatHistoryPanel";
 import { useChatbot } from "../hooks/useChatbot";
 import {
@@ -39,6 +42,8 @@ export default function Chatbot({ open, onClose }: ChatbotProps) {
   const [input, setInput] = useState("");
   const [isNewSession, setIsNewSession] = useState(false);
   const [chatHistory, setChatHistory] = useState<ChatSession[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const latestIndexRef = useRef<number | null>(null);
@@ -62,7 +67,15 @@ export default function Chatbot({ open, onClose }: ChatbotProps) {
       }
 
       setMessages([]);
-      fetchMessages(sessionId).then(setMessages).catch(console.log);
+      setIsLoading(true);
+      setError(null);
+      fetchMessages(sessionId)
+        .then(setMessages)
+        .catch((err) => {
+          console.error(err);
+          setError("Failed to load messages. Please try again.");
+        })
+        .finally(() => setIsLoading(false));
     } else if (open && !sessionId) {
       createNewSession();
       setIsNewSession(true);
@@ -334,7 +347,100 @@ export default function Chatbot({ open, onClose }: ChatbotProps) {
                     },
                   }}
                 >
-                  {messages.map((msg) => (
+                  {isLoading && (
+                    <Box
+                      sx={{
+                        flex: 1,
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: 2,
+                      }}
+                    >
+                      <CircularProgress size={48} sx={{ color: "primary.main" }} />
+                      <Typography variant="body2" color="text.secondary">
+                        Loading conversation...
+                      </Typography>
+                    </Box>
+                  )}
+
+                  {error && (
+                    <Box
+                      sx={{
+                        flex: 1,
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: 2,
+                        p: 3,
+                      }}
+                    >
+                      <ErrorOutlineIcon
+                        sx={{ fontSize: 64, color: "error.main" }}
+                      />
+                      <Typography variant="h6" color="error.main" fontWeight={600}>
+                        Something went wrong
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary" textAlign="center">
+                        {error}
+                      </Typography>
+                      <Button
+                        variant="outlined"
+                        onClick={() => {
+                          setError(null);
+                          if (sessionId) {
+                            setIsLoading(true);
+                            fetchMessages(sessionId)
+                              .then(setMessages)
+                              .catch((err) => {
+                                console.error(err);
+                                setError("Failed to load messages. Please try again.");
+                              })
+                              .finally(() => setIsLoading(false));
+                          }
+                        }}
+                        sx={{ mt: 2 }}
+                      >
+                        Retry
+                      </Button>
+                    </Box>
+                  )}
+
+                  {!isLoading && !error && messages.length === 0 && (
+                    <Box
+                      sx={{
+                        flex: 1,
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: 2,
+                        p: 3,
+                        textAlign: "center",
+                      }}
+                    >
+                      <ChatBubbleOutlineIcon
+                        sx={{
+                          fontSize: 80,
+                          color: (theme) => alpha(theme.palette.primary.main, 0.3),
+                        }}
+                      />
+                      <Typography variant="h6" color="text.primary" fontWeight={600}>
+                        Start a new conversation
+                      </Typography>
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{ maxWidth: 300 }}
+                      >
+                        How can I help you today?
+                      </Typography>
+                    </Box>
+                  )}
+
+                  {!isLoading && !error && messages.map((msg) => (
                     <Box
                       key={msg.message_id}
                       sx={{
