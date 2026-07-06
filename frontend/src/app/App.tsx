@@ -5,6 +5,7 @@ import "../app.css";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { defenseTheme } from "@/shared/theme";
 import { AuthProvider } from "@/features/auth";
+import { ChatbotProvider } from "@/features/chatbot";
 import LoginPage from "./pages/LoginPage";
 import MapPage from "./pages/MapPage";
 import AppLayout from "./components/AppLayout";
@@ -19,28 +20,30 @@ function App() {
       <ThemeProvider theme={defenseTheme}>
         <CssBaseline />
         <BrowserRouter>
-          <AuthProvider>
-            <Routes>
-              <Route
-                path="/login"
-                element={
-                  <PublicRoute>
-                    <LoginPage />
-                  </PublicRoute>
-                }
-              />
-              <Route
-                element={
-                  <ProtectedRoute>
-                    <AppLayout />
-                  </ProtectedRoute>
-                }
-              >
-                <Route path="/map" element={<MapPage />} />
-              </Route>
-              <Route path="*" element={<Navigate to="/login" replace />} />
-            </Routes>
-          </AuthProvider>
+          <ChatbotProvider>
+            <AuthProvider>
+              <Routes>
+                <Route
+                  path="/login"
+                  element={
+                    <PublicRoute>
+                      <LoginPage />
+                    </PublicRoute>
+                  }
+                />
+                <Route
+                  element={
+                    <ProtectedRoute>
+                      <AppLayout />
+                    </ProtectedRoute>
+                  }
+                >
+                  <Route path="/map" element={<MapPage />} />
+                </Route>
+                <Route path="*" element={<Navigate to="/login" replace />} />
+              </Routes>
+            </AuthProvider>
+          </ChatbotProvider>
         </BrowserRouter>
       </ThemeProvider>
     </QueryClientProvider>
