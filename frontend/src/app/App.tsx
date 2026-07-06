@@ -7,6 +7,7 @@ import { defenseTheme } from "@/shared/theme";
 import { AuthProvider } from "@/features/auth";
 import LoginPage from "./pages/LoginPage";
 import MapPage from "./pages/MapPage";
+import { EventsPage } from "./pages/EventsPage";
 import AppLayout from "./components/AppLayout";
 import PublicRoute from "./routes/PublicRoute";
 import ProtectedRoute from "./routes/ProtectedRoute";
@@ -37,6 +38,7 @@ function App() {
                 }
               >
                 <Route path="/map" element={<MapPage />} />
+                <Route path="/events" element={<EventsPage />} />
               </Route>
               <Route path="*" element={<Navigate to="/login" replace />} />
             </Routes>
