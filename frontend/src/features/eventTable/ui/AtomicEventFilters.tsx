@@ -12,7 +12,13 @@ import CloseIcon      from '@mui/icons-material/Close';
 import AddIcon        from '@mui/icons-material/Add';
 import DeleteIcon     from '@mui/icons-material/Delete';
 import ClearAllIcon   from '@mui/icons-material/ClearAll';
-import type { EventFilter, EventMetadataColumn, FilterOperator } from '../model/types';
+import {
+  isValidFilterRow,
+  filtersToRows,
+  rowsToFilters,
+  mergeUniqueValues,
+} from '../model/filterHelpers';
+import type { EventFilter, EventMetadataColumn, FilterOperator, FilterRow } from '../model/types';
 
 // ── Operator options per field type ──────────────────────────────────────────
 
@@ -46,14 +52,6 @@ const OPERATORS: Record<string, Array<{ value: FilterOperator; label: string }>>
 };
 
 // ── Types ─────────────────────────────────────────────────────────────────────
-
-interface FilterRow {
-  id:       string;
-  field:    string;
-  operator: string;
-  value:    string;
-  value2:   string;
-}
 
 interface Props {
   columns:         EventMetadataColumn[];
@@ -115,11 +113,7 @@ export function AtomicEventFilters({
   );
 
   const handleOpen = useCallback((e: React.MouseEvent<HTMLElement>) => {
-    setRows(
-      appliedFilters.length > 0
-        ? appliedFilters.map(f => ({ id: crypto.randomUUID(), field: f.field, operator: f.operator, value: f.value, value2: f.value2 ?? '' }))
-        : [createRow()],
-    );
+    setRows(appliedFilters.length > 0 ? filtersToRows(appliedFilters) : [createRow()]);
     setAnchorEl(e.currentTarget);
   }, [appliedFilters]);
 
@@ -133,21 +127,10 @@ export function AtomicEventFilters({
 
   const handleClearAll = () => { setRows([createRow()]); onApplyFilters([]); handleClose(); };
 
-  const validCount = rows.filter(r => {
-    if (!r.field || !r.operator || !r.value) return false;
-    return r.operator !== 'between' || !!r.value2;
-  }).length;
+  const validCount = rows.filter(isValidFilterRow).length;
 
   const handleApply = () => {
-    const valid: EventFilter[] = rows
-      .filter(r => r.field && r.operator && r.value && (r.operator !== 'between' || r.value2))
-      .map(r => ({
-        field:    r.field,
-        operator: r.operator as FilterOperator,
-        value:    r.value,
-        ...(r.value2 ? { value2: r.value2 } : {}),
-      }));
-    onApplyFilters(valid);
+    onApplyFilters(rowsToFilters(rows));
     handleClose();
   };
 
@@ -205,10 +188,7 @@ export function AtomicEventFilters({
                   const fieldType = col?.type ?? 'string';
                   const operators = OPERATORS[fieldType] ?? OPERATORS.string;
                   const isBetween = row.operator === 'between';
-                  const options   = [
-                    ...(col?.uniqueValues ?? []),
-                    ...(fieldValues[row.field] ?? []),
-                  ].filter((v, i, a) => a.indexOf(v) === i);
+                  const options   = mergeUniqueValues(col?.uniqueValues ?? [], fieldValues[row.field] ?? []);
 
                   return (
                     <Box key={row.id} sx={{ display: 'flex', gap: 2, mb: 3, alignItems: 'flex-start' }}>

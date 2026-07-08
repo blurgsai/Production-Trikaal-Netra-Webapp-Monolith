@@ -1,4 +1,4 @@
-import type { EventFilter, FilterOperator } from './types';
+import type { EventFilter, FilterOperator, FilterRow } from './types';
 
 const RESERVED_PARAMS = new Set(['q', 'page', 'rows', 'id']);
 
@@ -115,4 +115,54 @@ export function filtersToUrlParams(filters: EventFilter[]): Record<string, strin
   }
 
   return params;
+}
+
+// ── Filter row editing (AtomicEventFilters popover) ─────────────────────────────
+
+/**
+ * A filter row is ready to submit once it has a field, operator, and value —
+ * and, for the 'between' operator, a second value too. This is the single
+ * source of truth for row validity — used both to enable/disable "Apply" and
+ * to decide which rows actually get submitted, so the two can never disagree.
+ */
+export function isValidFilterRow(row: FilterRow): boolean {
+  if (!row.field || !row.operator || !row.value) return false;
+  return row.operator !== 'between' || !!row.value2;
+}
+
+/**
+ * Converts applied EventFilter[] → editable FilterRow[] for the filter popover.
+ * Each row gets a fresh client-side id — EventFilter itself has no row identity.
+ */
+export function filtersToRows(filters: EventFilter[]): FilterRow[] {
+  return filters.map(f => ({
+    id: crypto.randomUUID(),
+    field: f.field,
+    operator: f.operator,
+    value: f.value,
+    value2: f.value2 ?? '',
+  }));
+}
+
+/**
+ * Converts editable FilterRow[] → EventFilter[], dropping incomplete rows.
+ */
+export function rowsToFilters(rows: FilterRow[]): EventFilter[] {
+  return rows.filter(isValidFilterRow).map(r => ({
+    field: r.field,
+    operator: r.operator as FilterOperator,
+    value: r.value,
+    ...(r.value2 ? { value2: r.value2 } : {}),
+  }));
+}
+
+/**
+ * Merges two value lists (e.g. known unique values + freshly-loaded ones) and
+ * removes duplicates, preserving first-seen order.
+ */
+export function mergeUniqueValues(
+  a: (string | number)[],
+  b: (string | number)[],
+): (string | number)[] {
+  return [...a, ...b].filter((v, i, arr) => arr.indexOf(v) === i);
 }

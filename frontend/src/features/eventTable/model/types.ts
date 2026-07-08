@@ -45,6 +45,16 @@ export interface EventFilter {
   value2?: string;   // used only for 'between'
 }
 
+// Editable row shape used while a filter is being built in the filter popover,
+// before it's valid enough to submit as an EventFilter.
+export interface FilterRow {
+  id: string;
+  field: string;
+  operator: string;
+  value: string;
+  value2: string;
+}
+
 // ── Pagination ────────────────────────────────────────────────────────────────
 
 export interface PaginationParams {

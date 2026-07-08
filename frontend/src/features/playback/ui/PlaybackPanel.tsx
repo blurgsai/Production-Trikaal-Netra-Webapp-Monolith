@@ -1,7 +1,8 @@
 import { Fragment, useMemo } from 'react';
 import { Box, CircularProgress, Typography } from '@mui/material';
 import { usePlayback } from '../hooks/usePlayback';
-import type { EventDetailsBase, TrajectoryOverrideRule } from '../model/types';
+import { useResolvedEventTypes } from '../hooks/useResolvedEventTypes';
+import { useTrajectoryOverrides } from '../hooks/useTrajectoryOverrides';
 import { PlaybackMap }        from './PlaybackMap';
 import { VesselMarkers }      from './VesselMarkers';
 import { VesselTrajectories } from './VesselTrajectories';
@@ -11,7 +12,6 @@ import {
   getMapOverlay,
   getMarkerEnhancement,
   getTimelineEnhancement,
-  getTrajectoryOverrides,
 } from './pluginRegistry';
 
 interface PlaybackPanelProps {
@@ -34,39 +34,10 @@ export function PlaybackPanel({ eventId, eventType, isCompound }: PlaybackPanelP
   } = usePlayback({ eventId, eventType, isCompound });
 
   // Compound resolution: each constituent type is dispatched to the plugin registry separately
-  const resolvedTypes: string[] = useMemo(() => {
-    if (!data) return [];
-    if (!isCompound) return [eventType];
-    return data.eventDetails.constituentTypes ?? [eventType];
-  }, [data, eventType, isCompound]);
-
-  // For compound events the API nests each constituent's details under its type key;
-  // for atomic events the whole eventDetails block belongs to the single type.
-  // Compound event contract is not yet finalised — the nested cast will be revisited.
-  const resolvedDetails: Record<string, EventDetailsBase> = useMemo(() => {
-    if (!data) return {};
-    if (!isCompound) return { [eventType]: data.eventDetails };
-    const nested = data.eventDetails as unknown as Record<string, EventDetailsBase>;
-    return Object.fromEntries(
-      resolvedTypes.map(t => [t, nested[t] ?? data.eventDetails]),
-    );
-  }, [data, eventType, isCompound, resolvedTypes]);
+  const { resolvedTypes, resolvedDetails } = useResolvedEventTypes(data, eventType, isCompound);
 
   // Merge trajectory overrides from all constituent event types
-  const trajectoryOverrides = useMemo(() => {
-    if (!data) return null;
-    const merged: Record<string, TrajectoryOverrideRule[]> = {};
-    for (const t of resolvedTypes) {
-      const details = resolvedDetails[t];
-      if (!details) continue;
-      const result = getTrajectoryOverrides(t, details, data.timeWindow);
-      if (!result) continue;
-      for (const [vesselId, rules] of Object.entries(result)) {
-        merged[vesselId] = [...(merged[vesselId] ?? []), ...rules];
-      }
-    }
-    return Object.keys(merged).length ? merged : null;
-  }, [data, resolvedTypes, resolvedDetails]);
+  const trajectoryOverrides = useTrajectoryOverrides(data, resolvedTypes, resolvedDetails);
 
   // First vessel position at event load, for initial map centering only.
   // Deliberately keyed off `data` (not `currentPositions`/`currentTimestampMs`) so
