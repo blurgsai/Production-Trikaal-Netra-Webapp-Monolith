@@ -6,7 +6,7 @@
 #   model/types.ts       — Domain types (YOUR types, YOUR naming)
 #   model/mappers.ts     — Anti-corruption layer (translator)
 #   hooks/use*.ts        — Data-fetching hooks (TanStack Query)
-#   ui/*.tsx             — Presentational components
+#   ui/*.tsx             — Presentational components (nested subfolders allowed)
 #   index.ts             — Barrel export (public API)
 #
 # Usage: ./validate-feature-structure.sh <features_dir>
@@ -114,11 +114,11 @@ for feature_dir in "$FEATURES_DIR"/*/; do
     fi
   fi
 
-  # Check ui/ has at least one component file
+  # Check ui/ has at least one component file (nested subfolders allowed)
   if [ -d "${feature_dir}ui" ]; then
-    ui_real_files=$(find "${feature_dir}ui" -maxdepth 1 -type f -not -name ".gitkeep" | wc -l)
+    ui_real_files=$(find "${feature_dir}ui" -type f -not -name ".gitkeep" | wc -l)
     if [ "$ui_real_files" -gt 0 ]; then
-      ui_count=$(find "${feature_dir}ui" -maxdepth 1 -name "*.tsx" | wc -l)
+      ui_count=$(find "${feature_dir}ui" -name "*.tsx" | wc -l)
       if [ "$ui_count" -eq 0 ]; then
         echo "  FAIL: No component files (*.tsx) found in ui/"
         ERRORS=$((ERRORS + 1))
@@ -138,7 +138,7 @@ if [ "$ERRORS" -gt 0 ]; then
   echo "  model/types.ts      — Domain types (YOUR types, YOUR naming)"
   echo "  model/mappers.ts    — Anti-corruption layer (translator)"
   echo "  hooks/use*.ts       — Data-fetching hooks (TanStack Query)"
-  echo "  ui/*.tsx             — Presentational components"
+  echo "  ui/*.tsx             — Presentational components (nested subfolders allowed)"
   echo "  index.ts            — Barrel export (public API)"
   exit 1
 else
