@@ -70,7 +70,7 @@ function App() {
               </Routes>
             </AuthProvider>
           </ChatbotProvider>
->>>>>>> main
+
         </BrowserRouter>
       </ThemeProvider>
     </QueryClientProvider>
