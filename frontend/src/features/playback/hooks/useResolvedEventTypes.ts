@@ -15,11 +15,15 @@ export function useResolvedEventTypes(
   isCompound: boolean,
 ): ResolvedEventTypesResult {
   return useMemo(() => {
-    if (!data) return { resolvedTypes: [], resolvedDetails: {} };
+    if (!data || !data.eventDetails) return { resolvedTypes: [], resolvedDetails: {} };
 
+    // An empty constituentTypes array must fall back to the atomic eventType,
+    // otherwise a compound event with no constituents resolves to nothing and
+    // renders blank. `?? ` alone would not catch [] (it isn't nullish).
+    const constituentTypes = data.eventDetails.constituentTypes;
     const resolvedTypes = !isCompound
       ? [eventType]
-      : data.eventDetails.constituentTypes ?? [eventType];
+      : constituentTypes?.length ? constituentTypes : [eventType];
 
     // For compound events the API nests each constituent's details under its type key;
     // for atomic events the whole eventDetails block belongs to the single type.

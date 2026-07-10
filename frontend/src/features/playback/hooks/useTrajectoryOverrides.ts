@@ -12,7 +12,10 @@ export function useTrajectoryOverrides(
   resolvedDetails: Record<string, EventDetailsBase>,
 ): Record<string, TrajectoryOverrideRule[]> | null {
   return useMemo(() => {
-    if (!data) return null;
+    // timeWindow is required downstream: getTrajectoryOverridesForType reads
+    // eventStartMs/eventEndMs/queryEndMs off it, so a missing window would throw
+    // in the real registry. Bail out early rather than pass undefined through.
+    if (!data || !data.timeWindow) return null;
     const merged: Record<string, TrajectoryOverrideRule[]> = {};
     for (const t of resolvedTypes) {
       const details = resolvedDetails[t];
