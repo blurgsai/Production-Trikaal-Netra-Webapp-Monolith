@@ -61,7 +61,7 @@ for feature_dir in "$FEATURES_DIR"/*/; do
       if grep -qE "from\s+['\"]\.\./hooks|from\s+['\"]\.\./\.\./hooks" "$ui_file" 2>/dev/null; then
         echo "  WARN: $rel_path imports from hooks/ — UI should be presentational only"
       fi
-    done < <(find "${feature_dir}ui" -maxdepth 1 -name "*.tsx" -o -name "*.ts" 2>/dev/null)
+    done < <(find "${feature_dir}ui" \( -name "*.tsx" -o -name "*.ts" \) 2>/dev/null)
   fi
 
   # ─── Rule 2: api/ files never import from model/, hooks/, or ui/ ───

@@ -9,8 +9,9 @@
 #   src/features/users/api/hooks/    ← WRONG: layer inside layer
 #   src/features/users/components/   ← WRONG: not a valid layer name
 #
-# Also enforces that layer folders (api/, model/, hooks/, ui/) are flat —
+# Also enforces that layer folders (api/, model/, hooks/) are flat —
 # no subdirectories allowed inside them.
+# Exception: ui/ allows nested subfolders for component grouping.
 #
 # Usage: ./check-no-nested-features.sh <features_dir>
 #
@@ -63,24 +64,27 @@ for feature_dir in "$FEATURES_DIR"/*/; do
     fi
 
     # Check for nested directories inside layer folders
-    # Layers (api/, model/, hooks/, ui/) must be flat — no subdirectories
+    # Layers (api/, model/, hooks/) must be flat — no subdirectories
     # Exception: __tests__/ is allowed inside any layer for colocated tests
-    nested_dirs=$(find "$subdir" -mindepth 1 -maxdepth 1 -type d 2>/dev/null || true)
-    if [ -n "$nested_dirs" ]; then
-      invalid_dirs=""
-      while IFS= read -r ndir; do
-        ndir_name=$(basename "$ndir")
-        if [ "$ndir_name" != "__tests__" ]; then
-          invalid_dirs="$invalid_dirs$ndir\n"
+    # Exception: ui/ allows nested subfolders for component grouping
+    if [ "$subdir_name" != "ui" ]; then
+      nested_dirs=$(find "$subdir" -mindepth 1 -maxdepth 1 -type d 2>/dev/null || true)
+      if [ -n "$nested_dirs" ]; then
+        invalid_dirs=""
+        while IFS= read -r ndir; do
+          ndir_name=$(basename "$ndir")
+          if [ "$ndir_name" != "__tests__" ]; then
+            invalid_dirs="$invalid_dirs$ndir\n"
+          fi
+        done <<< "$nested_dirs"
+        if [ -n "$invalid_dirs" ]; then
+          echo "  FAIL: Found nested directories inside '$feature_name/$subdir_name/'"
+          echo "    Layers (api/, model/, hooks/) must be flat — no subdirectories."
+          echo "    Exception: __tests__/ is allowed for colocated tests."
+          echo "    Offending:"
+          echo -e "$invalid_dirs" | sed 's/^/      /'
+          ERRORS=$((ERRORS + 1))
         fi
-      done <<< "$nested_dirs"
-      if [ -n "$invalid_dirs" ]; then
-        echo "  FAIL: Found nested directories inside '$feature_name/$subdir_name/'"
-        echo "    Layers (api/, model/, hooks/, ui/) must be flat — no subdirectories."
-        echo "    Exception: __tests__/ is allowed for colocated tests."
-        echo "    Offending:"
-        echo -e "$invalid_dirs" | sed 's/^/      /'
-        ERRORS=$((ERRORS + 1))
       fi
     fi
   done
@@ -106,7 +110,7 @@ if [ "$ERRORS" -gt 0 ]; then
   echo "  1. Features must be DIRECT children of src/features/"
   echo "  2. A feature can only contain: api/  model/  hooks/  ui/  index.ts"
   echo "  3. No feature folder inside a feature folder"
-  echo "  4. No subdirectories inside layer folders (except __tests__/)"
+  echo "  4. No subdirectories inside layer folders (except __tests__/ and ui/ nesting)"
   echo "  5. No stray files at feature root (only index.ts allowed)"
   exit 1
 else

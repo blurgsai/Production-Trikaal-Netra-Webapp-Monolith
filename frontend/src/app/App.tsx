@@ -5,6 +5,7 @@ import "../app.css";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { defenseTheme } from "@/shared/theme";
 import { AuthProvider } from "@/features/auth";
+import { ChatbotProvider } from "@/features/chatbot";
 import LoginPage from "./pages/LoginPage";
 import MapPage from "./pages/MapPage";
 import { EventsPage } from "./pages/EventsPage";
@@ -20,6 +21,7 @@ function App() {
       <ThemeProvider theme={defenseTheme}>
         <CssBaseline />
         <BrowserRouter>
+<<<<<<< eventsTable-and-baseplayback
           <AuthProvider>
             <Routes>
               <Route
@@ -43,6 +45,32 @@ function App() {
               <Route path="*" element={<Navigate to="/login" replace />} />
             </Routes>
           </AuthProvider>
+=======
+          <ChatbotProvider>
+            <AuthProvider>
+              <Routes>
+                <Route
+                  path="/login"
+                  element={
+                    <PublicRoute>
+                      <LoginPage />
+                    </PublicRoute>
+                  }
+                />
+                <Route
+                  element={
+                    <ProtectedRoute>
+                      <AppLayout />
+                    </ProtectedRoute>
+                  }
+                >
+                  <Route path="/map" element={<MapPage />} />
+                </Route>
+                <Route path="*" element={<Navigate to="/login" replace />} />
+              </Routes>
+            </AuthProvider>
+          </ChatbotProvider>
+>>>>>>> main
         </BrowserRouter>
       </ThemeProvider>
     </QueryClientProvider>
