@@ -48,7 +48,7 @@ describe('mapEventFromApi', () => {
   });
 
   it('does not expose raw API field names in the domain object', () => {
-    const result = mapEventFromApi(raw) as Record<string, unknown>;
+    const result = mapEventFromApi(raw) as unknown as Record<string, unknown>;
 
     expect(result['start_time']).toBeUndefined();
     expect(result['end_time']).toBeUndefined();
