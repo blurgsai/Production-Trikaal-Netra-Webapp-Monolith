@@ -14,6 +14,22 @@ export function useChatSession() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const fetchChatHistory = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const rawHistory = await fetchChatHistoryApi();
+      const history = rawHistory.map(mapChatSessionResponse);
+      setChatHistory(history);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Failed to fetch chat history";
+      setError(errorMessage);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
   const createSession = useCallback(async () => {
     try {
       setIsLoading(true);
@@ -32,23 +48,7 @@ export function useChatSession() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
-
-  const fetchChatHistory = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      const rawHistory = await fetchChatHistoryApi();
-      const history = rawHistory.map(mapChatSessionResponse);
-      setChatHistory(history);
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Failed to fetch chat history";
-      setError(errorMessage);
-      throw err;
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+  }, [fetchChatHistory]);
 
   return {
     chatHistory,

@@ -29,11 +29,13 @@ export default function ChatHistoryPanel({
   fetchChatHistory,
   createNewSession,
 }: ChatHistoryPanelProps) {
-  if (!open) return null;
-
   useEffect(() => {
-    fetchChatHistory();
-  }, [fetchChatHistory]);
+    if (open) {
+      fetchChatHistory();
+    }
+  }, [fetchChatHistory, open]);
+
+  if (!open) return null;
 
   return (
     <Box

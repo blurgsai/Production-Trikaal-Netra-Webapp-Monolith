@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import {
@@ -55,6 +55,15 @@ export default function Chatbot({ open, onClose }: ChatbotProps) {
     });
   }, [messages]);
 
+  const createNewSession = useCallback(async () => {
+    try {
+      const newSessionId = await createSession();
+      setSessionId(newSessionId);
+    } catch (error) {
+      console.log(error);
+    }
+  }, [createSession]);
+
   // Fetch messages if session Id.Else create new session.
   useEffect(() => {
     if (open && sessionId) {
@@ -77,16 +86,7 @@ export default function Chatbot({ open, onClose }: ChatbotProps) {
       createNewSession();
       setIsNewSession(true);
     }
-  }, [sessionId, open, setMessages]);
-
-  const createNewSession = async () => {
-    try {
-      const newSessionId = await createSession();
-      setSessionId(newSessionId);
-    } catch (error) {
-      console.log(error);
-    }
-  };
+  }, [sessionId, open, setMessages, createNewSession, fetchMessages, isNewSession]);
 
   const handleSend = async () => {
     if (!input.trim()) return;
@@ -525,7 +525,7 @@ export default function Chatbot({ open, onClose }: ChatbotProps) {
                                 fontWeight: 600,
                                 "&:focus": { outline: "none" },
                               }}
-                              onClick={() => navigateToLink(msg?.navigationLink!)}
+                              onClick={() => navigateToLink(msg.navigationLink!)}
                             >
                               {msg.navigationLink}
                             </Button>
