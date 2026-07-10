@@ -21,7 +21,7 @@ function App() {
       <ThemeProvider theme={defenseTheme}>
         <CssBaseline />
         <BrowserRouter>
-<<<<<<< eventsTable-and-baseplayback
+
           <AuthProvider>
             <Routes>
               <Route
@@ -45,7 +45,7 @@ function App() {
               <Route path="*" element={<Navigate to="/login" replace />} />
             </Routes>
           </AuthProvider>
-=======
+
           <ChatbotProvider>
             <AuthProvider>
               <Routes>
