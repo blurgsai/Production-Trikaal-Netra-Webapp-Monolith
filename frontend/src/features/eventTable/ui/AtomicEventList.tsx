@@ -68,7 +68,11 @@ export function AtomicEventList({ selectedEvent, onSelectEvent }: Props) {
     setPage(0);
     setSearchParams(prev => {
       const next = new URLSearchParams(prev);
-      val.trim() ? next.set('q', val.trim()) : next.delete('q');
+      if (val.trim()) {
+        next.set('q', val.trim());
+      } else {
+        next.delete('q');
+      }
       return next;
     });
   }, [setSearchParams]);
