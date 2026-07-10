@@ -108,7 +108,7 @@ describe('mapMetadataColumnFromApi', () => {
   });
 
   it('does not expose unique_values raw field name', () => {
-    const result = mapMetadataColumnFromApi(raw) as Record<string, unknown>;
+    const result = mapMetadataColumnFromApi(raw) as unknown as Record<string, unknown>;
 
     expect(result['unique_values']).toBeUndefined();
   });
@@ -152,7 +152,7 @@ describe('mapCompoundConfigFromApi', () => {
   });
 
   it('does not expose raw field names', () => {
-    const result = mapCompoundConfigFromApi(raw) as Record<string, unknown>;
+    const result = mapCompoundConfigFromApi(raw) as unknown as Record<string, unknown>;
 
     expect(result['constituent_types']).toBeUndefined();
     expect(result['start_time']).toBeUndefined();
@@ -189,7 +189,7 @@ describe('mapCompoundInstanceFromApi', () => {
   });
 
   it('does not expose raw field names', () => {
-    const result = mapCompoundInstanceFromApi(raw) as Record<string, unknown>;
+    const result = mapCompoundInstanceFromApi(raw) as unknown as Record<string, unknown>;
 
     expect(result['config_id']).toBeUndefined();
     expect(result['config_name']).toBeUndefined();
