@@ -1,0 +1,447 @@
+﻿
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.9 [39m[90mD:/works/Production-Trikaal-Netra-Webapp-Monolith/frontend[39m
+
+ [31mΓ¥»[39m src/features/playback/__tests__/useVesselTrajectorySegments.test.ts [2m([22m[2m150 tests[22m[2m | [22m[31m12 failed[39m[2m)[22m[33m 340[2mms[22m[39m
+       [32mΓ£ô[39m Verify trajectory is generated when vessel has exactly 2 timeline points[32m 23[2mms[22m[39m
+       [32mΓ£ô[39m Verify trajectory is generated when vessel has more than 2 timeline points[32m 3[2mms[22m[39m
+       [32mΓ£ô[39m Verify coordinates are returned in chronological order[32m 2[2mms[22m[39m
+       [32mΓ£ô[39m Verify vesselId is returned correctly[32m 2[2mms[22m[39m
+       [32mΓ£ô[39m Verify multiple vessels generate separate trajectory objects[32m 5[2mms[22m[39m
+       [32mΓ£ô[39m Verify frames up to currentTimestampMs are included[32m 3[2mms[22m[39m
+       [32mΓ£ô[39m Verify frames after currentTimestampMs are excluded[32m 2[2mms[22m[39m
+       [32mΓ£ô[39m Verify frame with timestamp equal to currentTimestampMs is included[32m 3[2mms[22m[39m
+       [32mΓ£ô[39m Verify coordinates are correctly mapped from lat/lon values[32m 3[2mms[22m[39m
+       [32mΓ£ô[39m Verify trajectory returns correct coordinate count[32m 3[2mms[22m[39m
+       [32mΓ£ô[39m Verify trajectory for a single vessel[32m 2[2mms[22m[39m
+       [32mΓ£ô[39m Verify trajectory for multiple vessels[32m 2[2mms[22m[39m
+       [32mΓ£ô[39m Verify trajectory with no overrides returns segmentStyles as null[32m 2[2mms[22m[39m
+       [32mΓ£ô[39m Verify trajectory with one override rule applies override style[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m Verify trajectory with multiple override rules applies correct styles[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m Verify override style is applied when segment timestamp falls within override window[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m Verify default style is used when segment timestamp does not match override window[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m Verify segmentStyles length equals number of segments[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m Verify same vessel appearing in all frames generates complete path[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m Verify vessel appearing in selected frames generates partial path[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m Verify empty timeline returns empty array[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m Verify timeline with only one frame returns empty array[32m 2[2mms[22m[39m
+       [32mΓ£ô[39m Verify vessel appears in only one frame[32m 2[2mms[22m[39m
+       [32mΓ£ô[39m Verify currentTimestampMs before first frame timestamp[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m Verify currentTimestampMs exactly matches first frame timestamp[32m 2[2mms[22m[39m
+       [32mΓ£ô[39m Verify currentTimestampMs after last frame timestamp[32m 2[2mms[22m[39m
+       [32mΓ£ô[39m Verify timeline contains duplicate timestamps[32m 2[2mms[22m[39m
+       [32mΓ£ô[39m Verify timeline contains identical coordinates[32m 2[2mms[22m[39m
+       [32mΓ£ô[39m Verify timeline contains negative latitude values[32m 2[2mms[22m[39m
+       [32mΓ£ô[39m Verify timeline contains negative longitude values[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m Verify timeline contains zero latitude[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m Verify timeline contains zero longitude[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m Verify timeline contains decimal coordinates[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m Verify vessel disappears between frames[32m 2[2mms[22m[39m
+       [32mΓ£ô[39m Verify vessel reappears after missing frames[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m Verify multiple vessels share same coordinates[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m Verify trajectoryOverrides is null[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m Verify trajectoryOverrides is empty object[32m 3[2mms[22m[39m
+       [32mΓ£ô[39m Verify vessel has empty override array[32m 4[2mms[22m[39m
+       [32mΓ£ô[39m Verify override start equals segment timestamp[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m Verify override end equals segment timestamp[32m 2[2mms[22m[39m
+       [32mΓ£ô[39m Verify override window covers entire trajectory[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m Verify override window covers only first segment[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m Verify override window covers only last segment[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m Verify multiple overrides for same vessel[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m Verify overlapping override windows[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m Verify adjacent override windows[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m Verify override array contains one rule[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m Verify override array contains many rules[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m Verify resolved vessel list contains duplicate vessel IDs across frames[32m 2[2mms[22m[39m
+[31m       [31m├ù[31m Verify timeline is null[39m[32m 20[2mms[22m[39m
+[31m       [31m├ù[31m Verify timeline is undefined[39m[32m 4[2mms[22m[39m
+[31m       [31m├ù[31m Verify timeline contains null frame[39m[32m 2[2mms[22m[39m
+[31m       [31m├ù[31m Verify timeline contains undefined frame[39m[32m 2[2mms[22m[39m
+       [32mΓ£ô[39m Verify frame missing timestampMs[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m Verify frame timestampMs is null[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m Verify frame timestampMs is undefined[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m Verify frame timestampMs is NaN[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m Verify frame timestampMs is Infinity[32m 1[2mms[22m[39m
+[31m       [31m├ù[31m Verify frame missing vessels property[39m[32m 3[2mms[22m[39m
+[31m       [31m├ù[31m Verify frame vessels is null[39m[32m 2[2mms[22m[39m
+[31m       [31m├ù[31m Verify frame vessels is undefined[39m[32m 2[2mms[22m[39m
+       [32mΓ£ô[39m Verify frame vessels is array instead of object[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m Verify vessel position missing lat[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m Verify vessel position missing lon[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m Verify vessel position has null lat[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m Verify vessel position has null lon[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m Verify vessel position has undefined lat[32m 11[2mms[22m[39m
+       [32mΓ£ô[39m Verify vessel position has undefined lon[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m Verify vessel position contains NaN coordinates[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m Verify vessel position contains Infinity coordinates[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m Verify vesselId is empty string[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m Verify vesselId contains whitespace only[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m Verify vesselId contains special characters[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m Verify vesselId contains Unicode characters[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m Verify duplicate vessel IDs returned from backend[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m Verify override start greater than override end[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m Verify override end less than override start[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m Verify override contains NaN start value[32m 3[2mms[22m[39m
+       [32mΓ£ô[39m Verify override contains NaN end value[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m Verify override contains Infinity values[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m Verify override style is null[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m Verify override style is undefined[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m Verify override style missing color[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m Verify override style missing opacity[32m 2[2mms[22m[39m
+       [32mΓ£ô[39m Verify override style missing weight[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m Verify override style contains invalid color code[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m Verify override style contains negative opacity[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m Verify override style contains opacity greater than 1[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m Verify override style contains negative weight[32m 1[2mms[22m[39m
+[31m       [31m├ù[31m Verify override array contains null entries[39m[32m 3[2mms[22m[39m
+[31m       [31m├ù[31m Verify override array contains undefined entries[39m[32m 2[2mms[22m[39m
+       [32mΓ£ô[39m Verify override array contains malformed objects[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m Verify currentTimestampMs is NaN[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m Verify currentTimestampMs is Infinity[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m Verify currentTimestampMs is negative[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m Verify currentTimestampMs is extremely large[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m Verify timeline contains corrupted vessel structure[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m Verify trajectoryOverrides contains unexpected vessel IDs[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m Verify override matching logic breaks when rules are unsorted[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m Verify hook returns same result when inputs are unchanged[32m 2[2mms[22m[39m
+       [32mΓ£ô[39m Verify useMemo prevents unnecessary recomputation[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m Verify timeline change triggers recomputation[32m 3[2mms[22m[39m
+       [32mΓ£ô[39m Verify currentTimestampMs change triggers recomputation[32m 2[2mms[22m[39m
+       [32mΓ£ô[39m Verify trajectoryOverrides change triggers recomputation[32m 2[2mms[22m[39m
+       [32mΓ£ô[39m Verify rerender with same props returns same reference[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m Verify rerender with cloned timeline triggers recomputation[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m Verify rerender with cloned override object triggers recomputation[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m Verify vessel trajectory updates correctly as playback progresses[32m 2[2mms[22m[39m
+       [32mΓ£ô[39m Verify vessel trajectory shrinks when currentTimestampMs decreases[32m 2[2mms[22m[39m
+       [32mΓ£ô[39m Verify vessel trajectory grows when currentTimestampMs increases[32m 2[2mms[22m[39m
+       [32mΓ£ô[39m Verify override changes are reflected immediately[32m 3[2mms[22m[39m
+       [32mΓ£ô[39m Verify stale trajectory data is not returned[32m 3[2mms[22m[39m
+       [32mΓ£ô[39m Verify stale override styles are not returned[32m 2[2mms[22m[39m
+       [32mΓ£ô[39m Verify rapid timestamp updates produce correct trajectory[32m 2[2mms[22m[39m
+       [32mΓ£ô[39m Verify rapid override updates produce correct styles[32m 4[2mms[22m[39m
+       [32mΓ£ô[39m Verify timeline updates while playback is active[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m Verify vessel disappears after rerender[32m 2[2mms[22m[39m
+       [32mΓ£ô[39m Verify vessel appears after rerender[32m 2[2mms[22m[39m
+       [32mΓ£ô[39m Verify switching datasets resets trajectory correctly[32m 1[2mms[22m[39m
+[31m       [31m├ù[31m Verify backend returns timeline without vessels field[39m[32m 3[2mms[22m[39m
+       [32mΓ£ô[39m Verify backend returns timeline without timestampMs[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m Verify backend returns lat/lon as strings[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m Verify backend returns lat/lon as null[32m 2[2mms[22m[39m
+       [32mΓ£ô[39m Verify backend returns lat/lon as undefined[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m Verify backend returns lat/lon as arrays[32m 2[2mms[22m[39m
+       [32mΓ£ô[39m Verify backend returns override start as string[32m 2[2mms[22m[39m
+       [32mΓ£ô[39m Verify backend returns override end as string[32m 2[2mms[22m[39m
+       [32mΓ£ô[39m Verify backend returns override style as string[32m 3[2mms[22m[39m
+       [32mΓ£ô[39m Verify backend returns override style as empty object[32m 3[2mms[22m[39m
+       [32mΓ£ô[39m Verify backend returns additional unexpected style properties[32m 2[2mms[22m[39m
+       [32mΓ£ô[39m Verify backend returns duplicate timeline frames[32m 2[2mms[22m[39m
+[31m       [31m├ù[31m Verify backend returns out-of-order timeline frames[39m[32m 5[2mms[22m[39m
+       [32mΓ£ô[39m Verify backend returns partially populated vessel objects[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m Verify backend returns mixed valid and invalid vessel data[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m Verify backend changes override schema[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m Verify backend changes coordinate schema[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m Verify backend returns unknown fields[32m 1[2mms[22m[39m
+       [32mΓ£ô[39m Verify backend omits required fields[32m 2[2mms[22m[39m
+[31m       [31m├ù[31m Verify backend returns malformed override arrays[39m[32m 5[2mms[22m[39m
+       [32mΓ£ô[39m Verify 100 timeline frames[32m 2[2mms[22m[39m
+       [32mΓ£ô[39m Verify 1,000 timeline frames[32m 3[2mms[22m[39m
+       [32mΓ£ô[39m Verify 10,000 timeline frames[32m 7[2mms[22m[39m
+       [32mΓ£ô[39m Verify 100 vessels across timeline[32m 2[2mms[22m[39m
+       [32mΓ£ô[39m Verify 1,000 vessels across timeline[32m 5[2mms[22m[39m
+       [32mΓ£ô[39m Verify large coordinate history for a single vessel[32m 4[2mms[22m[39m
+       [32mΓ£ô[39m Verify 100 override rules for one vessel[32m 2[2mms[22m[39m
+       [32mΓ£ô[39m Verify 1,000 override rules for one vessel[32m 2[2mms[22m[39m
+       [32mΓ£ô[39m Verify many vessels each having large override arrays[32m 3[2mms[22m[39m
+       [32mΓ£ô[39m Verify trajectory generation remains responsive with maximum expected production dataset[32m 23[2mms[22m[39m
+node.exe : 
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" "C:\Program Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[31mΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[39m[1m[41m Failed Tests 12 [49m[22m[31mΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[39m
+
+[41m[1m FAIL [22m[49m src/features/playback/__tests__/useVesselTrajectorySegments.test.ts[2m > [22museVesselTrajectorySegments[2m > [22mBreak Cases[2m > [22mVerify timeline is null
+[31m[1mAssertionError[22m: expected TypeError: Cannot read properties of nullΓÇª to be undefined[39m
+
+[32m- Expected:[39m
+undefined
+
+[31m+ Received:[39m
+TypeError {
+  "message": "Cannot read properties of null (reading 'filter')",
+}
+
+[36m [2mΓ¥»[22m src/features/playback/__tests__/useVesselTrajectorySegments.test.ts:[2m482:21[22m[39m
+    [90m480|[39m     [34mit[39m([32m'Verify timeline is null'[39m[33m,[39m () [33m=>[39m {
+    [90m481|[39m       [35mconst[39m { result[33m,[39m error } [33m=[39m [34mrunHook[39m([35mnull[39m[33m,[39m [34m100[39m[33m,[39m [35mnull[39m)[33m;[39m
+    [90m482|[39m       [34mexpect[39m(error)[33m.[39m[34mtoBeUndefined[39m()[33m;[39m
+    [90m   |[39m                     [31m^[39m
+    [90m483|[39m       [34mexpect[39m(result)[33m.[39m[34mtoEqual[39m([])[33m;[39m
+    [90m484|[39m     })[33m;[39m
+
+[31m[2mΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[1/12]ΓÄ»[22m[39m
+
+[41m[1m FAIL [22m[49m src/features/playback/__tests__/useVesselTrajectorySegments.test.ts[2m > [22museVesselTrajectorySegments[2m > [22mBreak Cases[2m > [22mVerify timeline is 
+undefined
+[31m[1mAssertionError[22m: expected TypeError: Cannot read properties of undeΓÇª to be undefined[39m
+
+[32m- Expected:[39m
+undefined
+
+[31m+ Received:[39m
+TypeError {
+  "message": "Cannot read properties of undefined (reading 'filter')",
+}
+
+[36m [2mΓ¥»[22m src/features/playback/__tests__/useVesselTrajectorySegments.test.ts:[2m488:21[22m[39m
+    [90m486|[39m     [34mit[39m([32m'Verify timeline is undefined'[39m[33m,[39m () [33m=>[39m {
+    [90m487|[39m       [35mconst[39m { result[33m,[39m error } [33m=[39m [34mrunHook[39m(undefined[33m,[39m [34m100[39m[33m,[39m [35mnull[39m)[33m;[39m
+    [90m488|[39m       [34mexpect[39m(error)[33m.[39m[34mtoBeUndefined[39m()[33m;[39m
+    [90m   |[39m                     [31m^[39m
+    [90m489|[39m       [34mexpect[39m(result)[33m.[39m[34mtoEqual[39m([])[33m;[39m
+    [90m490|[39m     })[33m;[39m
+
+[31m[2mΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[2/12]ΓÄ»[22m[39m
+
+[41m[1m FAIL [22m[49m src/features/playback/__tests__/useVesselTrajectorySegments.test.ts[2m > [22museVesselTrajectorySegments[2m > [22mBreak Cases[2m > [22mVerify timeline contains 
+null frame
+[31m[1mAssertionError[22m: expected TypeError: Cannot read properties of nullΓÇª to be undefined[39m
+
+[32m- Expected:[39m
+undefined
+
+[31m+ Received:[39m
+TypeError {
+  "message": "Cannot read properties of null (reading 'timestampMs')",
+}
+
+[36m [2mΓ¥»[22m src/features/playback/__tests__/useVesselTrajectorySegments.test.ts:[2m495:21[22m[39m
+    [90m493|[39m       const timeline = [createFrame(0, { a: pos(0, 0) }), null, createΓÇª
+    [90m494|[39m       [35mconst[39m { result[33m,[39m error } [33m=[39m [34mrunHook[39m(timeline[33m,[39m [34m100[39m[33m,[39m [35mnull[39m)[33m;[39m
+    [90m495|[39m       [34mexpect[39m(error)[33m.[39m[34mtoBeUndefined[39m()[33m;[39m
+    [90m   |[39m                     [31m^[39m
+    [90m496|[39m       [34mexpect[39m(result)[33m.[39m[34mtoBeDefined[39m()[33m;[39m
+    [90m497|[39m     })[33m;[39m
+
+[31m[2mΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[3/12]ΓÄ»[22m[39m
+
+[41m[1m FAIL [22m[49m src/features/playback/__tests__/useVesselTrajectorySegments.test.ts[2m > [22museVesselTrajectorySegments[2m > [22mBreak Cases[2m > [22mVerify timeline contains 
+undefined frame
+[31m[1mAssertionError[22m: expected TypeError: Cannot read properties of undeΓÇª to be undefined[39m
+
+[32m- Expected:[39m
+undefined
+
+[31m+ Received:[39m
+TypeError {
+  "message": "Cannot read properties of undefined (reading 'timestampMs')",
+}
+
+[36m [2mΓ¥»[22m src/features/playback/__tests__/useVesselTrajectorySegments.test.ts:[2m502:21[22m[39m
+    [90m500|[39m       const timeline = [createFrame(0, { a: pos(0, 0) }), undefined, cΓÇª
+    [90m501|[39m       [35mconst[39m { result[33m,[39m error } [33m=[39m [34mrunHook[39m(timeline[33m,[39m [34m100[39m[33m,[39m [35mnull[39m)[33m;[39m
+    [90m502|[39m       [34mexpect[39m(error)[33m.[39m[34mtoBeUndefined[39m()[33m;[39m
+    [90m   |[39m                     [31m^[39m
+    [90m503|[39m       [34mexpect[39m(result)[33m.[39m[34mtoBeDefined[39m()[33m;[39m
+    [90m504|[39m     })[33m;[39m
+
+[31m[2mΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[4/12]ΓÄ»[22m[39m
+
+[41m[1m FAIL [22m[49m src/features/playback/__tests__/useVesselTrajectorySegments.test.ts[2m > [22museVesselTrajectorySegments[2m > [22mBreak Cases[2m > [22mVerify frame missing 
+vessels property
+[31m[1mAssertionError[22m: expected TypeError: Cannot convert undefined or nuΓÇª to be undefined[39m
+
+[32m- Expected:[39m
+undefined
+
+[31m+ Received:[39m
+TypeError {
+  "message": "Cannot convert undefined or null to object",
+}
+
+[36m [2mΓ¥»[22m src/features/playback/__tests__/useVesselTrajectorySegments.test.ts:[2m544:21[22m[39m
+    [90m542|[39m       const timeline = [{ timestampMs: 0 }, createFrame(100, { a: pos(ΓÇª
+    [90m543|[39m       [35mconst[39m { result[33m,[39m error } [33m=[39m [34mrunHook[39m(timeline[33m,[39m [34m100[39m[33m,[39m [35mnull[39m)[33m;[39m
+    [90m544|[39m       [34mexpect[39m(error)[33m.[39m[34mtoBeUndefined[39m()[33m;[39m
+    [90m   |[39m                     [31m^[39m
+    [90m545|[39m       [34mexpect[39m(result)[33m.[39m[34mtoBeDefined[39m()[33m;[39m
+    [90m546|[39m     })[33m;[39m
+
+[31m[2mΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[5/12]ΓÄ»[22m[39m
+
+[41m[1m FAIL [22m[49m src/features/playback/__tests__/useVesselTrajectorySegments.test.ts[2m > [22museVesselTrajectorySegments[2m > [22mBreak Cases[2m > [22mVerify frame vessels is 
+null
+[31m[1mAssertionError[22m: expected TypeError: Cannot convert undefined or nuΓÇª to be undefined[39m
+
+[32m- Expected:[39m
+undefined
+
+[31m+ Received:[39m
+TypeError {
+  "message": "Cannot convert undefined or null to object",
+}
+
+[36m [2mΓ¥»[22m src/features/playback/__tests__/useVesselTrajectorySegments.test.ts:[2m551:21[22m[39m
+    [90m549|[39m       const timeline = [createFrame(0, null as any), createFrame(100, ΓÇª
+    [90m550|[39m       [35mconst[39m { result[33m,[39m error } [33m=[39m [34mrunHook[39m(timeline[33m,[39m [34m100[39m[33m,[39m [35mnull[39m)[33m;[39m
+    [90m551|[39m       [34mexpect[39m(error)[33m.[39m[34mtoBeUndefined[39m()[33m;[39m
+    [90m   |[39m                     [31m^[39m
+    [90m552|[39m       [34mexpect[39m(result)[33m.[39m[34mtoBeDefined[39m()[33m;[39m
+    [90m553|[39m     })[33m;[39m
+
+[31m[2mΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[6/12]ΓÄ»[22m[39m
+
+[41m[1m FAIL [22m[49m src/features/playback/__tests__/useVesselTrajectorySegments.test.ts[2m > [22museVesselTrajectorySegments[2m > [22mBreak Cases[2m > [22mVerify frame vessels is 
+undefined
+[31m[1mAssertionError[22m: expected TypeError: Cannot convert undefined or nuΓÇª to be undefined[39m
+
+[32m- Expected:[39m
+undefined
+
+[31m+ Received:[39m
+TypeError {
+  "message": "Cannot convert undefined or null to object",
+}
+
+[36m [2mΓ¥»[22m src/features/playback/__tests__/useVesselTrajectorySegments.test.ts:[2m558:21[22m[39m
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m12 failed[39m[22m[2m | [22m[1m[32m138 passed[39m[22m[90m (150)[39m
+[2m   Start at [22m 16:59:43
+[2m   Duration [22m 5.96s[2m (transform 426ms, setup 574ms, import 614ms, tests 340ms, environment 4.01s)[22m
+
+    [90m556|[39m       const timeline = [createFrame(0, undefined as any), createFrame(ΓÇª
+    [90m557|[39m       [35mconst[39m { result[33m,[39m error } [33m=[39m [34mrunHook[39m(timeline[33m,[39m [34m100[39m[33m,[39m [35mnull[39m)[33m;[39m
+    [90m558|[39m       [34mexpect[39m(error)[33m.[39m[34mtoBeUndefined[39m()[33m;[39m
+    [90m   |[39m                     [31m^[39m
+    [90m559|[39m       [34mexpect[39m(result)[33m.[39m[34mtoBeDefined[39m()[33m;[39m
+    [90m560|[39m     })[33m;[39m
+
+[31m[2mΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[7/12]ΓÄ»[22m[39m
+
+[41m[1m FAIL [22m[49m src/features/playback/__tests__/useVesselTrajectorySegments.test.ts[2m > [22museVesselTrajectorySegments[2m > [22mBreak Cases[2m > [22mVerify override array 
+contains null entries
+[31m[1mAssertionError[22m: expected TypeError: Cannot read properties of nullΓÇª to be undefined[39m
+
+[32m- Expected:[39m
+undefined
+
+[31m+ Received:[39m
+TypeError {
+  "message": "Cannot read properties of null (reading 'start')",
+}
+
+[36m [2mΓ¥»[22m src/features/playback/__tests__/useVesselTrajectorySegments.test.ts:[2m788:21[22m[39m
+    [90m786|[39m       const overrides = { a: [null, createOverride(0, 100, '#ff0000')]ΓÇª
+    [90m787|[39m       [35mconst[39m { result[33m,[39m error } [33m=[39m [34mrunHook[39m(timeline[33m,[39m [34m100[39m[33m,[39m overrides)[33m;[39m
+    [90m788|[39m       [34mexpect[39m(error)[33m.[39m[34mtoBeUndefined[39m()[33m;[39m
+    [90m   |[39m                     [31m^[39m
+    [90m789|[39m       [34mexpect[39m(result)[33m.[39m[34mtoBeDefined[39m()[33m;[39m
+    [90m790|[39m     })[33m;[39m
+
+[31m[2mΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[8/12]ΓÄ»[22m[39m
+
+[41m[1m FAIL [22m[49m src/features/playback/__tests__/useVesselTrajectorySegments.test.ts[2m > [22museVesselTrajectorySegments[2m > [22mBreak Cases[2m > [22mVerify override array 
+contains undefined entries
+[31m[1mAssertionError[22m: expected TypeError: Cannot read properties of undeΓÇª to be undefined[39m
+
+[32m- Expected:[39m
+undefined
+
+[31m+ Received:[39m
+TypeError {
+  "message": "Cannot read properties of undefined (reading 'start')",
+}
+
+[36m [2mΓ¥»[22m src/features/playback/__tests__/useVesselTrajectorySegments.test.ts:[2m796:21[22m[39m
+    [90m794|[39m       const overrides = { a: [undefined, createOverride(0, 100, '#ff00ΓÇª
+    [90m795|[39m       [35mconst[39m { result[33m,[39m error } [33m=[39m [34mrunHook[39m(timeline[33m,[39m [34m100[39m[33m,[39m overrides)[33m;[39m
+    [90m796|[39m       [34mexpect[39m(error)[33m.[39m[34mtoBeUndefined[39m()[33m;[39m
+    [90m   |[39m                     [31m^[39m
+    [90m797|[39m       [34mexpect[39m(result)[33m.[39m[34mtoBeDefined[39m()[33m;[39m
+    [90m798|[39m     })[33m;[39m
+
+[31m[2mΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[9/12]ΓÄ»[22m[39m
+
+[41m[1m FAIL [22m[49m src/features/playback/__tests__/useVesselTrajectorySegments.test.ts[2m > [22museVesselTrajectorySegments[2m > [22mAPI Contract Issues[2m > [22mVerify backend 
+returns timeline without vessels field
+[31m[1mAssertionError[22m: expected TypeError: Cannot convert undefined or nuΓÇª to be undefined[39m
+
+[32m- Expected:[39m
+undefined
+
+[31m+ Received:[39m
+TypeError {
+  "message": "Cannot convert undefined or null to object",
+}
+
+[36m [2mΓ¥»[22m src/features/playback/__tests__/useVesselTrajectorySegments.test.ts:[2m1102:21[22m[39m
+    [90m1100|[39m       const timeline = [{ timestampMs: 0 }, { timestampMs: 100 }] as aΓÇª
+    [90m1101|[39m       [35mconst[39m { result[33m,[39m error } [33m=[39m [34mrunHook[39m(timeline[33m,[39m [34m100[39m[33m,[39m [35mnull[39m)[33m;[39m
+    [90m1102|[39m       [34mexpect[39m(error)[33m.[39m[34mtoBeUndefined[39m()[33m;[39m
+    [90m   |[39m                     [31m^[39m
+    [90m1103|[39m       [34mexpect[39m(result)[33m.[39m[34mtoEqual[39m([])[33m;[39m
+    [90m1104|[39m     })[33m;[39m
+
+[31m[2mΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[10/12]ΓÄ»[22m[39m
+
+[41m[1m FAIL [22m[49m src/features/playback/__tests__/useVesselTrajectorySegments.test.ts[2m > [22museVesselTrajectorySegments[2m > [22mAPI Contract Issues[2m > [22mVerify backend 
+returns out-of-order timeline frames
+[31m[1mAssertionError[22m: expected [ [ 2, 2 ], [ +0, +0 ], [ 1, 1 ] ] to deeply equal [ [ +0, +0 ], [ 1, 1 ], [ 2, 2 ] ][39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[2m    [[22m
+[31m+     2,[39m
+[31m+     2,[39m
+[31m+   ],[39m
+[31m+   [[39m
+[2m      0,[22m
+[2m      0,[22m
+[2m    ],[22m
+[2m    [[22m
+[2m      1,[22m
+[2m      1,[22m
+[32m-   ],[39m
+[32m-   [[39m
+[32m-     2,[39m
+[32m-     2,[39m
+[2m    ],[22m
+[2m  ][22m
+
+[36m [2mΓ¥»[22m src/features/playback/__tests__/useVesselTrajectorySegments.test.ts:[2m1212:34[22m[39m
+    [90m1210|[39m       [35mconst[39m { result[33m,[39m error } [33m=[39m [34mrunHook[39m(timeline[33m,[39m [34m200[39m[33m,[39m [35mnull[39m)[33m;[39m
+    [90m1211|[39m       [34mexpect[39m(error)[33m.[39m[34mtoBeUndefined[39m()[33m;[39m
+    [90m1212|[39m       [34mexpect[39m(result[33m?.[39m[[34m0[39m][33m.[39mcoords)[33m.[39m[34mtoEqual[39m([[[34m0[39m[33m,[39m [34m0[39m][33m,[39m [[34m1[39m[33m,[39m 
+[34m1[39m][33m,[39m [[34m2[39m[33m,[39m [34m2[39m]])[33m;[39m
+    [90m   |[39m                                  [31m^[39m
+    [90m1213|[39m     })[33m;[39m
+    [90m1214|[39m
+
+[31m[2mΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[11/12]ΓÄ»[22m[39m
+
+[41m[1m FAIL [22m[49m src/features/playback/__tests__/useVesselTrajectorySegments.test.ts[2m > [22museVesselTrajectorySegments[2m > [22mAPI Contract Issues[2m > [22mVerify backend 
+returns malformed override arrays
+[31m[1mAssertionError[22m: expected TypeError: overrides.find is not a functiΓÇª to be undefined[39m
+
+[32m- Expected:[39m
+undefined
+
+[31m+ Received:[39m
+TypeError {
+  "message": "overrides.find is not a function",
+}
+
+[36m [2mΓ¥»[22m src/features/playback/__tests__/useVesselTrajectorySegments.test.ts:[2m1274:21[22m[39m
+    [90m1272|[39m       [35mconst[39m overrides [33m=[39m { a[33m:[39m [32m'not-an-array'[39m [35mas[39m any }[33m;[39m
+    [90m1273|[39m       [35mconst[39m { result[33m,[39m error } [33m=[39m [34mrunHook[39m(timeline[33m,[39m [34m100[39m[33m,[39m overrides)[33m;[39m
+    [90m1274|[39m       [34mexpect[39m(error)[33m.[39m[34mtoBeUndefined[39m()[33m;[39m
+    [90m   |[39m                     [31m^[39m
+    [90m1275|[39m       [34mexpect[39m(result)[33m.[39m[34mtoBeDefined[39m()[33m;[39m
+    [90m1276|[39m     })[33m;[39m
+
+[31m[2mΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[12/12]ΓÄ»[22m[39m
+

@@ -8,6 +8,7 @@ import { AuthProvider } from "@/features/auth";
 import { ChatbotProvider } from "@/features/chatbot";
 import LoginPage from "./pages/LoginPage";
 import MapPage from "./pages/MapPage";
+import { EventsPage } from "./pages/EventsPage";
 import AppLayout from "./components/AppLayout";
 import PublicRoute from "./routes/PublicRoute";
 import ProtectedRoute from "./routes/ProtectedRoute";
@@ -20,6 +21,31 @@ function App() {
       <ThemeProvider theme={defenseTheme}>
         <CssBaseline />
         <BrowserRouter>
+
+          <AuthProvider>
+            <Routes>
+              <Route
+                path="/login"
+                element={
+                  <PublicRoute>
+                    <LoginPage />
+                  </PublicRoute>
+                }
+              />
+              <Route
+                element={
+                  <ProtectedRoute>
+                    <AppLayout />
+                  </ProtectedRoute>
+                }
+              >
+                <Route path="/map" element={<MapPage />} />
+                <Route path="/events" element={<EventsPage />} />
+              </Route>
+              <Route path="*" element={<Navigate to="/login" replace />} />
+            </Routes>
+          </AuthProvider>
+
           <ChatbotProvider>
             <AuthProvider>
               <Routes>
@@ -44,6 +70,7 @@ function App() {
               </Routes>
             </AuthProvider>
           </ChatbotProvider>
+
         </BrowserRouter>
       </ThemeProvider>
     </QueryClientProvider>
