@@ -1,13 +1,22 @@
-import { parseEventDate } from '../../playbackUtils';
+import { parseEventDate } from './playbackUtils';
 import type {
-  GeofenceIntrusionInformationRaw,
-  GeofencePolygonRaw,
-} from '../../../api/eventTypes/geofenceIntrusion/geofenceIntrusionTypes';
-import type { GeofenceEvent } from './geofenceIntrusionTypes';
-import type { EventDetailsBase, TimeWindow, TrajectoryOverrideRule } from '../../types';
+  GeofenceEvent,
+  GeofenceInformation,
+  GeofencePolygon,
+} from './eventTypeTypes';
+import type { EventDetailsBase, TimeWindow, TrajectoryOverrideRule } from './types';
+
+// ── Event-type mappers + trajectory-override functions ───────────────────────
+// One flat file, one section per event type. Operates on already-mapped domain
+// data (EventDetailsBase / extras), so it imports ONLY from model/ — never api/.
+// That keeps it clear of the "only model/mappers.ts may import api types" rule
+// even though it isn't named mappers.ts.
+// (Flattened from model/eventTypes/<type>/<type>Mappers.ts.)
+
+// ── geofence_intrusion ───────────────────────────────────────────────────────
 
 function parseGeoJsonToPositions(
-  raw: GeofencePolygonRaw | undefined,
+  raw: GeofencePolygon | undefined,
 ): [number, number][][] | null {
   if (!raw?.polygon?.coordinates) return null;
 
@@ -32,12 +41,12 @@ export function mapGeofenceEventFromDetails(
   base: EventDetailsBase,
   extras: Record<string, unknown>,
 ): GeofenceEvent {
-  const info    = base.information as GeofenceIntrusionInformationRaw;
-  const polygon = extras['geofence_polygon'] as GeofencePolygonRaw | undefined;
+  const info    = base.information as GeofenceInformation;
+  const polygon = extras['geofence_polygon'] as GeofencePolygon | undefined;
 
   return {
-    geofenceName:     info.geofence_name    ?? 'Restricted Area',
-    geofenceId:       info.geofence_id      ?? null,
+    geofenceName:     info.geofence_name      ?? 'Restricted Area',
+    geofenceId:       info.geofence_id        ?? null,
     hasExitedPolygon: info.Has_exited_polygon ?? false,
     intrusionStartMs: parseEventDate(base.startTime),
     intrusionEndMs:   parseEventDate(base.endTime),
@@ -50,7 +59,7 @@ export function getGeofenceTrajectoryOverrides(
   eventDetails: EventDetailsBase,
   timeWindow: TimeWindow,
 ): Record<string, TrajectoryOverrideRule[]> | null {
-  const info  = eventDetails.information as GeofenceIntrusionInformationRaw;
+  const info  = eventDetails.information as GeofenceInformation;
   const color = (info.Has_exited_polygon ?? false) ? '#ff8c00' : '#ff4444';
 
   const start = parseEventDate(eventDetails.startTime) ?? timeWindow.eventStartMs;

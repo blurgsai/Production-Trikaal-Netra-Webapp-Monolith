@@ -1,4 +1,4 @@
-import { getGeofenceTrajectoryOverrides } from './eventTypes/geofenceIntrusion/geofenceIntrusionMappers';
+import { getGeofenceTrajectoryOverrides } from './eventTypeMappers';
 import type { EventDetailsBase, TimeWindow, TrajectoryOverrideFn, TrajectoryOverrideRule } from './types';
 
 // Separate from ui/pluginRegistry.tsx on purpose: trajectoryFn returns plain data

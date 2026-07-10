@@ -1,4 +1,11 @@
-import type { EventDetailsBaseRaw } from '../../types';
+import type { EventDetailsBaseRaw } from './types';
+
+// ── Raw event-type schemas ───────────────────────────────────────────────────
+// Backend mirror for each event type's `information` block and any extra
+// top-level payload it attaches. One flat file, one section per event type.
+// (Flattened from api/eventTypes/<type>/ to satisfy the flat-layer CI rule.)
+
+// ── geofence_intrusion ───────────────────────────────────────────────────────
 
 // Polygon fetched by backend from a separate collection and attached to the response
 export interface GeofencePolygonCoordinatesRaw {

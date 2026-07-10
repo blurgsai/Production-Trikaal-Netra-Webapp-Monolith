@@ -1,5 +1,5 @@
 import { GeofenceIntrusionOverlay } from './GeofenceIntrusionOverlay';
-import { useGeofenceIntrusionEvent } from '../../../hooks/eventTypes/geofenceIntrusion/useGeofenceIntrusionEvent';
+import { useGeofenceIntrusionEvent } from '../../../hooks/useGeofenceIntrusionEvent';
 import type { EventPlugin } from '../../pluginRegistry';
 import type { EventOverlayProps } from '../../../model/types';
 

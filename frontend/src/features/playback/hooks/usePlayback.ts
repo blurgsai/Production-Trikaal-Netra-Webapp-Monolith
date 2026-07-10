@@ -1,7 +1,5 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { fetchPlaybackData } from '../api/playbackApi';
-import { mapPlaybackFromApi } from '../model/mappers';
+import { usePlaybackData } from './usePlaybackData';
 import { resolvePositionsAtTime, PLAYBACK_STEP_MS, TICK_INTERVAL_MS } from '../model/playbackUtils';
 import type { PlaybackData, VesselPosition } from '../model/types';
 
@@ -30,13 +28,7 @@ export function usePlayback({
   eventType,
   isCompound,
 }: UsePlaybackOptions): UsePlaybackReturn {
-  const { data, isLoading, error } = useQuery({
-    queryKey: ['playback', eventId, isCompound],
-    queryFn: () => fetchPlaybackData(eventId!, eventType!, isCompound),
-    enabled: !!eventId && !!eventType,
-    select: mapPlaybackFromApi,
-    staleTime: Infinity,
-  });
+  const { data, isLoading, error } = usePlaybackData({ eventId, eventType, isCompound });
 
   const [currentTimestampMs, setCurrentTimestampMs] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -85,7 +77,7 @@ export function usePlayback({
   return {
     data:               data ?? null,
     isLoading,
-    error:              error ? (error as Error).message : null,
+    error,
     currentTimestampMs,
     currentPositions,
     isPlaying,

@@ -1,5 +1,5 @@
 import { Polygon, Tooltip } from 'react-leaflet';
-import type { GeofenceEvent } from '../../../model/eventTypes/geofenceIntrusion/geofenceIntrusionTypes';
+import type { GeofenceEvent } from '../../../model/eventTypeTypes';
 import type { TimeWindow } from '../../../model/types';
 
 interface Props {
