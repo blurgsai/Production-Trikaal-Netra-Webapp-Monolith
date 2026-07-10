@@ -2,8 +2,12 @@ import { Box } from "@mui/material";
 import { Outlet } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import Header from "./Header";
+import { ChatBot } from "@/features/chatbot";
+import { useChatbot } from "@/features/chatbot";
 
 function AppLayout() {
+  const { isChatbotOpen, closeChatbot } = useChatbot();
+
   return (
     <Box display="flex">
       <Sidebar />
@@ -21,6 +25,7 @@ function AppLayout() {
       >
         <Header />
         <Outlet />
+        <ChatBot open={isChatbotOpen} onClose={closeChatbot} />
       </Box>
     </Box>
   );

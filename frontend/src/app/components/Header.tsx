@@ -10,10 +10,13 @@ import {
   Box,
   Chip,
 } from "@mui/material";
+import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import { useAuth } from "@/features/auth";
+import { useChatbot } from "@/features/chatbot";
 
 function Header() {
   const { logoutUser, username, role } = useAuth();
+  const { toggleChatbot } = useChatbot();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
@@ -49,6 +52,10 @@ function Header() {
             gap: 1.5,
           }}
         >
+          <IconButton onClick={toggleChatbot} sx={{ color: "primary.light" }}>
+            <AutoAwesomeIcon />
+          </IconButton>
+
           <Chip
             label={displayName}
             size="small"
