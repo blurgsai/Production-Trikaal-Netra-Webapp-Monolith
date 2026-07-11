@@ -66,15 +66,11 @@ export default function AnimationControls({
     if (duration < 86400) {
       return `${hours.toString().padStart(2, "0")}:${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
     }
-    return formatDateTime(seconds);
-  }, [duration]);
-
-  const formatDateTime = (seconds: number) => {
     if (!startTime) return "--";
     const startDate = new Date(startTime);
     const utcDate = new Date(startDate.getTime() + seconds * 1000);
     return `${String(utcDate.getMonth() + 1).padStart(2, "0")}/${String(utcDate.getDate()).padStart(2, "0")} ${String(utcDate.getHours()).padStart(2, "0")}:${String(utcDate.getMinutes()).padStart(2, "0")}`;
-  };
+  }, [duration, startTime]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
