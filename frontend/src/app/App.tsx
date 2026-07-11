@@ -21,31 +21,6 @@ function App() {
       <ThemeProvider theme={defenseTheme}>
         <CssBaseline />
         <BrowserRouter>
-
-          <AuthProvider>
-            <Routes>
-              <Route
-                path="/login"
-                element={
-                  <PublicRoute>
-                    <LoginPage />
-                  </PublicRoute>
-                }
-              />
-              <Route
-                element={
-                  <ProtectedRoute>
-                    <AppLayout />
-                  </ProtectedRoute>
-                }
-              >
-                <Route path="/map" element={<MapPage />} />
-                <Route path="/events" element={<EventsPage />} />
-              </Route>
-              <Route path="*" element={<Navigate to="/login" replace />} />
-            </Routes>
-          </AuthProvider>
-
           <ChatbotProvider>
             <AuthProvider>
               <Routes>
@@ -65,12 +40,12 @@ function App() {
                   }
                 >
                   <Route path="/map" element={<MapPage />} />
+                  <Route path="/events" element={<EventsPage />} />
                 </Route>
                 <Route path="*" element={<Navigate to="/login" replace />} />
               </Routes>
             </AuthProvider>
           </ChatbotProvider>
-
         </BrowserRouter>
       </ThemeProvider>
     </QueryClientProvider>
