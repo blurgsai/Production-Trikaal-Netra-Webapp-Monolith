@@ -1,8 +1,8 @@
-export { fetchPlaybackAttributes, fetchMinutePlaybackVessels } from "./historicalPlaybackApi";
+export { fetchPlaybackAttributes, fetchPlaybackVessels } from "./historicalPlaybackApi";
 export type {
   PlaybackAttributeApi,
   PlaybackAttributesResponse,
   PlaybackQueryPayload,
   PlaybackPointApi,
-  PlaybackMinuteResponse,
+  PlaybackChunkResponse,
 } from "./types";
