@@ -10,7 +10,7 @@ import {
 import "leaflet/dist/leaflet.css";
 
 import type { ThreatMapMarker, ThreatLevel } from "../model/types";
-import { worldMonitorPalette } from "../model/types";
+import { defenseColors } from "@/shared/theme";
 import { getSeverityConfig } from "../model/mappers";
 
 interface ThreatMapViewportProps {
@@ -70,7 +70,7 @@ export function ThreatMap({
         minHeight: 540,
         borderRadius: 4,
         overflow: "hidden",
-        border: `1px solid ${worldMonitorPalette.borderStrong}`,
+        border: `1px solid ${defenseColors.border.strong}`,
         boxShadow: "0 24px 60px rgba(0,0,0,0.32)",
       }}
     >
@@ -82,7 +82,7 @@ export function ThreatMap({
             zIndex: 1000,
             display: "grid",
             placeItems: "center",
-            backgroundColor: "rgba(7,17,31,0.55)",
+            backgroundColor: defenseColors.overlay,
           }}
         />
       )}
@@ -125,7 +125,7 @@ export function ThreatMap({
                 center={[marker.location.lat, marker.location.lng]}
                 radius={isPrimary ? 12 : isSelected ? 10 : 8}
                 pathOptions={{
-                  color: isPrimary ? "#ffffff" : severity.border,
+                  color: isPrimary ? defenseColors.text.primary : severity.border,
                   fillColor: severity.color,
                   fillOpacity: selectedEventId
                     ? isSelected
@@ -156,8 +156,8 @@ export function ThreatMap({
                   center={[marker.location.lat, marker.location.lng]}
                   radius={4}
                   pathOptions={{
-                    color: "#ffffff",
-                    fillColor: "#ffffff",
+                    color: defenseColors.text.primary,
+                    fillColor: defenseColors.text.primary,
                     fillOpacity: 1,
                     weight: 1,
                   }}
@@ -178,8 +178,8 @@ export function ThreatMap({
           zIndex: 500,
           p: 1,
           borderRadius: 999,
-          backgroundColor: "rgba(7,17,31,0.84)",
-          border: `1px solid ${worldMonitorPalette.border}`,
+          backgroundColor: defenseColors.overlay,
+          border: `1px solid ${defenseColors.border.default}`,
         }}
       >
         {SEVERITY_LEGEND.map((level) => {
@@ -203,7 +203,7 @@ export function ThreatMap({
               <Typography
                 variant="caption"
                 sx={{
-                  color: worldMonitorPalette.textMuted,
+                  color: defenseColors.text.muted,
                   fontWeight: 600,
                   textTransform: "uppercase",
                   letterSpacing: 0.5,

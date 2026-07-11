@@ -17,15 +17,15 @@ import { useParams } from "react-router-dom";
 import { ArticleCard } from "./ArticleCard";
 import { WorldMonitorScrollbarStyles } from "./ScrollbarStyles";
 
-import { worldMonitorPalette } from "../model/types";
+import { defenseColors } from "@/shared/theme";
 
 const filterInputSx = {
   pt: 0.5,
   "& .MuiOutlinedInput-root": {
-    color: worldMonitorPalette.text,
-    backgroundColor: "rgba(255,255,255,0.03)",
-    "& fieldset": { borderColor: worldMonitorPalette.borderStrong },
-    "&:hover fieldset": { borderColor: worldMonitorPalette.textMuted },
+    color: defenseColors.text.primary,
+    backgroundColor: defenseColors.border.soft,
+    "& fieldset": { borderColor: defenseColors.border.strong },
+    "&:hover fieldset": { borderColor: defenseColors.text.muted },
   },
 };
 
@@ -83,9 +83,8 @@ export function Articles() {
           gap: 1.5,
           p: 1.5,
           borderRadius: 3,
-          border: `1px solid ${worldMonitorPalette.border}`,
-          background:
-            "linear-gradient(180deg, rgba(18,35,59,0.95), rgba(9,22,37,0.98))",
+          border: `1px solid ${defenseColors.border.default}`,
+          background: `linear-gradient(180deg, ${defenseColors.background.surfaceAlt}, ${defenseColors.background.surface})`,
         }}
       >
         <TextField
@@ -135,11 +134,11 @@ export function Articles() {
       >
         {isLoading ? (
           <Box sx={{ display: "grid", placeItems: "center", flex: 1 }}>
-            <CircularProgress sx={{ color: worldMonitorPalette.accent }} />
+            <CircularProgress sx={{ color: defenseColors.primary.main }} />
           </Box>
         ) : articles.length === 0 ? (
           <Box sx={{ display: "grid", placeItems: "center", flex: 1, py: 6 }}>
-            <Typography sx={{ color: worldMonitorPalette.textMuted }}>
+            <Typography sx={{ color: defenseColors.text.muted }}>
               No articles found matching the current filters.
             </Typography>
           </Box>

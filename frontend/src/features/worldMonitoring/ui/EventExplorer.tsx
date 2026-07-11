@@ -19,7 +19,7 @@ import type {
   ThreatPagination,
 } from "../model/types";
 
-import { worldMonitorPalette } from "../model/types";
+import { defenseColors } from "@/shared/theme";
 import {
   formatEventTypeLabel,
   formatRelative,
@@ -43,8 +43,8 @@ function EventRow({ event, isSelected, onSelect }: EventRowProps) {
     <Card
       sx={{
         borderRadius: 2,
-        border: `1px solid ${isSelected ? severity.border : worldMonitorPalette.border}`,
-        background: isSelected ? severity.bg : "rgba(255,255,255,0.02)",
+        border: `1px solid ${isSelected ? severity.border : defenseColors.border.default}`,
+        background: isSelected ? severity.bg : defenseColors.border.soft,
         transition: "all 0.2s ease",
         "&:hover": {
           borderColor: severity.border,
@@ -67,7 +67,7 @@ function EventRow({ event, isSelected, onSelect }: EventRowProps) {
         />
         <Typography
           variant="caption"
-          sx={{ color: worldMonitorPalette.textMuted }}
+          sx={{ color: defenseColors.text.muted }}
         >
           {formatRelative(event.enrichedAt)}
         </Typography>
@@ -76,7 +76,7 @@ function EventRow({ event, isSelected, onSelect }: EventRowProps) {
       <Typography
         variant="subtitle2"
         sx={{
-          color: worldMonitorPalette.text,
+          color: defenseColors.text.primary,
           fontWeight: 700,
           mb: 0.75,
           wordBreak: "break-word",
@@ -88,7 +88,7 @@ function EventRow({ event, isSelected, onSelect }: EventRowProps) {
 
       <Typography
         variant="body2"
-        sx={{ color: worldMonitorPalette.textMuted, mb: 1.25 }}
+        sx={{ color: defenseColors.text.muted, mb: 1.25 }}
       >
         {event.summary}
       </Typography>
@@ -98,8 +98,8 @@ function EventRow({ event, isSelected, onSelect }: EventRowProps) {
           size="small"
           label={formatEventTypeLabel(event.eventType)}
           sx={{
-            backgroundColor: "rgba(78,195,255,0.12)",
-            color: worldMonitorPalette.accent,
+            backgroundColor: defenseColors.primary.soft,
+            color: defenseColors.primary.main,
           }}
         />
         {event.location && (
@@ -107,8 +107,8 @@ function EventRow({ event, isSelected, onSelect }: EventRowProps) {
             size="small"
             label={event.location}
             sx={{
-              backgroundColor: "rgba(255,255,255,0.04)",
-              color: worldMonitorPalette.textMuted,
+              backgroundColor: defenseColors.border.soft,
+              color: defenseColors.text.muted,
             }}
           />
         )}
@@ -152,7 +152,7 @@ export function EventExplorer({
         <Box
           sx={{
             p: 2,
-            borderBottom: `1px solid ${worldMonitorPalette.border}`,
+            borderBottom: `1px solid ${defenseColors.border.default}`,
             display: "flex",
             alignItems: "center",
           }}
@@ -160,7 +160,7 @@ export function EventExplorer({
           <Button
             startIcon={<ArrowBackIcon />}
             onClick={onCloseDetail}
-            sx={{ color: worldMonitorPalette.textMuted }}
+            sx={{ color: defenseColors.text.muted }}
           >
             Back to list
           </Button>
@@ -181,17 +181,17 @@ export function EventExplorer({
   return (
     <>
         <Paper
-          sx={{ p: 2, borderBottom: `1px solid ${worldMonitorPalette.border}` }}
+          sx={{ p: 2, borderBottom: `1px solid ${defenseColors.border.default}` }}
         >
         <Typography
           variant="h6"
-          sx={{ color: worldMonitorPalette.text, fontWeight: 800 }}
+          sx={{ color: defenseColors.text.primary, fontWeight: 800 }}
         >
           Event Explorer
         </Typography>
         <Typography
           variant="body2"
-          sx={{ color: worldMonitorPalette.textMuted }}
+          sx={{ color: defenseColors.text.muted }}
         >
           {pagination?.total ?? 0} events match the active threat filters.
         </Typography>
@@ -199,7 +199,7 @@ export function EventExplorer({
           <Typography
             variant="caption"
             sx={{
-              color: worldMonitorPalette.accent,
+              color: defenseColors.primary.main,
               display: "block",
               mt: 0.75,
             }}
@@ -212,13 +212,13 @@ export function EventExplorer({
         </Paper>
       {loading ? (
         <Box sx={{ flex: 1, display: "grid", placeItems: "center" }}>
-          <CircularProgress sx={{ color: worldMonitorPalette.accent }} />
+          <CircularProgress sx={{ color: defenseColors.primary.main }} />
         </Box>
       ) : (
         <>
           {events.length === 0 ? (
             <Box sx={{ flex: 1, display: "grid", placeItems: "center" }}>
-              <Typography sx={{ color: worldMonitorPalette.textMuted }}>
+              <Typography sx={{ color: defenseColors.text.muted }}>
                 No events match the current filters.
               </Typography>
             </Box>
@@ -247,7 +247,7 @@ export function EventExplorer({
 
         {(pagination?.totalPages ?? 1) > 1 && (
           <Paper
-            sx={{ p: 1.5, borderTop: `1px solid ${worldMonitorPalette.border}`, display: "flex", justifyContent: "center" }}
+            sx={{ p: 1.5, borderTop: `1px solid ${defenseColors.border.default}`, display: "flex", justifyContent: "center" }}
           >
             <Pagination
               count={pagination?.totalPages ?? 1}

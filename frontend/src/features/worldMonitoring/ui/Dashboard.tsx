@@ -5,7 +5,7 @@ import { Alert, Box, CircularProgress, Stack } from "@mui/material";
 import { useDashboard } from "../hooks/useDashboard";
 import { useDashboardEventDetail } from "../hooks/useDashboardEventDetail";
 import type { DashboardHotspot, DashboardRecentEvent } from "../model/types";
-import { worldMonitorPalette } from "../model/types";
+import { defenseColors } from "@/shared/theme";
 import { getSeverityConfig, formatEventTypeLabel } from "../model/mappers";
 
 import { MetricCard } from "./MetricCard";
@@ -85,7 +85,7 @@ export const Dashboard = () => {
           flex: 1,
         }}
       >
-        <CircularProgress sx={{ color: worldMonitorPalette.accent }} />
+        <CircularProgress sx={{ color: defenseColors.primary.main }} />
       </Box>
     );
   }

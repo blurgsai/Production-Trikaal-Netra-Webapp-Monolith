@@ -1,3 +1,5 @@
+import { defenseColors } from "@/shared/theme";
+
 export interface Location {
   name: string;
   lat?: number;
@@ -122,42 +124,28 @@ export interface DashboardDistributions {
 export const severityConfig = {
   LOW: {
     label: "Low",
-    color: "#2ec27e",
-    bg: "rgba(46, 194, 126, 0.14)",
-    border: "rgba(46, 194, 126, 0.42)",
+    color: defenseColors.status.success,
+    bg: `${defenseColors.status.success}24`,
+    border: `${defenseColors.status.success}6b`,
   },
   MEDIUM: {
     label: "Medium",
-    color: "#f6c445",
-    bg: "rgba(246, 196, 69, 0.14)",
-    border: "rgba(246, 196, 69, 0.42)",
+    color: defenseColors.status.info,
+    bg: `${defenseColors.status.info}24`,
+    border: `${defenseColors.status.info}6b`,
   },
   HIGH: {
     label: "High",
-    color: "#ff8a3d",
-    bg: "rgba(255, 138, 61, 0.14)",
-    border: "rgba(255, 138, 61, 0.42)",
+    color: defenseColors.status.warning,
+    bg: `${defenseColors.status.warning}24`,
+    border: `${defenseColors.status.warning}6b`,
   },
   CRITICAL: {
     label: "Critical",
-    color: "#ff4d67",
-    bg: "rgba(255, 77, 103, 0.16)",
-    border: "rgba(255, 77, 103, 0.44)",
+    color: defenseColors.status.error,
+    bg: `${defenseColors.status.error}29`,
+    border: `${defenseColors.status.error}70`,
   },
-} as const;
-
-export const worldMonitorPalette = {
-  background: "#07111f",
-  panel: "#0d1a2c",
-  panelAlt: "#12233b",
-  panelMuted: "#091625",
-  border: "rgba(143, 179, 225, 0.18)",
-  borderStrong: "rgba(143, 179, 225, 0.28)",
-  text: "#edf4ff",
-  textSecondary: "#7f93ac",
-  textMuted: "#93a8c7",
-  accent: "#4ec3ff",
-  accentSoft: "rgba(78, 195, 255, 0.16)",
 } as const;
 
 export type SeverityLevel = keyof typeof severityConfig;

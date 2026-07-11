@@ -1,6 +1,6 @@
 import { GlobalStyles } from "@mui/material";
 
-import { worldMonitorPalette } from "../model/types";
+import { defenseColors } from "@/shared/theme";
 
 export function WorldMonitorScrollbarStyles() {
   return (
@@ -8,20 +8,20 @@ export function WorldMonitorScrollbarStyles() {
       styles={{
         ".wm-scrollable": {
           scrollbarWidth: "thin",
-          scrollbarColor: `${worldMonitorPalette.textMuted} transparent`,
+          scrollbarColor: `${defenseColors.text.muted} transparent`,
           "&::-webkit-scrollbar": {
             width: 8,
             height: 8,
           },
           "&::-webkit-scrollbar-track": {
-            backgroundColor: "rgba(255,255,255,0.04)",
+            backgroundColor: defenseColors.border.soft,
             borderRadius: 4,
           },
           "&::-webkit-scrollbar-thumb": {
-            backgroundColor: "rgba(255,255,255,0.25)",
+            backgroundColor: defenseColors.scrollbar.thumb,
             borderRadius: 4,
             "&:hover": {
-              backgroundColor: "rgba(255,255,255,0.35)",
+              backgroundColor: defenseColors.scrollbar.thumbHover,
             },
           },
         },

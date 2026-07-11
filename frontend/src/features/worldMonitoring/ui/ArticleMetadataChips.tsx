@@ -1,6 +1,6 @@
 import { Chip, Stack } from "@mui/material";
 
-import { worldMonitorPalette } from "../model/types";
+import { defenseColors } from "@/shared/theme";
 import { formatSourceTypeLabel } from "../model/mappers";
 
 interface ArticleMetadata {
@@ -39,8 +39,8 @@ export function ArticleMetadataChips({
           size="small"
           label={article.source}
           sx={{
-            color: worldMonitorPalette.accent,
-            backgroundColor: worldMonitorPalette.accentSoft,
+            color: defenseColors.primary.main,
+            backgroundColor: defenseColors.primary.soft,
           }}
         />
       )}
@@ -50,8 +50,8 @@ export function ArticleMetadataChips({
           size="small"
           label={formatSourceTypeLabel(article.sourceType)}
           sx={{
-            color: worldMonitorPalette.textMuted,
-            backgroundColor: "rgba(255,255,255,0.04)",
+            color: defenseColors.text.muted,
+            backgroundColor: defenseColors.border.soft,
           }}
         />
       )}
@@ -61,8 +61,8 @@ export function ArticleMetadataChips({
           size="small"
           label={`By ${article.author}`}
           sx={{
-            color: worldMonitorPalette.textMuted,
-            backgroundColor: "rgba(255,255,255,0.04)",
+            color: defenseColors.text.muted,
+            backgroundColor: defenseColors.border.soft,
           }}
         />
       )}
@@ -73,9 +73,9 @@ export function ArticleMetadataChips({
           size="small"
           label={loc.name}
           sx={{
-            color: worldMonitorPalette.text,
-            backgroundColor: "rgba(255,255,255,0.04)",
-            border: `1px solid ${worldMonitorPalette.border}`,
+            color: defenseColors.text.primary,
+            backgroundColor: defenseColors.border.soft,
+            border: `1px solid ${defenseColors.border.default}`,
           }}
         />
       ))}
@@ -86,9 +86,9 @@ export function ArticleMetadataChips({
           size="small"
           label={`# ${tag}`}
           sx={{
-            color: "#ffb36d",
-            backgroundColor: "rgba(255,179,109,0.12)",
-            border: "1px solid rgba(255,179,109,0.28)",
+            color: defenseColors.status.warning,
+            backgroundColor: `${defenseColors.status.warning}20`,
+            border: `1px solid ${defenseColors.status.warning}47`,
           }}
         />
       ))}

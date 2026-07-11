@@ -8,7 +8,7 @@ import {
 import { useThreats } from "../hooks/useThreats";
 
 import type { ThreatFilters, ThreatMapMarker } from "../model/types";
-import { worldMonitorPalette } from "../model/types";
+import { defenseColors } from "@/shared/theme";
 
 import { ThreatMap } from "./ThreatMap";
 import { ThreatFilters as ThreatFiltersPanel } from "./ThreatFilters";
@@ -183,9 +183,8 @@ export function Threats() {
             display: "flex",
             flexDirection: "column",
             borderRadius: 4,
-            border: `1px solid ${worldMonitorPalette.border}`,
-            background:
-              "linear-gradient(180deg, rgba(13,26,44,0.98), rgba(9,22,37,0.98))",
+            border: `1px solid ${defenseColors.border.default}`,
+            background: `linear-gradient(180deg, ${defenseColors.background.surfaceAlt}, ${defenseColors.background.surface})`,
             overflow: "hidden",
           }}
         >

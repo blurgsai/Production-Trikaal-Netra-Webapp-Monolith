@@ -9,7 +9,7 @@ import {
   YAxis,
 } from "recharts";
 
-import { worldMonitorPalette } from "../model/types";
+import { defenseColors } from "@/shared/theme";
 import type { DashboardTrend } from "../model/types";
 
 interface ActivityTrendProps {
@@ -22,15 +22,15 @@ export const ActivityTrend = ({ trends }: ActivityTrendProps) => {
       sx={{
         p: 2,
         borderRadius: 3,
-        border: `1px solid ${worldMonitorPalette.border}`,
-        backgroundColor: worldMonitorPalette.panel,
+        border: `1px solid ${defenseColors.border.default}`,
+        backgroundColor: defenseColors.background.surface,
         minHeight: 320,
       }}
     >
       <Typography
         variant="h6"
         sx={{
-          color: worldMonitorPalette.text,
+          color: defenseColors.text.primary,
           fontWeight: 800,
           mb: 2,
         }}
@@ -40,19 +40,19 @@ export const ActivityTrend = ({ trends }: ActivityTrendProps) => {
 
       <ResponsiveContainer width="100%" height={220}>
         <LineChart data={trends}>
-          <CartesianGrid stroke={worldMonitorPalette.border} vertical={false} />
+          <CartesianGrid stroke={defenseColors.border.default} vertical={false} />
 
-          <XAxis dataKey="bucket" stroke={worldMonitorPalette.textMuted} />
+          <XAxis dataKey="bucket" stroke={defenseColors.text.muted} />
 
-          <YAxis stroke={worldMonitorPalette.textMuted} />
+          <YAxis stroke={defenseColors.text.muted} />
 
           <Tooltip
             contentStyle={{
-              border: `1px solid ${worldMonitorPalette.borderStrong}`,
-              color: worldMonitorPalette.textSecondary,
+              border: `1px solid ${defenseColors.border.strong}`,
+              color: defenseColors.text.secondary,
             }}
             labelStyle={{
-              color: worldMonitorPalette.textSecondary,
+              color: defenseColors.text.secondary,
             }}
           />
 
@@ -60,7 +60,7 @@ export const ActivityTrend = ({ trends }: ActivityTrendProps) => {
             type="monotone"
             dataKey="totalEvents"
             name="Total Events"
-            stroke={worldMonitorPalette.accent}
+            stroke={defenseColors.primary.main}
             strokeWidth={2.5}
           />
 
@@ -68,7 +68,7 @@ export const ActivityTrend = ({ trends }: ActivityTrendProps) => {
             type="monotone"
             dataKey="criticalHighEvents"
             name="Critical / High"
-            stroke="#ff4d67"
+            stroke={defenseColors.status.error}
             strokeWidth={2.5}
           />
         </LineChart>
@@ -76,8 +76,8 @@ export const ActivityTrend = ({ trends }: ActivityTrendProps) => {
 
       <Stack direction="row" spacing={2} mt={1.5} justifyContent="center">
         {[
-          { label: "Total Events", color: worldMonitorPalette.accent },
-          { label: "Critical / High", color: "#ff4d67" },
+          { label: "Total Events", color: defenseColors.primary.main },
+          { label: "Critical / High", color: defenseColors.status.error },
         ].map((item) => (
           <Stack key={item.label} direction="row" spacing={0.75} alignItems="center">
             <Box
@@ -88,7 +88,7 @@ export const ActivityTrend = ({ trends }: ActivityTrendProps) => {
                 backgroundColor: item.color,
               }}
             />
-            <Typography variant="caption" sx={{ color: worldMonitorPalette.textMuted }}>
+            <Typography variant="caption" sx={{ color: defenseColors.text.muted }}>
               {item.label}
             </Typography>
           </Stack>

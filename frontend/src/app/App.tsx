@@ -9,6 +9,7 @@ import { ChatbotProvider } from "@/features/chatbot";
 import LoginPage from "./pages/LoginPage";
 import MapPage from "./pages/MapPage";
 import { EventsPage } from "./pages/EventsPage";
+import HistoricalPlaybackPage from "./pages/HistoricalPlaybackPage";
 import WorldMonitoringPage from "./pages/WorldMonitoringPage";
 import AppLayout from "./components/AppLayout";
 import PublicRoute from "./routes/PublicRoute";
@@ -43,6 +44,7 @@ function App() {
                 >
                   <Route path="/map" element={<MapPage />} />
                   <Route path="/events" element={<EventsPage />} />
+                  <Route path="/historical-playback" element={<HistoricalPlaybackPage />} />
                   <Route path="/world-monitoring" element={<WorldMonitoringPage />}>
                     <Route index element={<Navigate to="/world-monitoring/dashboard" replace />} />
                     <Route path="dashboard" element={<Dashboard />} />

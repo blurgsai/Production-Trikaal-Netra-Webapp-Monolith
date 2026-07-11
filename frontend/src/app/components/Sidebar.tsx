@@ -1,6 +1,7 @@
 import { Box, IconButton, Tooltip } from "@mui/material";
 import MapIcon from "@mui/icons-material/Map";
 import EventIcon from "@mui/icons-material/Event";
+import HistoryIcon from "@mui/icons-material/History";
 import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import WorldMonitoringIcon from "./icons/WorldMonitoringIcon";
 
@@ -13,6 +14,7 @@ function Sidebar() {
   const menuItems = [
     { icon: <MapIcon />, label: "Map", path: "/map" },
     { icon: <EventIcon />, label: "Events", path: "/events" },
+    { icon: <HistoryIcon />, label: "Historical Playback", path: "/historical-playback" },
     { icon: <WorldMonitoringIcon />, label: "World Monitoring", path: "/world-monitoring" },
   ];
 

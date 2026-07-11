@@ -1,0 +1,10 @@
+{
+  "attributes": [
+    { "key": "vessel_type", "path": "vessel.vessel_type" },
+    { "key": "flag", "path": "vessel.flag" },
+    { "key": "speed", "path": "vessel.speed" },
+    { "key": "heading", "path": "vessel.heading" },
+    { "key": "destination", "path": "vessel.destination" },
+    { "key": "status", "path": "vessel.status" }
+  ]
+}

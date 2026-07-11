@@ -1,7 +1,7 @@
 import { Button, Card, CardContent, CardMedia, Chip, Stack, Typography } from "@mui/material";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 
-import { worldMonitorPalette } from "../model/types";
+import { defenseColors } from "@/shared/theme";
 import { formatDateTime } from "../model/mappers";
 
 import { ArticleMetadataChips } from "./ArticleMetadataChips";
@@ -41,9 +41,8 @@ export function ArticleCard({ article, onOpen }: ArticleCardProps) {
     <Card
       sx={{
         borderRadius: 3,
-        border: `1px solid ${worldMonitorPalette.border}`,
-        background:
-          "linear-gradient(180deg, rgba(18,35,59,0.96), rgba(9,22,37,0.98))",
+        border: `1px solid ${defenseColors.border.default}`,
+        background: `linear-gradient(180deg, ${defenseColors.background.surfaceAlt}, ${defenseColors.background.surface})`,
         overflow: "hidden",
       }}
     >
@@ -55,7 +54,7 @@ export function ArticleCard({ article, onOpen }: ArticleCardProps) {
           sx={{
             height: 180,
             objectFit: "cover",
-            borderBottom: `1px solid ${worldMonitorPalette.border}`,
+            borderBottom: `1px solid ${defenseColors.border.default}`,
           }}
         />
       )}
@@ -66,8 +65,8 @@ export function ArticleCard({ article, onOpen }: ArticleCardProps) {
             size="small"
             label={`${article.linkedEventCount} linked events`}
             sx={{
-              backgroundColor: "rgba(255,255,255,0.04)",
-              color: worldMonitorPalette.textMuted,
+              backgroundColor: defenseColors.border.soft,
+              color: defenseColors.text.muted,
             }}
           />
 
@@ -76,8 +75,8 @@ export function ArticleCard({ article, onOpen }: ArticleCardProps) {
               size="small"
               label={article.processingStatus}
               sx={{
-                backgroundColor: "rgba(255,255,255,0.04)",
-                color: worldMonitorPalette.textMuted,
+                backgroundColor: defenseColors.border.soft,
+                color: defenseColors.text.muted,
               }}
             />
           )}
@@ -86,7 +85,7 @@ export function ArticleCard({ article, onOpen }: ArticleCardProps) {
         <Typography
           variant="h6"
           sx={{
-            color: worldMonitorPalette.text,
+            color: defenseColors.text.primary,
             fontWeight: 800,
             mb: 1,
           }}
@@ -97,7 +96,7 @@ export function ArticleCard({ article, onOpen }: ArticleCardProps) {
         <Typography
           variant="body2"
           sx={{
-            color: worldMonitorPalette.textMuted,
+            color: defenseColors.text.muted,
             mb: 1.5,
             display: "-webkit-box",
             WebkitLineClamp: 3,
@@ -112,7 +111,7 @@ export function ArticleCard({ article, onOpen }: ArticleCardProps) {
           <Typography
             variant="caption"
             sx={{
-              color: worldMonitorPalette.textMuted,
+              color: defenseColors.text.muted,
               display: "block",
               mb: 1.5,
             }}
@@ -127,7 +126,7 @@ export function ArticleCard({ article, onOpen }: ArticleCardProps) {
           onClick={() => onOpen(article.id)}
           endIcon={<OpenInNewIcon />}
           sx={{
-            color: worldMonitorPalette.accent,
+            color: defenseColors.primary.main,
             p: 0,
             mt: 1.5,
           }}

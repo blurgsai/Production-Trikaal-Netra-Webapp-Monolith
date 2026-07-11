@@ -1,7 +1,7 @@
 import { Card, CardActionArea, CardContent, Chip, Paper, Stack, Typography } from "@mui/material";
 
 import type { DashboardRecentEvent } from "../model/types";
-import { worldMonitorPalette } from "../model/types";
+import { defenseColors } from "@/shared/theme";
 import {
   formatEventTypeLabel,
   formatRelative,
@@ -26,15 +26,15 @@ export const RecentIntelligence = ({
         display: "flex",
         flexDirection: "column",
         borderRadius: 3,
-        border: `1px solid ${worldMonitorPalette.border}`,
-        backgroundColor: worldMonitorPalette.panel,
+        border: `1px solid ${defenseColors.border.default}`,
+        backgroundColor: defenseColors.background.surface,
         overflow: "hidden",
       }}
     >
       <Typography
         variant="h6"
         sx={{
-          color: worldMonitorPalette.text,
+          color: defenseColors.text.primary,
           fontWeight: 800,
           mb: 2,
         }}
@@ -58,12 +58,12 @@ export const RecentIntelligence = ({
             key={event.id}
             sx={{
               borderRadius: 2,
-              border: `1px solid ${worldMonitorPalette.border}`,
-              backgroundColor: "rgba(255,255,255,0.02)",
+              border: `1px solid ${defenseColors.border.default}`,
+              backgroundColor: defenseColors.border.soft,
               transition: "all 0.2s ease",
               "&:hover": {
-                borderColor: worldMonitorPalette.borderStrong,
-                backgroundColor: "rgba(255,255,255,0.04)",
+                borderColor: defenseColors.border.strong,
+                backgroundColor: defenseColors.action.hover,
                 transform: "translateY(-1px)",
               },
             }}
@@ -88,15 +88,15 @@ export const RecentIntelligence = ({
                 size="small"
                 label={formatEventTypeLabel(event.eventType)}
                 sx={{
-                  color: worldMonitorPalette.accent,
-                  backgroundColor: worldMonitorPalette.accentSoft,
+                  color: defenseColors.primary.main,
+                  backgroundColor: defenseColors.primary.soft,
                 }}
               />
             </Stack>
 
             <Typography
               sx={{
-                color: worldMonitorPalette.text,
+                color: defenseColors.text.primary,
                 fontWeight: 700,
                 mb: 0.5,
               }}
@@ -107,7 +107,7 @@ export const RecentIntelligence = ({
             <Typography
               variant="body2"
               sx={{
-                color: worldMonitorPalette.textMuted,
+                color: defenseColors.text.muted,
                 wordBreak: "break-word",
                 overflowWrap: "break-word",
               }}
@@ -127,7 +127,7 @@ export const RecentIntelligence = ({
                 <Typography
                   variant="caption"
                   sx={{
-                    color: worldMonitorPalette.textMuted,
+                    color: defenseColors.text.muted,
                   }}
                 >
                   {event.location}
@@ -138,7 +138,7 @@ export const RecentIntelligence = ({
                 <Typography
                   variant="caption"
                   sx={{
-                    color: worldMonitorPalette.textMuted,
+                    color: defenseColors.text.muted,
                   }}
                 >
                   {event.source}
@@ -148,7 +148,7 @@ export const RecentIntelligence = ({
               <Typography
                 variant="caption"
                 sx={{
-                  color: worldMonitorPalette.textMuted,
+                  color: defenseColors.text.muted,
                 }}
               >
                 {formatRelative(event.enrichedAt)}

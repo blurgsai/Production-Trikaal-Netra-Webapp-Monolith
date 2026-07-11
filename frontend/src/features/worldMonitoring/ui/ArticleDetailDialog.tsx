@@ -19,7 +19,7 @@ import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import { useArticleDetail } from "../hooks/useArticleDetail";
 import { ArticleMetadataChips } from "./ArticleMetadataChips";
 
-import { worldMonitorPalette } from "../model/types";
+import { defenseColors } from "@/shared/theme";
 import {
   formatDateTime,
   getArticleImage,
@@ -48,9 +48,9 @@ export function ArticleDetailDialog({
       maxWidth="md"
       PaperProps={{
         sx: {
-          backgroundColor: worldMonitorPalette.panel,
-          border: `1px solid ${worldMonitorPalette.borderStrong}`,
-          color: worldMonitorPalette.text,
+          backgroundColor: defenseColors.background.surface,
+          border: `1px solid ${defenseColors.border.strong}`,
+          color: defenseColors.text.primary,
         },
       }}
     >
@@ -59,8 +59,8 @@ export function ArticleDetailDialog({
           m: 0,
           p: 2,
           pr: 6,
-          color: worldMonitorPalette.text,
-          borderBottom: `1px solid ${worldMonitorPalette.border}`,
+          color: defenseColors.text.primary,
+          borderBottom: `1px solid ${defenseColors.border.default}`,
         }}
       >
         Article Detail
@@ -72,25 +72,25 @@ export function ArticleDetailDialog({
           position: "absolute",
           right: 8,
           top: 8,
-          color: worldMonitorPalette.textMuted,
+          color: defenseColors.text.muted,
         }}
       >
         <CloseIcon />
       </IconButton>
-      <DialogContent>
+      <DialogContent sx={{ p: 2 }}>
         {isLoading || !article ? (
           <Box sx={{ minHeight: 240, display: "grid", placeItems: "center" }}>
-            <CircularProgress sx={{ color: worldMonitorPalette.accent }} />
+            <CircularProgress sx={{ color: defenseColors.primary.main }} />
           </Box>
         ) : (
-          <Stack spacing={2}>
+          <Stack spacing={2} useFlexGap>
             <Box>
               <Typography variant="h5" sx={{ fontWeight: 800 }}>
                 {article.title}
               </Typography>
               <Typography
                 variant="body2"
-                sx={{ color: worldMonitorPalette.textMuted, mt: 1 }}
+                sx={{ color: defenseColors.text.muted, mt: 1 }}
               >
                 {article.source ?? "Unknown source"}
                 {article.published
@@ -110,14 +110,14 @@ export function ArticleDetailDialog({
                   height: 260,
                   borderRadius: 2,
                   objectFit: "cover",
-                  border: `1px solid ${worldMonitorPalette.border}`,
+                  border: `1px solid ${defenseColors.border.default}`,
                 }}
               />
             )}
 
             <Typography
               variant="body1"
-              sx={{ color: worldMonitorPalette.textMuted }}
+              sx={{ color: defenseColors.text.muted }}
             >
               {article.summary ??
                 article.processedContent ??
@@ -130,21 +130,21 @@ export function ArticleDetailDialog({
               <Box>
                 <Typography
                   variant="subtitle2"
-                  sx={{ color: worldMonitorPalette.text, mb: 1 }}
+                  sx={{ color: defenseColors.text.primary, mb: 1 }}
                 >
                   Derived Events
                 </Typography>
-                <Stack spacing={1}>
+                <Stack spacing={1} useFlexGap>
                   {article.linkedEvents.map((event) => (
                     <Card
                       key={event.id}
                       sx={{
                         borderRadius: 2,
-                        border: `1px solid ${worldMonitorPalette.border}`,
+                        border: `1px solid ${defenseColors.border.default}`,
                         transition: "all 0.2s ease",
                         "&:hover": {
-                          borderColor: worldMonitorPalette.borderStrong,
-                          backgroundColor: "rgba(255,255,255,0.03)",
+                          borderColor: defenseColors.border.strong,
+                          backgroundColor: defenseColors.action.hover,
                           transform: "translateY(-1px)",
                         },
                       }}
@@ -156,10 +156,10 @@ export function ArticleDetailDialog({
                         }}
                         sx={{ borderRadius: 2 }}
                       >
-                        <CardContent sx={{ p: 1.25, "&:last-child": { pb: 1.25 } }}>
+                        <CardContent sx={{ p: 2, "&:last-child": { pb: 2 } }}>
                       <Typography
                         sx={{
-                          color: worldMonitorPalette.text,
+                          color: defenseColors.text.primary,
                           fontWeight: 700,
                           mb: 0.5,
                         }}
@@ -168,7 +168,7 @@ export function ArticleDetailDialog({
                       </Typography>
                       <Typography
                         variant="body2"
-                        sx={{ color: worldMonitorPalette.textMuted }}
+                        sx={{ color: defenseColors.text.muted }}
                       >
                         {event.summary}
                       </Typography>
@@ -189,7 +189,7 @@ export function ArticleDetailDialog({
                 endIcon={<OpenInNewIcon />}
                 sx={{
                   alignSelf: "flex-start",
-                  color: worldMonitorPalette.accent,
+                  color: defenseColors.primary.main,
                 }}
               >
                 Open Source Site
