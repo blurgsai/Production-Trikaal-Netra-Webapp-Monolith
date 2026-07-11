@@ -59,12 +59,11 @@ describe("AnimationControls (integration: component → user interaction)", () =
 
   it("calls onClose when close button clicked", async () => {
     const onClose = vi.fn();
-    const { container } = render(
+    render(
       <AnimationControls {...defaultProps({ onClose })} />,
     );
-    const buttons = container.querySelectorAll("button");
-    const closeButton = buttons[buttons.length - 1];
-    fireEvent.click(closeButton);
+    const closeIcon = screen.getByTestId("CloseIcon");
+    fireEvent.click(closeIcon.closest("button")!);
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 

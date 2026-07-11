@@ -2,7 +2,6 @@ export type {
   PlaybackAttribute,
   PlaybackRange,
   PlaybackPoint,
-  PlaybackMinute,
   CurrentPosition,
   PlaybackVessel,
   PlaybackQuery,
@@ -11,7 +10,6 @@ export {
   mapPlaybackAttribute,
   mapPlaybackAttributes,
   mapPlaybackPoint,
-  mapPlaybackMinute,
   mapPlaybackQuery,
 } from "./mappers";
-export { DataBufferManager } from "./DataBufferManager";
+export { DataBufferManager, type FetchPlaybackVesselsFn } from "./dataBufferManager";

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 
-import { DataBufferManager } from "../model/DataBufferManager";
+import { fetchPlaybackVessels } from "../api/historicalPlaybackApi";
+import { DataBufferManager } from "../model/dataBufferManager";
 
 import type { PlaybackChunk, TimeGranularity } from "../model/types";
 
@@ -57,6 +58,7 @@ export function usePlaybackBuffer(): UsePlaybackBufferResult {
         geometry,
         filters,
         granularity,
+        fetchPlaybackVessels,
       );
       setBufferManager(manager);
       bufferManagerRef.current = manager;

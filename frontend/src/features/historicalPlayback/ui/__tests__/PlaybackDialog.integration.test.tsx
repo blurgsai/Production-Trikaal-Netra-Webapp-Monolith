@@ -40,20 +40,20 @@ describe("PlaybackDialog (integration: component → user interaction)", () => {
 
   it("shows Start DateTime and End DateTime labels", () => {
     render(<PlaybackDialog {...defaultProps()} />);
-    expect(screen.getByLabelText("Start DateTime")).toBeInTheDocument();
-    expect(screen.getByLabelText("End DateTime")).toBeInTheDocument();
+    expect(screen.getByLabelText("Start")).toBeInTheDocument();
+    expect(screen.getByLabelText("End")).toBeInTheDocument();
   });
 
   it("displays current playback range values", () => {
     render(<PlaybackDialog {...defaultProps()} />);
-    expect(screen.getByLabelText("Start DateTime")).toHaveValue("2024-12-04T21:30");
-    expect(screen.getByLabelText("End DateTime")).toHaveValue("2024-12-04T21:40");
+    expect(screen.getByLabelText("Start")).toHaveValue("2024-12-04T21:30");
+    expect(screen.getByLabelText("End")).toHaveValue("2024-12-04T21:40");
   });
 
-  it("calls onClose when Cancel button clicked", async () => {
+  it("calls onClose when Start over button clicked", async () => {
     const onClose = vi.fn();
     render(<PlaybackDialog {...defaultProps({ onClose })} />);
-    await userEvent.click(screen.getByText("Cancel"));
+    await userEvent.click(screen.getByText("Start over"));
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
@@ -94,7 +94,7 @@ describe("PlaybackDialog (integration: component → user interaction)", () => {
   it("calls setPlaybackRange when start datetime changes", async () => {
     const setPlaybackRange = vi.fn();
     render(<PlaybackDialog {...defaultProps({ setPlaybackRange })} />);
-    const startInput = screen.getByLabelText("Start DateTime");
+    const startInput = screen.getByLabelText("Start");
     fireEvent.change(startInput, { target: { value: "2024-12-04T22:00" } });
     expect(setPlaybackRange).toHaveBeenCalledTimes(1);
   });
@@ -102,7 +102,7 @@ describe("PlaybackDialog (integration: component → user interaction)", () => {
   it("calls setPlaybackRange when end datetime changes", async () => {
     const setPlaybackRange = vi.fn();
     render(<PlaybackDialog {...defaultProps({ setPlaybackRange })} />);
-    const endInput = screen.getByLabelText("End DateTime");
+    const endInput = screen.getByLabelText("End");
     fireEvent.change(endInput, { target: { value: "2024-12-04T22:30" } });
     expect(setPlaybackRange).toHaveBeenCalledTimes(1);
   });

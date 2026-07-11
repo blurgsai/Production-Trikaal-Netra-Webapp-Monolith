@@ -1,14 +1,17 @@
-import { fetchPlaybackVessels } from "../api/historicalPlaybackApi";
-import { mapPlaybackChunk, mapPlaybackQuery } from "../model/mappers";
+import { mapPlaybackChunk, mapPlaybackQuery } from "./mappers";
 import type {
   PlaybackChunk,
   PlaybackQuery,
   TimeGranularity,
-} from "../model/types";
+} from "./types";
 import {
   GRANULARITY_SECONDS,
   GRANULARITY_BUFFER_SIZE,
-} from "../model/types";
+} from "./types";
+
+export type FetchPlaybackVesselsFn = (
+  payload: ReturnType<typeof mapPlaybackQuery>,
+) => Promise<Parameters<typeof mapPlaybackChunk>[0]>;
 
 export class DataBufferManager {
   private baseTime: string;
@@ -25,17 +28,21 @@ export class DataBufferManager {
 
   private maxBufferSize: number;
 
+  private fetchFn: FetchPlaybackVesselsFn;
+
   constructor(
     baseTime: string,
     geometry: GeoJSON.Geometry,
     filters: Record<string, unknown>,
-    granularity: TimeGranularity = "minute",
+    granularity: TimeGranularity,
+    fetchFn: FetchPlaybackVesselsFn,
   ) {
     this.baseTime = baseTime;
     this.geometry = geometry;
     this.filters = filters;
     this.granularity = granularity;
     this.maxBufferSize = GRANULARITY_BUFFER_SIZE[granularity];
+    this.fetchFn = fetchFn;
   }
 
   getChunkOffset(timeSeconds: number): number {
@@ -75,7 +82,7 @@ export class DataBufferManager {
       filters: this.filters,
     };
 
-    const response = await fetchPlaybackVessels(mapPlaybackQuery(query));
+    const response = await this.fetchFn(mapPlaybackQuery(query));
     return mapPlaybackChunk(response);
   }
 
