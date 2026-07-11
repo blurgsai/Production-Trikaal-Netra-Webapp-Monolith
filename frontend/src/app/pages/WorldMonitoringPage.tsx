@@ -1,7 +1,7 @@
 import { Box, Tab, Tabs } from "@mui/material";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 
-import { worldMonitorPalette } from "@/features/worldMonitoring/model/types";
+import { worldMonitorPalette } from "@/features/worldMonitoring";
 
 const TABS = [
   { label: "Dashboard", path: "/world-monitoring/dashboard" },
