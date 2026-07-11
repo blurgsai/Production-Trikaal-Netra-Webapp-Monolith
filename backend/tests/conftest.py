@@ -73,3 +73,120 @@ def sample_polygon_geojson():
             [65.0, 15.0],
         ]],
     }
+
+
+# ── World Monitor fixtures ──
+
+from bson import ObjectId  # noqa: E402
+
+
+@pytest.fixture
+def sample_event_doc():
+    """A raw MongoDB event document for world_monitor_events collection."""
+    return {
+        "_id": ObjectId("65f1a2b3c4d5e6f7a8b9c0d1"),
+        "event_id": "evt-001",
+        "event_type": "Piracy",
+        "threat_level": "HIGH",
+        "summary": "Suspicious vessel activity near Gulf of Aden",
+        "reasoning": "Multiple fast boats approached a cargo vessel.",
+        "relevance_score": 0.85,
+        "enriched_at": "2025-01-15T10:30:00Z",
+        "article_id": ObjectId("65f1a2b3c4d5e6f7a8b9c0e2"),
+        "location": [
+            {
+                "name": "Gulf of Aden",
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": [45.0, 12.5],
+                },
+            },
+            {
+                "name": "Bab-el-Mandeb",
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": [43.3, 12.6],
+                },
+            },
+        ],
+        "extracted_data": [
+            {
+                "extracted_data": {
+                    "threat_type": "piracy",
+                    "location": "Gulf of Aden",
+                    "vessel_name": "MV Pacific Star",
+                    "damage": "No damage reported",
+                }
+            }
+        ],
+    }
+
+
+@pytest.fixture
+def sample_article_doc():
+    """A raw MongoDB article document for world_monitor_articles collection."""
+    return {
+        "_id": ObjectId("65f1a2b3c4d5e6f7a8b9c0e2"),
+        "article_id": "art-001",
+        "title": "Piracy Incident Reported Near Gulf of Aden",
+        "source": "Maritime News",
+        "source_type": "RSS",
+        "author": "Jane Doe",
+        "published": "2025-01-15T08:00:00Z",
+        "updated": "2025-01-15T09:00:00Z",
+        "ingested_at": "2025-01-15T09:30:00Z",
+        "summary": "A piracy incident was reported near the Gulf of Aden.",
+        "image_url": "https://example.com/image.jpg",
+        "tags": ["piracy", "maritime", "security"],
+        "processing_status": "enriched",
+        "processed_content": "<p>Full article content here.</p>",
+        "raw_content": "<p>Raw article content here.</p>",
+        "link": "https://example.com/article/1",
+        "location": [
+            {
+                "name": "Gulf of Aden",
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": [45.0, 12.5],
+                },
+            },
+        ],
+    }
+
+
+@pytest.fixture
+def sample_event_docs(sample_event_doc):
+    """Multiple raw event documents for batch tests."""
+    second = dict(sample_event_doc)
+    second["_id"] = ObjectId("65f1a2b3c4d5e6f7a8b9c0d3")
+    second["event_id"] = "evt-002"
+    second["threat_level"] = "CRITICAL"
+    second["event_type"] = "Conflict"
+    return [sample_event_doc, second]
+
+
+@pytest.fixture
+def mock_db():
+    """A mocked Motor MongoDB database with collection support."""
+    db = MagicMock()
+    events_collection = MagicMock()
+    articles_collection = MagicMock()
+    db.get_collection = MagicMock(
+        side_effect=lambda name: events_collection
+        if name == "world_monitor_events"
+        else articles_collection
+    )
+    db._events = events_collection
+    db._articles = articles_collection
+    return db
+
+
+@pytest.fixture
+def mock_cursor():
+    """A mocked Motor cursor that supports sort/skip/limit/to_list chaining."""
+    cursor = MagicMock()
+    cursor.sort = MagicMock(return_value=cursor)
+    cursor.skip = MagicMock(return_value=cursor)
+    cursor.limit = MagicMock(return_value=cursor)
+    cursor.to_list = AsyncMock(return_value=[])
+    return cursor

@@ -2,7 +2,13 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import { useGeofenceIntrusionEvent } from '../useGeofenceIntrusionEvent';
 import type { EventDetailsBase } from '../../model/types';
-import type { GeofencePolygon } from '../../model/eventTypeTypes';
+import type { GeofencePolygonCoordinates } from '../../model/eventTypeTypes';
+
+type GeofencePolygonExtras = {
+  geofence_id?: string;
+  asset_name?: string;
+  polygon: GeofencePolygonCoordinates;
+};
 
 function makeEventDetails(overrides?: Partial<EventDetailsBase>): EventDetailsBase {
   return {
@@ -28,7 +34,7 @@ function makeEventDetails(overrides?: Partial<EventDetailsBase>): EventDetailsBa
   };
 }
 
-function makePolygon(): GeofencePolygon {
+function makePolygon(): GeofencePolygonExtras {
   return {
     geofence_id: 'gf1',
     asset_name: 'Asset A',

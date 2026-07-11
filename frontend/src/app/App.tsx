@@ -9,9 +9,11 @@ import { ChatbotProvider } from "@/features/chatbot";
 import LoginPage from "./pages/LoginPage";
 import MapPage from "./pages/MapPage";
 import { EventsPage } from "./pages/EventsPage";
+import WorldMonitoringPage from "./pages/WorldMonitoringPage";
 import AppLayout from "./components/AppLayout";
 import PublicRoute from "./routes/PublicRoute";
 import ProtectedRoute from "./routes/ProtectedRoute";
+import { Dashboard, Threats, Articles } from "@/features/worldMonitoring";
 
 const queryClient = new QueryClient();
 
@@ -41,6 +43,14 @@ function App() {
                 >
                   <Route path="/map" element={<MapPage />} />
                   <Route path="/events" element={<EventsPage />} />
+                  <Route path="/world-monitoring" element={<WorldMonitoringPage />}>
+                    <Route index element={<Navigate to="/world-monitoring/dashboard" replace />} />
+                    <Route path="dashboard" element={<Dashboard />} />
+                    <Route path="threats" element={<Threats />} />
+                    <Route path="threats/:eventId" element={<Threats />} />
+                    <Route path="articles" element={<Articles />} />
+                    <Route path="articles/:articleId" element={<Articles />} />
+                  </Route>
                 </Route>
                 <Route path="*" element={<Navigate to="/login" replace />} />
               </Routes>

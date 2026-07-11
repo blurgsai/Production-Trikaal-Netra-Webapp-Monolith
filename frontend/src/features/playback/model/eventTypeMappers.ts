@@ -1,9 +1,5 @@
 import { parseEventDate } from './playbackUtils';
-import type {
-  GeofenceEvent,
-  GeofenceInformation,
-  GeofencePolygon,
-} from './eventTypeTypes';
+import type { GeofenceEvent, GeofencePolygonCoordinates } from './eventTypeTypes';
 import type { EventDetailsBase, TimeWindow, TrajectoryOverrideRule } from './types';
 
 // ── Event-type mappers + trajectory-override functions ───────────────────────
@@ -15,8 +11,12 @@ import type { EventDetailsBase, TimeWindow, TrajectoryOverrideRule } from './typ
 
 // ── geofence_intrusion ───────────────────────────────────────────────────────
 
+type GeofencePolygonExtras = {
+  polygon?: GeofencePolygonCoordinates;
+};
+
 function parseGeoJsonToPositions(
-  raw: GeofencePolygon | undefined,
+  raw: GeofencePolygonExtras | undefined,
 ): [number, number][][] | null {
   if (!raw?.polygon?.coordinates) return null;
 
@@ -41,13 +41,13 @@ export function mapGeofenceEventFromDetails(
   base: EventDetailsBase,
   extras: Record<string, unknown>,
 ): GeofenceEvent {
-  const info    = base.information as GeofenceInformation;
-  const polygon = extras['geofence_polygon'] as GeofencePolygon | undefined;
+  const info    = base.information as Record<string, unknown>;
+  const polygon = extras['geofence_polygon'] as GeofencePolygonExtras | undefined;
 
   return {
-    geofenceName:     info.geofence_name      ?? 'Restricted Area',
-    geofenceId:       info.geofence_id        ?? null,
-    hasExitedPolygon: info.Has_exited_polygon ?? false,
+    geofenceName:     (info['geofence_name'] as string | undefined)      ?? 'Restricted Area',
+    geofenceId:       (info['geofence_id'] as string | undefined)        ?? null,
+    hasExitedPolygon: (info['Has_exited_polygon'] as boolean | undefined) ?? false,
     intrusionStartMs: parseEventDate(base.startTime),
     intrusionEndMs:   parseEventDate(base.endTime),
     vesselIds:        base.vessels,
@@ -59,8 +59,8 @@ export function getGeofenceTrajectoryOverrides(
   eventDetails: EventDetailsBase,
   timeWindow: TimeWindow,
 ): Record<string, TrajectoryOverrideRule[]> | null {
-  const info  = eventDetails.information as GeofenceInformation;
-  const color = (info.Has_exited_polygon ?? false) ? '#ff8c00' : '#ff4444';
+  const info  = eventDetails.information as Record<string, unknown>;
+  const color = (info['Has_exited_polygon'] as boolean | undefined ?? false) ? '#ff8c00' : '#ff4444';
 
   const start = parseEventDate(eventDetails.startTime) ?? timeWindow.eventStartMs;
   const end   = parseEventDate(eventDetails.endTime)   ?? timeWindow.eventEndMs ?? timeWindow.queryEndMs;

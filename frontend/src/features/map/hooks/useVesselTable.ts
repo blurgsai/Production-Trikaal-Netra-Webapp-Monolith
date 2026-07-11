@@ -3,7 +3,7 @@ import type { VesselTableFilter, SavedFilterSet, Polygon, VesselTableQuery } fro
 import { fetchVesselTable, fetchVesselTableColumns, fetchUniqueColumnValues } from "../api/vesselTableApi";
 import { mapVesselTableResponse, type VesselTablePage } from "../model/mappers";
 import { buildWfsCqlFilter, buildPolygonCqlFilter, combineCqlFilters } from "../model/cqlFilter";
-import { loadSavedFilters, saveFilter, deleteSavedFilter } from "../api/vesselFilterStorage";
+import { loadSavedFilters, saveFilter, deleteSavedFilter } from "../model/vesselFilterStorage";
 import { DEFAULT_TABLE_COLUMNS, DEFAULT_PAGE_SIZE } from "../model/config";
 
 interface UseVesselTableOptions {
