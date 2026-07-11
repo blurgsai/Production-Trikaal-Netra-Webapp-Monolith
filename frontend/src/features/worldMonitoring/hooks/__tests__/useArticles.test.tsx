@@ -341,9 +341,10 @@ describe("useArticles", () => {
     it("handles article without optional fields", async () => {
       vi.mocked(getArticleMetadata).mockResolvedValue(mockMetadata);
       vi.mocked(getArticles).mockResolvedValue({
-        data: [{ id: "art-min", title: "Minimal Article" } as any],
+        success: true,
+        data: [{ id: "art-min", title: "Minimal Article" }],
         pagination: { page: 1, page_size: 10, total_pages: 1, total: 1 },
-      } as any);
+      });
       const { result } = renderHook(() => useArticles(defaultFilters, 1, 10), { wrapper: createWrapper() });
       await waitFor(() => {
         expect(result.current.data?.articles[0].summary).toBeUndefined();
@@ -355,9 +356,10 @@ describe("useArticles", () => {
     it("handles article with missing linked_event_count, defaults to 0", async () => {
       vi.mocked(getArticleMetadata).mockResolvedValue(mockMetadata);
       vi.mocked(getArticles).mockResolvedValue({
-        data: [{ id: "art-no-count", title: "No Count" } as any],
+        success: true,
+        data: [{ id: "art-no-count", title: "No Count" }],
         pagination: { page: 1, page_size: 10, total_pages: 1, total: 1 },
-      } as any);
+      });
       const { result } = renderHook(() => useArticles(defaultFilters, 1, 10), { wrapper: createWrapper() });
       await waitFor(() => expect(result.current.data?.articles[0].linkedEventCount).toBe(0));
     });
@@ -365,9 +367,10 @@ describe("useArticles", () => {
     it("handles article with missing tags, defaults to empty array", async () => {
       vi.mocked(getArticleMetadata).mockResolvedValue(mockMetadata);
       vi.mocked(getArticles).mockResolvedValue({
-        data: [{ id: "art-no-tags", title: "No Tags" } as any],
+        success: true,
+        data: [{ id: "art-no-tags", title: "No Tags" }],
         pagination: { page: 1, page_size: 10, total_pages: 1, total: 1 },
-      } as any);
+      });
       const { result } = renderHook(() => useArticles(defaultFilters, 1, 10), { wrapper: createWrapper() });
       await waitFor(() => expect(result.current.data?.articles[0].tags).toEqual([]));
     });
@@ -396,9 +399,10 @@ describe("useArticles", () => {
     it("handles article with empty tags array", async () => {
       vi.mocked(getArticleMetadata).mockResolvedValue(mockMetadata);
       vi.mocked(getArticles).mockResolvedValue({
-        data: [{ id: "art-empty-tags", title: "Empty Tags", tags: [] } as any],
+        success: true,
+        data: [{ id: "art-empty-tags", title: "Empty Tags", tags: [] }],
         pagination: { page: 1, page_size: 10, total_pages: 1, total: 1 },
-      } as any);
+      });
       const { result } = renderHook(() => useArticles(defaultFilters, 1, 10), { wrapper: createWrapper() });
       await waitFor(() => expect(result.current.data?.articles[0].tags).toEqual([]));
     });
@@ -406,9 +410,10 @@ describe("useArticles", () => {
     it("handles article with many tags", async () => {
       vi.mocked(getArticleMetadata).mockResolvedValue(mockMetadata);
       vi.mocked(getArticles).mockResolvedValue({
-        data: [{ id: "art-many-tags", title: "Many Tags", tags: ["a", "b", "c", "d", "e", "f", "g", "h"] } as any],
+        success: true,
+        data: [{ id: "art-many-tags", title: "Many Tags", tags: ["a", "b", "c", "d", "e", "f", "g", "h"] }],
         pagination: { page: 1, page_size: 10, total_pages: 1, total: 1 },
-      } as any);
+      });
       const { result } = renderHook(() => useArticles(defaultFilters, 1, 10), { wrapper: createWrapper() });
       await waitFor(() => expect(result.current.data?.articles[0].tags).toHaveLength(8));
     });
@@ -416,9 +421,10 @@ describe("useArticles", () => {
     it("handles article with null image_url", async () => {
       vi.mocked(getArticleMetadata).mockResolvedValue(mockMetadata);
       vi.mocked(getArticles).mockResolvedValue({
-        data: [{ id: "art-null-img", title: "Null Image", image_url: null as unknown as undefined } as any],
+        success: true,
+        data: [{ id: "art-null-img", title: "Null Image", image_url: null as unknown as undefined }],
         pagination: { page: 1, page_size: 10, total_pages: 1, total: 1 },
-      } as any);
+      });
       const { result } = renderHook(() => useArticles(defaultFilters, 1, 10), { wrapper: createWrapper() });
       await waitFor(() => expect(result.current.data?.articles[0].imageUrl).toBeNull());
     });
@@ -426,13 +432,14 @@ describe("useArticles", () => {
     it("handles multiple articles preserving order", async () => {
       vi.mocked(getArticleMetadata).mockResolvedValue(mockMetadata);
       vi.mocked(getArticles).mockResolvedValue({
+        success: true,
         data: [
-          { id: "a1", title: "A1" } as any,
-          { id: "a2", title: "A2" } as any,
-          { id: "a3", title: "A3" } as any,
+          { id: "a1", title: "A1" },
+          { id: "a2", title: "A2" },
+          { id: "a3", title: "A3" },
         ],
         pagination: { page: 1, page_size: 10, total_pages: 1, total: 3 },
-      } as any);
+      });
       const { result } = renderHook(() => useArticles(defaultFilters, 1, 10), { wrapper: createWrapper() });
       await waitFor(() => {
         expect(result.current.data?.articles[0].id).toBe("a1");

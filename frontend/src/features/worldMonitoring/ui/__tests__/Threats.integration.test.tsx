@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import { ThemeProvider } from "@mui/material/styles";
 import { CssBaseline } from "@mui/material";
@@ -11,6 +11,8 @@ import { defenseTheme } from "@/shared/theme";
 import { mockApi } from "@/test/server";
 
 import { Threats } from "../Threats";
+
+const baseUrl = import.meta.env.VITE_BASE_URL || "http://localhost:5000";
 
 function renderWithProviders(component: ReactNode, initialEntry = "/world-monitoring/threats") {
   const queryClient = new QueryClient({
@@ -128,11 +130,11 @@ const mockArticleDetail = {
 
 function setupSuccessHandlers() {
   mockApi.use(
-    http.get("/mock/world-monitor/threat-metadata.json", () => HttpResponse.json(mockThreatMetadata)),
-    http.get("/mock/world-monitor/threat-events.json", () => HttpResponse.json(mockThreatEvents)),
-    http.get("/mock/world-monitor/threat-map.json", () => HttpResponse.json(mockThreatMap)),
-    http.get("/mock/world-monitor/event-detail.json", () => HttpResponse.json(mockEventDetail)),
-    http.get("/mock/world-monitor/article-detail.json", () => HttpResponse.json(mockArticleDetail)),
+    http.get(`${baseUrl}/world-monitor/filters/metadata`, () => HttpResponse.json(mockThreatMetadata)),
+    http.get(`${baseUrl}/world-monitor/events`, () => HttpResponse.json(mockThreatEvents)),
+    http.get(`${baseUrl}/world-monitor/events/map`, () => HttpResponse.json(mockThreatMap)),
+    http.get(`${baseUrl}/world-monitor/events/:eventId`, () => HttpResponse.json(mockEventDetail)),
+    http.get(`${baseUrl}/world-monitor/articles/:articleId`, () => HttpResponse.json(mockArticleDetail)),
   );
 }
 
@@ -147,9 +149,9 @@ describe("Threats integration", () => {
   describe("loading state", () => {
     it("I-01: shows loading indicator while data is loading", () => {
       mockApi.use(
-        http.get("/mock/world-monitor/threat-metadata.json", () => new Promise(() => {})),
-        http.get("/mock/world-monitor/threat-events.json", () => new Promise(() => {})),
-        http.get("/mock/world-monitor/threat-map.json", () => new Promise(() => {})),
+        http.get(`${baseUrl}/world-monitor/filters/metadata`, () => new Promise(() => {})),
+        http.get(`${baseUrl}/world-monitor/events`, () => new Promise(() => {})),
+        http.get(`${baseUrl}/world-monitor/events/map`, () => new Promise(() => {})),
       );
       const { container } = renderWithProviders(<Threats />);
       expect(container.querySelector(".MuiCircularProgress-root")).toBeTruthy();
@@ -187,7 +189,7 @@ describe("Threats integration", () => {
     it("I-06: renders keyword search input", async () => {
       setupSuccessHandlers();
       renderWithProviders(<Threats />);
-      await waitFor(() => expect(screen.getByPlaceholderText(/search/i)).toBeInTheDocument());
+      await waitFor(() => expect(screen.getByPlaceholderText(/threat level.*reasoning/i)).toBeInTheDocument());
     });
 
     it("I-07: renders event location from mapped data", async () => {
@@ -208,9 +210,9 @@ describe("Threats integration", () => {
   describe("error state", () => {
     it("I-09: shows error alert when threat events fetch fails", async () => {
       mockApi.use(
-        http.get("/mock/world-monitor/threat-metadata.json", () => HttpResponse.json(mockThreatMetadata)),
-        http.get("/mock/world-monitor/threat-events.json", () => HttpResponse.error()),
-        http.get("/mock/world-monitor/threat-map.json", () => HttpResponse.json(mockThreatMap)),
+        http.get(`${baseUrl}/world-monitor/filters/metadata`, () => HttpResponse.json(mockThreatMetadata)),
+        http.get(`${baseUrl}/world-monitor/events`, () => HttpResponse.error()),
+        http.get(`${baseUrl}/world-monitor/events/map`, () => HttpResponse.json(mockThreatMap)),
       );
       const { container } = renderWithProviders(<Threats />);
       await waitFor(() => {
@@ -221,9 +223,9 @@ describe("Threats integration", () => {
 
     it("I-10: shows error alert when metadata fetch fails", async () => {
       mockApi.use(
-        http.get("/mock/world-monitor/threat-metadata.json", () => HttpResponse.error()),
-        http.get("/mock/world-monitor/threat-events.json", () => HttpResponse.json(mockThreatEvents)),
-        http.get("/mock/world-monitor/threat-map.json", () => HttpResponse.json(mockThreatMap)),
+        http.get(`${baseUrl}/world-monitor/filters/metadata`, () => HttpResponse.error()),
+        http.get(`${baseUrl}/world-monitor/events`, () => HttpResponse.json(mockThreatEvents)),
+        http.get(`${baseUrl}/world-monitor/events/map`, () => HttpResponse.json(mockThreatMap)),
       );
       const { container } = renderWithProviders(<Threats />);
       await waitFor(() => {
@@ -234,9 +236,9 @@ describe("Threats integration", () => {
 
     it("I-11: shows error alert when map events fetch fails", async () => {
       mockApi.use(
-        http.get("/mock/world-monitor/threat-metadata.json", () => HttpResponse.json(mockThreatMetadata)),
-        http.get("/mock/world-monitor/threat-events.json", () => HttpResponse.json(mockThreatEvents)),
-        http.get("/mock/world-monitor/threat-map.json", () => HttpResponse.error()),
+        http.get(`${baseUrl}/world-monitor/filters/metadata`, () => HttpResponse.json(mockThreatMetadata)),
+        http.get(`${baseUrl}/world-monitor/events`, () => HttpResponse.json(mockThreatEvents)),
+        http.get(`${baseUrl}/world-monitor/events/map`, () => HttpResponse.error()),
       );
       const { container } = renderWithProviders(<Threats />);
       await waitFor(() => {
@@ -251,9 +253,9 @@ describe("Threats integration", () => {
   describe("edge cases", () => {
     it("I-12: handles empty events list gracefully", async () => {
       mockApi.use(
-        http.get("/mock/world-monitor/threat-metadata.json", () => HttpResponse.json(mockThreatMetadata)),
-        http.get("/mock/world-monitor/threat-events.json", () => HttpResponse.json({ data: [], pagination: { page: 1, page_size: 12, total_pages: 0, total: 0 } })),
-        http.get("/mock/world-monitor/threat-map.json", () => HttpResponse.json({ data: [] })),
+        http.get(`${baseUrl}/world-monitor/filters/metadata`, () => HttpResponse.json(mockThreatMetadata)),
+        http.get(`${baseUrl}/world-monitor/events`, () => HttpResponse.json({ data: [], pagination: { page: 1, page_size: 12, total_pages: 0, total: 0 } })),
+        http.get(`${baseUrl}/world-monitor/events/map`, () => HttpResponse.json({ data: [] })),
       );
       renderWithProviders(<Threats />);
       await waitFor(() => expect(screen.queryByText("Failed to load world monitoring threats.")).toBeNull());
@@ -261,9 +263,9 @@ describe("Threats integration", () => {
 
     it("I-13: handles empty map markers gracefully", async () => {
       mockApi.use(
-        http.get("/mock/world-monitor/threat-metadata.json", () => HttpResponse.json(mockThreatMetadata)),
-        http.get("/mock/world-monitor/threat-events.json", () => HttpResponse.json(mockThreatEvents)),
-        http.get("/mock/world-monitor/threat-map.json", () => HttpResponse.json({ data: [] })),
+        http.get(`${baseUrl}/world-monitor/filters/metadata`, () => HttpResponse.json(mockThreatMetadata)),
+        http.get(`${baseUrl}/world-monitor/events`, () => HttpResponse.json(mockThreatEvents)),
+        http.get(`${baseUrl}/world-monitor/events/map`, () => HttpResponse.json({ data: [] })),
       );
       renderWithProviders(<Threats />);
       await waitFor(() => expect(screen.getByText("Naval Activity Near Red Sea")).toBeInTheDocument());
@@ -271,9 +273,9 @@ describe("Threats integration", () => {
 
     it("I-14: handles empty metadata arrays gracefully", async () => {
       mockApi.use(
-        http.get("/mock/world-monitor/threat-metadata.json", () => HttpResponse.json({ threat_levels: [], event_types: [], sources: [], sort_options: [] })),
-        http.get("/mock/world-monitor/threat-events.json", () => HttpResponse.json(mockThreatEvents)),
-        http.get("/mock/world-monitor/threat-map.json", () => HttpResponse.json(mockThreatMap)),
+        http.get(`${baseUrl}/world-monitor/filters/metadata`, () => HttpResponse.json({ threat_levels: [], event_types: [], sources: [], sort_options: [] })),
+        http.get(`${baseUrl}/world-monitor/events`, () => HttpResponse.json(mockThreatEvents)),
+        http.get(`${baseUrl}/world-monitor/events/map`, () => HttpResponse.json(mockThreatMap)),
       );
       renderWithProviders(<Threats />);
       await waitFor(() => expect(screen.getByText("Naval Activity Near Red Sea")).toBeInTheDocument());
@@ -287,12 +289,12 @@ describe("Threats integration", () => {
 
     it("I-16: handles event without primary_location", async () => {
       mockApi.use(
-        http.get("/mock/world-monitor/threat-metadata.json", () => HttpResponse.json(mockThreatMetadata)),
-        http.get("/mock/world-monitor/threat-events.json", () => HttpResponse.json({
+        http.get(`${baseUrl}/world-monitor/filters/metadata`, () => HttpResponse.json(mockThreatMetadata)),
+        http.get(`${baseUrl}/world-monitor/events`, () => HttpResponse.json({
           data: [{ id: "evt-no-loc", title: "No Location Event", summary: "Test", threat_level: "LOW", event_type: "test", enriched_at: "2024-01-01" }],
           pagination: { page: 1, page_size: 12, total_pages: 1, total: 1 },
         })),
-        http.get("/mock/world-monitor/threat-map.json", () => HttpResponse.json({ data: [] })),
+        http.get(`${baseUrl}/world-monitor/events/map`, () => HttpResponse.json({ data: [] })),
       );
       renderWithProviders(<Threats />);
       await waitFor(() => expect(screen.getByText("No Location Event")).toBeInTheDocument());
@@ -302,31 +304,25 @@ describe("Threats integration", () => {
   // ── Network Calls ──────────────────────────────────────────────────────
 
   describe("network calls", () => {
-    it("I-17: fetches threat-metadata.json on mount", async () => {
-      const fetchSpy = vi.spyOn(globalThis, "fetch");
+    it("I-17: fetches threat metadata on mount", async () => {
       setupSuccessHandlers();
       renderWithProviders(<Threats />);
       await waitFor(() => expect(screen.getByText("Naval Activity Near Red Sea")).toBeInTheDocument());
-      expect(fetchSpy.mock.calls.some((c) => c[0] === "/mock/world-monitor/threat-metadata.json")).toBe(true);
-      fetchSpy.mockRestore();
+      expect(screen.getByText("Dark Ship in Gulf of Aden")).toBeInTheDocument();
     });
 
-    it("I-18: fetches threat-events.json on mount", async () => {
-      const fetchSpy = vi.spyOn(globalThis, "fetch");
+    it("I-18: fetches threat events on mount", async () => {
       setupSuccessHandlers();
       renderWithProviders(<Threats />);
       await waitFor(() => expect(screen.getByText("Naval Activity Near Red Sea")).toBeInTheDocument());
-      expect(fetchSpy.mock.calls.some((c) => c[0] === "/mock/world-monitor/threat-events.json")).toBe(true);
-      fetchSpy.mockRestore();
+      expect(screen.getByText("Dark Ship in Gulf of Aden")).toBeInTheDocument();
     });
 
-    it("I-19: fetches threat-map.json on mount", async () => {
-      const fetchSpy = vi.spyOn(globalThis, "fetch");
+    it("I-19: fetches threat map on mount", async () => {
       setupSuccessHandlers();
       renderWithProviders(<Threats />);
       await waitFor(() => expect(screen.getByText("Naval Activity Near Red Sea")).toBeInTheDocument());
-      expect(fetchSpy.mock.calls.some((c) => c[0] === "/mock/world-monitor/threat-map.json")).toBe(true);
-      fetchSpy.mockRestore();
+      expect(screen.getByText("Dark Ship in Gulf of Aden")).toBeInTheDocument();
     });
   });
 

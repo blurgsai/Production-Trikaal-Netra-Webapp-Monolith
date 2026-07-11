@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 import re
+from collections.abc import Iterable
 from datetime import datetime
-from typing import Any, Iterable
+from typing import Any
 
 from pydantic import BaseModel, Field
-
 
 # ── Domain models (designed for API consumers, not MongoDB shapes) ──
 
@@ -27,6 +27,8 @@ class LinkedArticlePreview(BaseModel):
     published: str | None = None
     summary: str | None = None
     image_url: str | None = None
+    processed_content: str | None = None
+    raw_content: str | None = None
     tags: list[str] = Field(default_factory=list)
     locations: list[WorldMonitorLocation] = Field(default_factory=list)
     link: str | None = None
@@ -384,6 +386,8 @@ def map_article_preview_from_doc(
         "published": _stringify_datetime(article_doc.get("published")),
         "summary": _clean_text(article_doc.get("summary")),
         "image_url": article_doc.get("image_url"),
+        "processed_content": _clean_text(article_doc.get("processed_content")),
+        "raw_content": _strip_html(article_doc.get("raw_content")),
         "tags": [str(tag) for tag in article_doc.get("tags") or []],
         "locations": locations,
         "link": article_doc.get("link"),

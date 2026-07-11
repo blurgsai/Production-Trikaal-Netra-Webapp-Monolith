@@ -305,7 +305,7 @@ describe("useThreatDetail", () => {
     it("maps linkedArticlePreview processedContent from processed_content", async () => {
       vi.mocked(getEventDetail).mockResolvedValue({
         ...mockEventDetail,
-        linked_article_preview: { ...mockEventDetail.linked_article_preview!, processed_content: "Processed text" } as any,
+        linked_article_preview: { ...mockEventDetail.linked_article_preview!, processed_content: "Processed text" },
       });
       const { result } = renderHook(() => useThreatDetail("evt-001"), {
         wrapper: createWrapper(),
@@ -316,7 +316,7 @@ describe("useThreatDetail", () => {
     it("maps linkedArticlePreview rawContent from raw_content", async () => {
       vi.mocked(getEventDetail).mockResolvedValue({
         ...mockEventDetail,
-        linked_article_preview: { ...mockEventDetail.linked_article_preview!, raw_content: "Raw text" } as any,
+        linked_article_preview: { ...mockEventDetail.linked_article_preview!, raw_content: "Raw text" },
       });
       const { result } = renderHook(() => useThreatDetail("evt-001"), {
         wrapper: createWrapper(),

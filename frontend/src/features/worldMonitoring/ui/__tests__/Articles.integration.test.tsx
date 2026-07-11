@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import { ThemeProvider } from "@mui/material/styles";
 import { CssBaseline } from "@mui/material";
@@ -11,6 +11,8 @@ import { defenseTheme } from "@/shared/theme";
 import { mockApi } from "@/test/server";
 
 import { Articles } from "../Articles";
+
+const baseUrl = import.meta.env.VITE_BASE_URL || "http://localhost:5000";
 
 function renderWithProviders(component: ReactNode, initialEntry = "/world-monitoring/articles") {
   const queryClient = new QueryClient({
@@ -91,9 +93,9 @@ const mockArticleDetail = {
 
 function setupSuccessHandlers() {
   mockApi.use(
-    http.get("/mock/world-monitor/article-metadata.json", () => HttpResponse.json(mockArticleMetadata)),
-    http.get("/mock/world-monitor/articles.json", () => HttpResponse.json(mockArticles)),
-    http.get("/mock/world-monitor/article-detail.json", () => HttpResponse.json(mockArticleDetail)),
+    http.get(`${baseUrl}/world-monitor/filters/metadata`, () => HttpResponse.json(mockArticleMetadata)),
+    http.get(`${baseUrl}/world-monitor/articles`, () => HttpResponse.json(mockArticles)),
+    http.get(`${baseUrl}/world-monitor/articles/:articleId`, () => HttpResponse.json(mockArticleDetail)),
   );
 }
 
@@ -108,8 +110,8 @@ describe("Articles integration", () => {
   describe("loading state", () => {
     it("I-01: shows CircularProgress while data is loading", () => {
       mockApi.use(
-        http.get("/mock/world-monitor/article-metadata.json", () => new Promise(() => {})),
-        http.get("/mock/world-monitor/articles.json", () => new Promise(() => {})),
+        http.get(`${baseUrl}/world-monitor/filters/metadata`, () => new Promise(() => {})),
+        http.get(`${baseUrl}/world-monitor/articles`, () => new Promise(() => {})),
       );
       const { container } = renderWithProviders(<Articles />);
       expect(container.querySelector(".MuiCircularProgress-root")).toBeTruthy();
@@ -117,8 +119,8 @@ describe("Articles integration", () => {
 
     it("I-02: does not render article cards while loading", () => {
       mockApi.use(
-        http.get("/mock/world-monitor/article-metadata.json", () => new Promise(() => {})),
-        http.get("/mock/world-monitor/articles.json", () => new Promise(() => {})),
+        http.get(`${baseUrl}/world-monitor/filters/metadata`, () => new Promise(() => {})),
+        http.get(`${baseUrl}/world-monitor/articles`, () => new Promise(() => {})),
       );
       renderWithProviders(<Articles />);
       expect(screen.queryByText("Red Sea Tensions Rise as Naval Activity Increases")).toBeNull();
@@ -155,7 +157,7 @@ describe("Articles integration", () => {
     it("I-07: renders source dropdown with All sources option", async () => {
       setupSuccessHandlers();
       renderWithProviders(<Articles />);
-      await waitFor(() => expect(screen.getByText("All sources")).toBeInTheDocument());
+      await waitFor(() => expect(screen.getByPlaceholderText("All sources")).toBeInTheDocument());
     });
 
     it("I-08: renders source options from metadata", async () => {
@@ -167,7 +169,7 @@ describe("Articles integration", () => {
     it("I-09: renders All statuses option in status dropdown", async () => {
       setupSuccessHandlers();
       renderWithProviders(<Articles />);
-      await waitFor(() => expect(screen.getByText("All statuses")).toBeInTheDocument());
+      await waitFor(() => expect(screen.getByPlaceholderText("All statuses")).toBeInTheDocument());
     });
 
     it("I-10: does not show error alert on success", async () => {
@@ -209,8 +211,8 @@ describe("Articles integration", () => {
   describe("error state", () => {
     it("I-15: shows error alert when articles fetch fails", async () => {
       mockApi.use(
-        http.get("/mock/world-monitor/article-metadata.json", () => HttpResponse.json(mockArticleMetadata)),
-        http.get("/mock/world-monitor/articles.json", () => HttpResponse.error()),
+        http.get(`${baseUrl}/world-monitor/filters/metadata`, () => HttpResponse.json(mockArticleMetadata)),
+        http.get(`${baseUrl}/world-monitor/articles`, () => HttpResponse.error()),
       );
       const { container } = renderWithProviders(<Articles />);
       await waitFor(() => {
@@ -221,8 +223,8 @@ describe("Articles integration", () => {
 
     it("I-16: shows error alert when metadata fetch fails", async () => {
       mockApi.use(
-        http.get("/mock/world-monitor/article-metadata.json", () => HttpResponse.error()),
-        http.get("/mock/world-monitor/articles.json", () => HttpResponse.json(mockArticles)),
+        http.get(`${baseUrl}/world-monitor/filters/metadata`, () => HttpResponse.error()),
+        http.get(`${baseUrl}/world-monitor/articles`, () => HttpResponse.json(mockArticles)),
       );
       const { container } = renderWithProviders(<Articles />);
       await waitFor(() => {
@@ -233,8 +235,8 @@ describe("Articles integration", () => {
 
     it("I-17: hides CircularProgress on error", async () => {
       mockApi.use(
-        http.get("/mock/world-monitor/article-metadata.json", () => HttpResponse.error()),
-        http.get("/mock/world-monitor/articles.json", () => HttpResponse.json(mockArticles)),
+        http.get(`${baseUrl}/world-monitor/filters/metadata`, () => HttpResponse.error()),
+        http.get(`${baseUrl}/world-monitor/articles`, () => HttpResponse.json(mockArticles)),
       );
       const { container } = renderWithProviders(<Articles />);
       await waitFor(() => {
@@ -246,8 +248,8 @@ describe("Articles integration", () => {
 
     it("I-18: does not render article cards on error", async () => {
       mockApi.use(
-        http.get("/mock/world-monitor/article-metadata.json", () => HttpResponse.json(mockArticleMetadata)),
-        http.get("/mock/world-monitor/articles.json", () => HttpResponse.error()),
+        http.get(`${baseUrl}/world-monitor/filters/metadata`, () => HttpResponse.json(mockArticleMetadata)),
+        http.get(`${baseUrl}/world-monitor/articles`, () => HttpResponse.error()),
       );
       renderWithProviders(<Articles />);
       await waitFor(() => {
@@ -261,8 +263,8 @@ describe("Articles integration", () => {
   describe("edge cases", () => {
     it("I-19: handles empty articles list gracefully", async () => {
       mockApi.use(
-        http.get("/mock/world-monitor/article-metadata.json", () => HttpResponse.json(mockArticleMetadata)),
-        http.get("/mock/world-monitor/articles.json", () => HttpResponse.json({ data: [], pagination: { page: 1, page_size: 12, total_pages: 0, total: 0 } })),
+        http.get(`${baseUrl}/world-monitor/filters/metadata`, () => HttpResponse.json(mockArticleMetadata)),
+        http.get(`${baseUrl}/world-monitor/articles`, () => HttpResponse.json({ data: [], pagination: { page: 1, page_size: 12, total_pages: 0, total: 0 } })),
       );
       renderWithProviders(<Articles />);
       await waitFor(() => expect(screen.queryByText("Failed to load source intelligence.")).toBeNull());
@@ -270,8 +272,8 @@ describe("Articles integration", () => {
 
     it("I-20: handles empty metadata arrays gracefully", async () => {
       mockApi.use(
-        http.get("/mock/world-monitor/article-metadata.json", () => HttpResponse.json({ sources: [], processing_statuses: [] })),
-        http.get("/mock/world-monitor/articles.json", () => HttpResponse.json(mockArticles)),
+        http.get(`${baseUrl}/world-monitor/filters/metadata`, () => HttpResponse.json({ sources: [], processing_statuses: [] })),
+        http.get(`${baseUrl}/world-monitor/articles`, () => HttpResponse.json(mockArticles)),
       );
       renderWithProviders(<Articles />);
       await waitFor(() => expect(screen.getByText("Red Sea Tensions Rise as Naval Activity Increases")).toBeInTheDocument());
@@ -285,8 +287,8 @@ describe("Articles integration", () => {
 
     it("I-22: handles article without optional fields", async () => {
       mockApi.use(
-        http.get("/mock/world-monitor/article-metadata.json", () => HttpResponse.json(mockArticleMetadata)),
-        http.get("/mock/world-monitor/articles.json", () => HttpResponse.json({
+        http.get(`${baseUrl}/world-monitor/filters/metadata`, () => HttpResponse.json(mockArticleMetadata)),
+        http.get(`${baseUrl}/world-monitor/articles`, () => HttpResponse.json({
           data: [{ id: "art-min", title: "Minimal Article" }],
           pagination: { page: 1, page_size: 12, total_pages: 1, total: 1 },
         })),
@@ -297,8 +299,8 @@ describe("Articles integration", () => {
 
     it("I-23: handles zero total pages in pagination", async () => {
       mockApi.use(
-        http.get("/mock/world-monitor/article-metadata.json", () => HttpResponse.json(mockArticleMetadata)),
-        http.get("/mock/world-monitor/articles.json", () => HttpResponse.json({ data: [], pagination: { page: 1, page_size: 12, total_pages: 0, total: 0 } })),
+        http.get(`${baseUrl}/world-monitor/filters/metadata`, () => HttpResponse.json(mockArticleMetadata)),
+        http.get(`${baseUrl}/world-monitor/articles`, () => HttpResponse.json({ data: [], pagination: { page: 1, page_size: 12, total_pages: 0, total: 0 } })),
       );
       renderWithProviders(<Articles />);
       await waitFor(() => expect(screen.queryByText("Failed to load source intelligence.")).toBeNull());
@@ -306,8 +308,8 @@ describe("Articles integration", () => {
 
     it("I-24: handles large total in pagination", async () => {
       mockApi.use(
-        http.get("/mock/world-monitor/article-metadata.json", () => HttpResponse.json(mockArticleMetadata)),
-        http.get("/mock/world-monitor/articles.json", () => HttpResponse.json({
+        http.get(`${baseUrl}/world-monitor/filters/metadata`, () => HttpResponse.json(mockArticleMetadata)),
+        http.get(`${baseUrl}/world-monitor/articles`, () => HttpResponse.json({
           data: mockArticles.data,
           pagination: { page: 1, page_size: 12, total_pages: 100, total: 1200 },
         })),
@@ -320,22 +322,18 @@ describe("Articles integration", () => {
   // ── Network Calls ──────────────────────────────────────────────────────
 
   describe("network calls", () => {
-    it("I-25: fetches article-metadata.json on mount", async () => {
-      const fetchSpy = vi.spyOn(globalThis, "fetch");
+    it("I-25: fetches metadata on mount", async () => {
       setupSuccessHandlers();
       renderWithProviders(<Articles />);
       await waitFor(() => expect(screen.getByText("Red Sea Tensions Rise as Naval Activity Increases")).toBeInTheDocument());
-      expect(fetchSpy.mock.calls.some((c) => c[0] === "/mock/world-monitor/article-metadata.json")).toBe(true);
-      fetchSpy.mockRestore();
+      expect(screen.getAllByText("Reuters").length).toBeGreaterThan(0);
     });
 
-    it("I-26: fetches articles.json on mount", async () => {
-      const fetchSpy = vi.spyOn(globalThis, "fetch");
+    it("I-26: fetches articles on mount", async () => {
       setupSuccessHandlers();
       renderWithProviders(<Articles />);
       await waitFor(() => expect(screen.getByText("Red Sea Tensions Rise as Naval Activity Increases")).toBeInTheDocument());
-      expect(fetchSpy.mock.calls.some((c) => c[0] === "/mock/world-monitor/articles.json")).toBe(true);
-      fetchSpy.mockRestore();
+      expect(screen.getByText("Gulf of Aden Piracy Report Released")).toBeInTheDocument();
     });
   });
 

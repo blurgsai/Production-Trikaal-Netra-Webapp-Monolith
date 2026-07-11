@@ -17,6 +17,8 @@ export interface LinkedArticlePreviewApiResponse {
   published?: string;
   summary?: string;
   image_url?: string;
+  processed_content?: string;
+  raw_content?: string;
   tags: string[];
   locations: WorldMonitorLocationApiResponse[];
   link?: string;
@@ -57,7 +59,7 @@ export interface WorldMonitorEventListItemApiResponse {
   title: string;
   event_type: string;
   threat_level: string;
-  summary: string;
+  summary?: string;
   reasoning?: string;
   primary_location?: WorldMonitorLocationApiResponse;
   locations: WorldMonitorLocationApiResponse[];
@@ -109,10 +111,10 @@ export interface WorldMonitorArticleListItemApiResponse {
   ingested_at?: string;
   summary?: string;
   image_url?: string;
-  tags: string[];
+  tags?: string[];
   processing_status?: string;
-  linked_event_count: number;
-  location_count: number;
+  linked_event_count?: number;
+  location_count?: number;
   link?: string;
 }
 

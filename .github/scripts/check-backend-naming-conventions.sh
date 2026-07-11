@@ -36,7 +36,7 @@ is_pascal_case() {
 }
 
 is_snake_case() {
-  [[ "$1" =~ ^[a-z][a-z0-9_]*$ ]]
+  [[ "$1" =~ ^_?[a-z][a-z0-9_]*$ ]]
 }
 
 is_upper_snake_case() {

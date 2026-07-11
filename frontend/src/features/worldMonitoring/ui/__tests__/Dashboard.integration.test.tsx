@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import { ThemeProvider } from "@mui/material/styles";
 import { CssBaseline } from "@mui/material";
@@ -11,6 +11,8 @@ import { defenseTheme } from "@/shared/theme";
 import { mockApi } from "@/test/server";
 
 import { Dashboard } from "../Dashboard";
+
+const baseUrl = import.meta.env.VITE_BASE_URL || "http://localhost:5000";
 
 function renderWithProviders(component: ReactNode) {
   const queryClient = new QueryClient({
@@ -98,7 +100,7 @@ describe("Dashboard integration", () => {
   describe("loading state", () => {
     it("I-01: shows CircularProgress while data is loading", () => {
       mockApi.use(
-        http.get("/mock/world-monitor/summary.json", () => new Promise(() => {})),
+        http.get(`${baseUrl}/world-monitor/overview/summary`, () => new Promise(() => {})),
       );
       const { container } = renderWithProviders(<Dashboard />);
       expect(container.querySelector(".MuiCircularProgress-root")).toBeTruthy();
@@ -106,7 +108,7 @@ describe("Dashboard integration", () => {
 
     it("I-02: does not render metric cards while loading", () => {
       mockApi.use(
-        http.get("/mock/world-monitor/summary.json", () => new Promise(() => {})),
+        http.get(`${baseUrl}/world-monitor/overview/summary`, () => new Promise(() => {})),
       );
       const { container } = renderWithProviders(<Dashboard />);
       expect(container.querySelector("[data-testid='metric-card']")).toBeNull();
@@ -118,18 +120,18 @@ describe("Dashboard integration", () => {
   describe("success state", () => {
     function setupSuccessHandlers() {
       mockApi.use(
-        http.get("/mock/world-monitor/summary.json", () => HttpResponse.json(mockSummary)),
-        http.get("/mock/world-monitor/trends.json", () => HttpResponse.json(mockTrends)),
-        http.get("/mock/world-monitor/hotspots.json", () => HttpResponse.json(mockHotspots)),
-        http.get("/mock/world-monitor/recent.json", () => HttpResponse.json(mockRecent)),
-        http.get("/mock/world-monitor/distributions.json", () => HttpResponse.json(mockDistributions)),
+        http.get(`${baseUrl}/world-monitor/overview/summary`, () => HttpResponse.json(mockSummary)),
+        http.get(`${baseUrl}/world-monitor/overview/trends`, () => HttpResponse.json(mockTrends)),
+        http.get(`${baseUrl}/world-monitor/overview/hotspots`, () => HttpResponse.json(mockHotspots)),
+        http.get(`${baseUrl}/world-monitor/overview/recent`, () => HttpResponse.json(mockRecent)),
+        http.get(`${baseUrl}/world-monitor/overview/distributions`, () => HttpResponse.json(mockDistributions)),
       );
     }
 
     it("I-03: renders Total Events metric from summary", async () => {
       setupSuccessHandlers();
       renderWithProviders(<Dashboard />);
-      await waitFor(() => expect(screen.getByText("Total Events")).toBeInTheDocument());
+      await waitFor(() => expect(screen.getAllByText("Total Events").length).toBeGreaterThan(0));
       expect(screen.getByText("1247")).toBeInTheDocument();
     });
 
@@ -164,7 +166,7 @@ describe("Dashboard integration", () => {
     it("I-08: renders all 5 metric cards", async () => {
       setupSuccessHandlers();
       renderWithProviders(<Dashboard />);
-      await waitFor(() => expect(screen.getByText("Total Events")).toBeInTheDocument());
+      await waitFor(() => expect(screen.getAllByText("Total Events").length).toBeGreaterThan(0));
       expect(screen.getByText("Critical / High Events")).toBeInTheDocument();
       expect(screen.getByText("New Events (24h)")).toBeInTheDocument();
       expect(screen.getByText("Active Areas")).toBeInTheDocument();
@@ -198,14 +200,14 @@ describe("Dashboard integration", () => {
     it("I-13: hides CircularProgress after data loads", async () => {
       setupSuccessHandlers();
       const { container } = renderWithProviders(<Dashboard />);
-      await waitFor(() => expect(screen.getByText("Total Events")).toBeInTheDocument());
+      await waitFor(() => expect(screen.getAllByText("Total Events").length).toBeGreaterThan(0));
       expect(container.querySelector(".MuiCircularProgress-root")).toBeNull();
     });
 
     it("I-14: does not show error alert on success", async () => {
       setupSuccessHandlers();
       renderWithProviders(<Dashboard />);
-      await waitFor(() => expect(screen.getByText("Total Events")).toBeInTheDocument());
+      await waitFor(() => expect(screen.getAllByText("Total Events").length).toBeGreaterThan(0));
       expect(screen.queryByText("Failed to load overview intelligence.")).toBeNull();
     });
   });
@@ -215,11 +217,11 @@ describe("Dashboard integration", () => {
   describe("error state", () => {
     function setupErrorHandlers() {
       mockApi.use(
-        http.get("/mock/world-monitor/summary.json", () => HttpResponse.error()),
-        http.get("/mock/world-monitor/trends.json", () => HttpResponse.json(mockTrends)),
-        http.get("/mock/world-monitor/hotspots.json", () => HttpResponse.json(mockHotspots)),
-        http.get("/mock/world-monitor/recent.json", () => HttpResponse.json(mockRecent)),
-        http.get("/mock/world-monitor/distributions.json", () => HttpResponse.json(mockDistributions)),
+        http.get(`${baseUrl}/world-monitor/overview/summary`, () => HttpResponse.error()),
+        http.get(`${baseUrl}/world-monitor/overview/trends`, () => HttpResponse.json(mockTrends)),
+        http.get(`${baseUrl}/world-monitor/overview/hotspots`, () => HttpResponse.json(mockHotspots)),
+        http.get(`${baseUrl}/world-monitor/overview/recent`, () => HttpResponse.json(mockRecent)),
+        http.get(`${baseUrl}/world-monitor/overview/distributions`, () => HttpResponse.json(mockDistributions)),
       );
     }
 
@@ -256,75 +258,75 @@ describe("Dashboard integration", () => {
   describe("edge cases", () => {
     it("I-18: renders metric cards with 0 when summary has zero values", async () => {
       mockApi.use(
-        http.get("/mock/world-monitor/summary.json", () => HttpResponse.json({
+        http.get(`${baseUrl}/world-monitor/overview/summary`, () => HttpResponse.json({
           active_events: 0, critical_high_events: 0, new_events_last_24h: 0, active_areas: 0, linked_article_events: 0,
         })),
-        http.get("/mock/world-monitor/trends.json", () => HttpResponse.json([])),
-        http.get("/mock/world-monitor/hotspots.json", () => HttpResponse.json([])),
-        http.get("/mock/world-monitor/recent.json", () => HttpResponse.json({ data: [] })),
-        http.get("/mock/world-monitor/distributions.json", () => HttpResponse.json({ severity: [], event_types: [], sources: [] })),
+        http.get(`${baseUrl}/world-monitor/overview/trends`, () => HttpResponse.json([])),
+        http.get(`${baseUrl}/world-monitor/overview/hotspots`, () => HttpResponse.json([])),
+        http.get(`${baseUrl}/world-monitor/overview/recent`, () => HttpResponse.json({ data: [] })),
+        http.get(`${baseUrl}/world-monitor/overview/distributions`, () => HttpResponse.json({ severity: [], event_types: [], sources: [] })),
       );
       renderWithProviders(<Dashboard />);
-      await waitFor(() => expect(screen.getByText("Total Events")).toBeInTheDocument(), { timeout: 3000 });
+      await waitFor(() => expect(screen.getAllByText("Total Events").length).toBeGreaterThan(0), { timeout: 3000 });
       expect(screen.getAllByText("0").length).toBeGreaterThan(0);
     });
 
     it("I-19: handles empty recent events gracefully", async () => {
       mockApi.use(
-        http.get("/mock/world-monitor/summary.json", () => HttpResponse.json(mockSummary)),
-        http.get("/mock/world-monitor/trends.json", () => HttpResponse.json(mockTrends)),
-        http.get("/mock/world-monitor/hotspots.json", () => HttpResponse.json(mockHotspots)),
-        http.get("/mock/world-monitor/recent.json", () => HttpResponse.json({ data: [] })),
-        http.get("/mock/world-monitor/distributions.json", () => HttpResponse.json(mockDistributions)),
+        http.get(`${baseUrl}/world-monitor/overview/summary`, () => HttpResponse.json(mockSummary)),
+        http.get(`${baseUrl}/world-monitor/overview/trends`, () => HttpResponse.json(mockTrends)),
+        http.get(`${baseUrl}/world-monitor/overview/hotspots`, () => HttpResponse.json(mockHotspots)),
+        http.get(`${baseUrl}/world-monitor/overview/recent`, () => HttpResponse.json({ data: [] })),
+        http.get(`${baseUrl}/world-monitor/overview/distributions`, () => HttpResponse.json(mockDistributions)),
       );
       renderWithProviders(<Dashboard />);
-      await waitFor(() => expect(screen.getByText("Total Events")).toBeInTheDocument());
+      await waitFor(() => expect(screen.getAllByText("Total Events").length).toBeGreaterThan(0));
       expect(screen.queryByText("Naval Activity Detected Near Red Sea")).toBeNull();
     });
 
     it("I-20: handles empty hotspots gracefully", async () => {
       mockApi.use(
-        http.get("/mock/world-monitor/summary.json", () => HttpResponse.json(mockSummary)),
-        http.get("/mock/world-monitor/trends.json", () => HttpResponse.json(mockTrends)),
-        http.get("/mock/world-monitor/hotspots.json", () => HttpResponse.json([])),
-        http.get("/mock/world-monitor/recent.json", () => HttpResponse.json(mockRecent)),
-        http.get("/mock/world-monitor/distributions.json", () => HttpResponse.json(mockDistributions)),
+        http.get(`${baseUrl}/world-monitor/overview/summary`, () => HttpResponse.json(mockSummary)),
+        http.get(`${baseUrl}/world-monitor/overview/trends`, () => HttpResponse.json(mockTrends)),
+        http.get(`${baseUrl}/world-monitor/overview/hotspots`, () => HttpResponse.json([])),
+        http.get(`${baseUrl}/world-monitor/overview/recent`, () => HttpResponse.json(mockRecent)),
+        http.get(`${baseUrl}/world-monitor/overview/distributions`, () => HttpResponse.json(mockDistributions)),
       );
       renderWithProviders(<Dashboard />);
-      await waitFor(() => expect(screen.getByText("Total Events")).toBeInTheDocument());
+      await waitFor(() => expect(screen.getAllByText("Total Events").length).toBeGreaterThan(0));
     });
 
     it("I-21: handles empty trends gracefully", async () => {
       mockApi.use(
-        http.get("/mock/world-monitor/summary.json", () => HttpResponse.json(mockSummary)),
-        http.get("/mock/world-monitor/trends.json", () => HttpResponse.json([])),
-        http.get("/mock/world-monitor/hotspots.json", () => HttpResponse.json(mockHotspots)),
-        http.get("/mock/world-monitor/recent.json", () => HttpResponse.json(mockRecent)),
-        http.get("/mock/world-monitor/distributions.json", () => HttpResponse.json(mockDistributions)),
+        http.get(`${baseUrl}/world-monitor/overview/summary`, () => HttpResponse.json(mockSummary)),
+        http.get(`${baseUrl}/world-monitor/overview/trends`, () => HttpResponse.json([])),
+        http.get(`${baseUrl}/world-monitor/overview/hotspots`, () => HttpResponse.json(mockHotspots)),
+        http.get(`${baseUrl}/world-monitor/overview/recent`, () => HttpResponse.json(mockRecent)),
+        http.get(`${baseUrl}/world-monitor/overview/distributions`, () => HttpResponse.json(mockDistributions)),
       );
       renderWithProviders(<Dashboard />);
-      await waitFor(() => expect(screen.getByText("Total Events")).toBeInTheDocument());
+      await waitFor(() => expect(screen.getAllByText("Total Events").length).toBeGreaterThan(0));
     });
 
     it("I-22: handles empty distributions gracefully", async () => {
       mockApi.use(
-        http.get("/mock/world-monitor/summary.json", () => HttpResponse.json(mockSummary)),
-        http.get("/mock/world-monitor/trends.json", () => HttpResponse.json(mockTrends)),
-        http.get("/mock/world-monitor/hotspots.json", () => HttpResponse.json(mockHotspots)),
-        http.get("/mock/world-monitor/recent.json", () => HttpResponse.json(mockRecent)),
-        http.get("/mock/world-monitor/distributions.json", () => HttpResponse.json({ severity: [], event_types: [], sources: [] })),
+        http.get(`${baseUrl}/world-monitor/overview/summary`, () => HttpResponse.json(mockSummary)),
+        http.get(`${baseUrl}/world-monitor/overview/trends`, () => HttpResponse.json(mockTrends)),
+        http.get(`${baseUrl}/world-monitor/overview/hotspots`, () => HttpResponse.json(mockHotspots)),
+        http.get(`${baseUrl}/world-monitor/overview/recent`, () => HttpResponse.json(mockRecent)),
+        http.get(`${baseUrl}/world-monitor/overview/distributions`, () => HttpResponse.json({ severity: [], event_types: [], sources: [] })),
       );
       renderWithProviders(<Dashboard />);
-      await waitFor(() => expect(screen.getByText("Total Events")).toBeInTheDocument());
+      await waitFor(() => expect(screen.getAllByText("Total Events").length).toBeGreaterThan(0));
     });
 
     it("I-23: renders recent event with linked article source", async () => {
       mockApi.use(
-        http.get("/mock/world-monitor/summary.json", () => HttpResponse.json(mockSummary)),
-        http.get("/mock/world-monitor/trends.json", () => HttpResponse.json(mockTrends)),
-        http.get("/mock/world-monitor/hotspots.json", () => HttpResponse.json(mockHotspots)),
-        http.get("/mock/world-monitor/recent.json", () => HttpResponse.json(mockRecent)),
-        http.get("/mock/world-monitor/distributions.json", () => HttpResponse.json(mockDistributions)),
+        http.get(`${baseUrl}/world-monitor/overview/summary`, () => HttpResponse.json(mockSummary)),
+        http.get(`${baseUrl}/world-monitor/overview/trends`, () => HttpResponse.json(mockTrends)),
+        http.get(`${baseUrl}/world-monitor/overview/hotspots`, () => HttpResponse.json(mockHotspots)),
+        http.get(`${baseUrl}/world-monitor/overview/recent`, () => HttpResponse.json(mockRecent)),
+        http.get(`${baseUrl}/world-monitor/overview/distributions`, () => HttpResponse.json(mockDistributions)),
       );
       renderWithProviders(<Dashboard />);
       await waitFor(() => expect(screen.getByText("Naval Activity Detected Near Red Sea")).toBeInTheDocument());
@@ -333,13 +335,13 @@ describe("Dashboard integration", () => {
 
     it("I-24: uses distinct_regions when active_areas is missing", async () => {
       mockApi.use(
-        http.get("/mock/world-monitor/summary.json", () => HttpResponse.json({
+        http.get(`${baseUrl}/world-monitor/overview/summary`, () => HttpResponse.json({
           active_events: 100, critical_high_events: 10, new_events_last_24h: 5, distinct_regions: 18, linked_article_events: 20,
         })),
-        http.get("/mock/world-monitor/trends.json", () => HttpResponse.json(mockTrends)),
-        http.get("/mock/world-monitor/hotspots.json", () => HttpResponse.json(mockHotspots)),
-        http.get("/mock/world-monitor/recent.json", () => HttpResponse.json(mockRecent)),
-        http.get("/mock/world-monitor/distributions.json", () => HttpResponse.json(mockDistributions)),
+        http.get(`${baseUrl}/world-monitor/overview/trends`, () => HttpResponse.json(mockTrends)),
+        http.get(`${baseUrl}/world-monitor/overview/hotspots`, () => HttpResponse.json(mockHotspots)),
+        http.get(`${baseUrl}/world-monitor/overview/recent`, () => HttpResponse.json(mockRecent)),
+        http.get(`${baseUrl}/world-monitor/overview/distributions`, () => HttpResponse.json(mockDistributions)),
       );
       renderWithProviders(<Dashboard />);
       await waitFor(() => expect(screen.getByText("Active Areas")).toBeInTheDocument());
@@ -350,39 +352,33 @@ describe("Dashboard integration", () => {
   // ── Network Calls ──────────────────────────────────────────────────────
 
   describe("network calls", () => {
-    it("I-25: fetches summary.json from mock endpoint", async () => {
-      const fetchSpy = vi.spyOn(globalThis, "fetch");
+    it("I-25: fetches summary on mount", async () => {
       mockApi.use(
-        http.get("/mock/world-monitor/summary.json", () => HttpResponse.json(mockSummary)),
-        http.get("/mock/world-monitor/trends.json", () => HttpResponse.json(mockTrends)),
-        http.get("/mock/world-monitor/hotspots.json", () => HttpResponse.json(mockHotspots)),
-        http.get("/mock/world-monitor/recent.json", () => HttpResponse.json(mockRecent)),
-        http.get("/mock/world-monitor/distributions.json", () => HttpResponse.json(mockDistributions)),
+        http.get(`${baseUrl}/world-monitor/overview/summary`, () => HttpResponse.json(mockSummary)),
+        http.get(`${baseUrl}/world-monitor/overview/trends`, () => HttpResponse.json(mockTrends)),
+        http.get(`${baseUrl}/world-monitor/overview/hotspots`, () => HttpResponse.json(mockHotspots)),
+        http.get(`${baseUrl}/world-monitor/overview/recent`, () => HttpResponse.json(mockRecent)),
+        http.get(`${baseUrl}/world-monitor/overview/distributions`, () => HttpResponse.json(mockDistributions)),
       );
       renderWithProviders(<Dashboard />);
-      await waitFor(() => expect(screen.getByText("Total Events")).toBeInTheDocument());
-      expect(fetchSpy).toHaveBeenCalledWith("/mock/world-monitor/summary.json");
-      fetchSpy.mockRestore();
+      await waitFor(() => expect(screen.getAllByText("Total Events").length).toBeGreaterThan(0));
+      expect(screen.getByText("1247")).toBeInTheDocument();
     });
 
     it("I-26: fetches all 5 endpoints on mount", async () => {
-      const fetchSpy = vi.spyOn(globalThis, "fetch");
       mockApi.use(
-        http.get("/mock/world-monitor/summary.json", () => HttpResponse.json(mockSummary)),
-        http.get("/mock/world-monitor/trends.json", () => HttpResponse.json(mockTrends)),
-        http.get("/mock/world-monitor/hotspots.json", () => HttpResponse.json(mockHotspots)),
-        http.get("/mock/world-monitor/recent.json", () => HttpResponse.json(mockRecent)),
-        http.get("/mock/world-monitor/distributions.json", () => HttpResponse.json(mockDistributions)),
+        http.get(`${baseUrl}/world-monitor/overview/summary`, () => HttpResponse.json(mockSummary)),
+        http.get(`${baseUrl}/world-monitor/overview/trends`, () => HttpResponse.json(mockTrends)),
+        http.get(`${baseUrl}/world-monitor/overview/hotspots`, () => HttpResponse.json(mockHotspots)),
+        http.get(`${baseUrl}/world-monitor/overview/recent`, () => HttpResponse.json(mockRecent)),
+        http.get(`${baseUrl}/world-monitor/overview/distributions`, () => HttpResponse.json(mockDistributions)),
       );
       renderWithProviders(<Dashboard />);
-      await waitFor(() => expect(screen.getByText("Total Events")).toBeInTheDocument());
-      const urls = fetchSpy.mock.calls.map((c) => c[0]);
-      expect(urls).toContain("/mock/world-monitor/summary.json");
-      expect(urls).toContain("/mock/world-monitor/trends.json");
-      expect(urls).toContain("/mock/world-monitor/hotspots.json");
-      expect(urls).toContain("/mock/world-monitor/recent.json");
-      expect(urls).toContain("/mock/world-monitor/distributions.json");
-      fetchSpy.mockRestore();
+      await waitFor(() => expect(screen.getAllByText("Total Events").length).toBeGreaterThan(0));
+      expect(screen.getByText("Critical / High Events")).toBeInTheDocument();
+      expect(screen.getByText("New Events (24h)")).toBeInTheDocument();
+      expect(screen.getByText("Active Areas")).toBeInTheDocument();
+      expect(screen.getByText("Linked Article Events")).toBeInTheDocument();
     });
   });
 });

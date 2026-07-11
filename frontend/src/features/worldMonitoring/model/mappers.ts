@@ -207,6 +207,8 @@ export const mapEventDetail = (
         source: raw.linked_article_preview.source,
         sourceType: raw.linked_article_preview.source_type,
         author: raw.linked_article_preview.author,
+        processedContent: raw.linked_article_preview.processed_content,
+        rawContent: raw.linked_article_preview.raw_content,
         tags: raw.linked_article_preview.tags,
         locations: raw.linked_article_preview.locations.map(mapLocation),
       }

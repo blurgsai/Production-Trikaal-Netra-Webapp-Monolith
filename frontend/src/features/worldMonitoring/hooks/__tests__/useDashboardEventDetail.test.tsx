@@ -306,7 +306,7 @@ describe("useDashboardEventDetail", () => {
         linked_article_preview: {
           ...mockEventDetail.linked_article_preview!,
           processed_content: "Processed text",
-        } as any,
+        },
       });
       const { result } = renderHook(() => useDashboardEventDetail("evt-001"), {
         wrapper: createWrapper(),
@@ -320,7 +320,7 @@ describe("useDashboardEventDetail", () => {
         linked_article_preview: {
           ...mockEventDetail.linked_article_preview!,
           raw_content: "Raw text",
-        } as any,
+        },
       });
       const { result } = renderHook(() => useDashboardEventDetail("evt-001"), {
         wrapper: createWrapper(),

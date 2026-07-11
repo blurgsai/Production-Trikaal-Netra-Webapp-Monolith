@@ -545,10 +545,10 @@ describe("useThreats", () => {
       vi.mocked(getThreatEvents).mockResolvedValue({
         success: true,
         data: [
-          { id: "e1", title: "Low", summary: "S", threat_level: "LOW", event_type: "Test", enriched_at: "2024-01-01", locations: [] } as any,
-          { id: "e2", title: "Med", summary: "S", threat_level: "MEDIUM", event_type: "Test", enriched_at: "2024-01-01", locations: [] } as any,
-          { id: "e3", title: "High", summary: "S", threat_level: "HIGH", event_type: "Test", enriched_at: "2024-01-01", locations: [] } as any,
-          { id: "e4", title: "Crit", summary: "S", threat_level: "CRITICAL", event_type: "Test", enriched_at: "2024-01-01", locations: [] } as any,
+          { id: "e1", title: "Low", summary: "S", threat_level: "LOW", event_type: "Test", enriched_at: "2024-01-01", locations: [] },
+          { id: "e2", title: "Med", summary: "S", threat_level: "MEDIUM", event_type: "Test", enriched_at: "2024-01-01", locations: [] },
+          { id: "e3", title: "High", summary: "S", threat_level: "HIGH", event_type: "Test", enriched_at: "2024-01-01", locations: [] },
+          { id: "e4", title: "Crit", summary: "S", threat_level: "CRITICAL", event_type: "Test", enriched_at: "2024-01-01", locations: [] },
         ],
         pagination: { page: 1, page_size: 10, total_pages: 1, total: 4 },
       });

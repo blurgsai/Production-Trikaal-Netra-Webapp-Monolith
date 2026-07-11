@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 
-from src.shared.auth import get_current_user
 from src.features.world_monitor.models import (
     OverviewDistributionsResponse,
     OverviewHotspot,
@@ -29,6 +28,7 @@ from src.features.world_monitor.services import (
     get_overview_summary,
     get_overview_trends,
 )
+from src.shared.auth import get_current_user
 from src.shared.dependencies import get_db
 
 router = APIRouter(prefix="/world-monitor", tags=["World Monitoring"])

@@ -385,7 +385,7 @@ describe("useArticleDetail", () => {
     it("handles linked_event without summary", async () => {
       vi.mocked(getArticleDetail).mockResolvedValue({
         ...mockArticleDetail,
-        linked_events: [{ id: "evt-003", title: "No Summary", threat_level: "LOW", event_type: "Test", locations: [] } as any],
+        linked_events: [{ id: "evt-003", title: "No Summary", threat_level: "LOW", event_type: "Test", locations: [] }],
       });
       const { result } = renderHook(() => useArticleDetail("art-001"), { wrapper: createWrapper() });
       await waitFor(() => expect(result.current.data?.linkedEvents[0].summary).toBeUndefined());
@@ -395,9 +395,9 @@ describe("useArticleDetail", () => {
       vi.mocked(getArticleDetail).mockResolvedValue({
         ...mockArticleDetail,
         linked_events: [
-          { id: "e1", title: "E1", threat_level: "LOW", event_type: "A", locations: [] } as any,
-          { id: "e2", title: "E2", threat_level: "HIGH", event_type: "B", locations: [] } as any,
-          { id: "e3", title: "E3", threat_level: "CRITICAL", event_type: "C", locations: [] } as any,
+          { id: "e1", title: "E1", threat_level: "LOW", event_type: "A", locations: [] },
+          { id: "e2", title: "E2", threat_level: "HIGH", event_type: "B", locations: [] },
+          { id: "e3", title: "E3", threat_level: "CRITICAL", event_type: "C", locations: [] },
         ],
       });
       const { result } = renderHook(() => useArticleDetail("art-001"), { wrapper: createWrapper() });

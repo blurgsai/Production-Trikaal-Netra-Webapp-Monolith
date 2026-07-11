@@ -59,7 +59,7 @@ export function Threats() {
 
   const metadata = data?.metadata;
   const events = data?.events ?? [];
-  const mapMarkers = data?.mapMarkers ?? [];
+  const mapMarkers = useMemo(() => data?.mapMarkers ?? [], [data?.mapMarkers]);
   const pagination = data?.pagination;
 
   const navigate = useNavigate();

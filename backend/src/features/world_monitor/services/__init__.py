@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime, timezone
 from typing import Any
 
 from src.features.world_monitor.clients import (
@@ -31,7 +31,6 @@ from src.features.world_monitor.models import (
     map_map_markers_from_doc,
 )
 from src.shared.errors import NotFoundError
-
 
 SORT_OPTIONS = [
     {"value": "latest", "label": "Latest"},
@@ -157,7 +156,7 @@ async def get_article_detail(db, article_id: str) -> dict[str, Any] | None:
 
 async def get_overview_summary(db) -> dict[str, Any]:
     events = await fetch_all_events(db)
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     last_24h_ts = now.timestamp() - 86400
 
     active_events = len(events)
@@ -200,7 +199,7 @@ async def get_overview_summary(db) -> dict[str, Any]:
 
         if enriched_dt:
             if enriched_dt.tzinfo is None:
-                enriched_dt = enriched_dt.replace(tzinfo=timezone.utc)
+                enriched_dt = enriched_dt.replace(tzinfo=UTC)
             if enriched_dt.timestamp() >= last_24h_ts:
                 new_events_last_24h += 1
 

@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import math
 import re
-from datetime import datetime, timezone
-from typing import Any, Iterable
+from collections.abc import Iterable
+from datetime import UTC, datetime, timezone
+from typing import Any
 
 from bson import ObjectId
 
@@ -12,14 +13,14 @@ def _parse_iso_datetime(value: Any) -> datetime | None:
     if value is None:
         return None
     if isinstance(value, datetime):
-        return value if value.tzinfo else value.replace(tzinfo=timezone.utc)
+        return value if value.tzinfo else value.replace(tzinfo=UTC)
     if isinstance(value, str):
         normalized = value.replace("Z", "+00:00")
         try:
             parsed = datetime.fromisoformat(normalized)
         except ValueError:
             return None
-        return parsed if parsed.tzinfo else parsed.replace(tzinfo=timezone.utc)
+        return parsed if parsed.tzinfo else parsed.replace(tzinfo=UTC)
     return None
 
 
@@ -277,7 +278,7 @@ async def fetch_all_events(db) -> list[dict[str, Any]]:
 
 async def fetch_today_article_count(db) -> int:
     articles = db.get_collection("world_monitor_articles")
-    now = datetime.now(timezone.utc)
-    start = datetime(now.year, now.month, now.day, tzinfo=timezone.utc)
+    now = datetime.now(UTC)
+    start = datetime(now.year, now.month, now.day, tzinfo=UTC)
     end = start.replace(hour=23, minute=59, second=59, microsecond=999999)
     return await articles.count_documents({"ingested_at": {"$gte": start, "$lte": end}})
