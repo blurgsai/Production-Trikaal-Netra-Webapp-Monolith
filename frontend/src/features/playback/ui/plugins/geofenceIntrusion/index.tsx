@@ -1,6 +1,6 @@
 import { GeofenceIntrusionOverlay } from './GeofenceIntrusionOverlay';
 import { useGeofenceIntrusionEvent } from '../../../hooks/useGeofenceIntrusionEvent';
-import type { EventPlugin } from '../../pluginRegistry';
+import type { EventPlugin } from '../../PluginRegistry';
 import type { EventOverlayProps } from '../../../model/types';
 
 // Named component (not an inline arrow on a lowercase object key) so

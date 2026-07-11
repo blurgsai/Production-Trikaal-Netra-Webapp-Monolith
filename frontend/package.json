@@ -15,7 +15,8 @@
     "check:top-level": "chmod +x ../.github/scripts/check-no-top-level-tech-folders.sh && ../.github/scripts/check-no-top-level-tech-folders.sh src",
     "check:imports": "chmod +x ../.github/scripts/check-layer-imports.sh && ../.github/scripts/check-layer-imports.sh src/features",
     "check:barrel": "chmod +x ../.github/scripts/check-barrel-exports.sh && ../.github/scripts/check-barrel-exports.sh src/features",
-    "check:all": "npm run check:structure && npm run check:nested && npm run check:top-level && npm run check:imports && npm run check:barrel && npm run lint",
+    "check:mock-json": "chmod +x ../.github/scripts/check-frontend-mock-json-usage.sh && ../.github/scripts/check-frontend-mock-json-usage.sh src",
+    "check:all": "npm run check:structure && npm run check:nested && npm run check:top-level && npm run check:imports && npm run check:barrel && npm run check:mock-json && npm run lint",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

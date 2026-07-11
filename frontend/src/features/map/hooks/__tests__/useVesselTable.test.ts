@@ -11,7 +11,7 @@ vi.mock("../../api/vesselTableApi", () => ({
   searchColumnValues: vi.fn(),
 }));
 
-vi.mock("../../api/vesselFilterStorage", () => ({
+vi.mock("../../model/vesselFilterStorage", () => ({
   loadSavedFilters: vi.fn(),
   saveFilter: vi.fn(),
   deleteSavedFilter: vi.fn(),
@@ -28,7 +28,7 @@ vi.mock("../../model/mappers", () => ({
 }));
 
 import { fetchVesselTable, fetchVesselTableColumns, fetchUniqueColumnValues } from "../../api/vesselTableApi";
-import { loadSavedFilters, saveFilter, deleteSavedFilter } from "../../api/vesselFilterStorage";
+import { loadSavedFilters, saveFilter, deleteSavedFilter } from "../../model/vesselFilterStorage";
 import { buildWfsCqlFilter, buildPolygonCqlFilter, combineCqlFilters } from "../../model/cqlFilter";
 import { mapVesselTableResponse } from "../../model/mappers";
 

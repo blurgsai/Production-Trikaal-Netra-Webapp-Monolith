@@ -12,7 +12,7 @@ import {
   getMapOverlay,
   getMarkerEnhancement,
   getTimelineEnhancement,
-} from './pluginRegistry';
+} from './PluginRegistry';
 
 interface PlaybackPanelProps {
   eventId: string;

@@ -2,6 +2,7 @@ import { Box, IconButton, Tooltip } from "@mui/material";
 import MapIcon from "@mui/icons-material/Map";
 import EventIcon from "@mui/icons-material/Event";
 import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
+import WorldMonitoringIcon from "./icons/WorldMonitoringIcon";
 
 import { useNavigate, useLocation } from "react-router-dom";
 
@@ -12,6 +13,7 @@ function Sidebar() {
   const menuItems = [
     { icon: <MapIcon />, label: "Map", path: "/map" },
     { icon: <EventIcon />, label: "Events", path: "/events" },
+    { icon: <WorldMonitoringIcon />, label: "World Monitoring", path: "/world-monitoring" },
   ];
 
   return (

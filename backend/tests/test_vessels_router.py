@@ -1,10 +1,24 @@
-"""Unit tests for src.features.vessels.router — FastAPI endpoint tests."""
+"""Integration tests for src.features.vessels.router — FastAPI endpoint tests.
+
+These tests use TestClient(app) to exercise the full HTTP stack:
+  router → service → client → model (with mocked external calls).
+
+They are marked with @pytest.mark.integration so they can be selected
+or deselected independently from pure unit tests.
+"""
 import httpx
 import pytest
 from fastapi.testclient import TestClient
 
 from src.main import app
+from src.shared.auth import get_current_user
 from src.shared.dependencies import get_http_client
+
+pytestmark = pytest.mark.integration
+
+
+def _mock_current_user():
+    return {"username": "testuser", "role": "user"}
 
 
 def _mock_response(status_code=200, text=""):
@@ -15,7 +29,10 @@ def _mock_response(status_code=200, text=""):
 
 @pytest.fixture
 def client():
-    return TestClient(app)
+    app.dependency_overrides[get_current_user] = _mock_current_user
+    c = TestClient(app)
+    yield c
+    app.dependency_overrides.clear()
 
 
 @pytest.fixture
@@ -24,6 +41,7 @@ def override_http_client(mock_http_client):
     async def _override():
         yield mock_http_client
     app.dependency_overrides[get_http_client] = _override
+    app.dependency_overrides[get_current_user] = _mock_current_user
     yield mock_http_client
     app.dependency_overrides.clear()
 
@@ -75,11 +93,12 @@ class TestGetTrajectoryEndpoint:
         assert resp.status_code == 502
         assert "ClickHouse" in resp.json()["detail"]
 
-    def test_no_auth_required(self, client, override_http_client, sample_trajectory_raw):
-        """Vessels endpoints don't require authentication."""
-        override_http_client.get.return_value = _mock_response(200, sample_trajectory_raw)
+    def test_auth_required(self, client, override_http_client, sample_trajectory_raw):
+        """Vessels endpoints require authentication."""
+        app.dependency_overrides.pop(get_current_user, None)
         resp = client.get("/vessels/trajectory/123")
-        assert resp.status_code == 200
+        assert resp.status_code == 401
+        app.dependency_overrides[get_current_user] = _mock_current_user
 
     def test_time_capped_at_max(self, client, override_http_client, sample_trajectory_raw):
         override_http_client.get.return_value = _mock_response(200, sample_trajectory_raw)
@@ -181,14 +200,15 @@ class TestGetPlaybackEndpoint:
         assert resp.status_code == 502
         assert "ClickHouse" in resp.json()["detail"]
 
-    def test_no_auth_required(self, client, override_http_client, sample_playback_raw, sample_polygon_geojson):
-        override_http_client.get.return_value = _mock_response(200, sample_playback_raw)
+    def test_auth_required(self, client, override_http_client, sample_playback_raw, sample_polygon_geojson):
+        app.dependency_overrides.pop(get_current_user, None)
         resp = client.post("/vessels/playback", json={
             "polygon": sample_polygon_geojson,
             "start": "2024-12-04 17:00:00",
             "end": "2024-12-04 18:00:00",
         })
-        assert resp.status_code == 200
+        assert resp.status_code == 401
+        app.dependency_overrides[get_current_user] = _mock_current_user
 
     def test_response_schema(self, client, override_http_client, sample_playback_raw, sample_polygon_geojson):
         override_http_client.get.return_value = _mock_response(200, sample_playback_raw)
