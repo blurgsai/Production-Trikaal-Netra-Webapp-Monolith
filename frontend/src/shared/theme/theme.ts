@@ -151,8 +151,8 @@ export const defenseTheme = createTheme({
           transition: "background-color 5000s ease-in-out 0s",
         },
         body: {
-          "-webkit-font-smoothing": "antialiased",
-          "-moz-osx-font-smoothing": "grayscale",
+          WebkitFontSmoothing: "antialiased",
+          MozOsxFontSmoothing: "grayscale",
         },
         ".leaflet-container": {
           cursor: "pointer !important",
