@@ -42,7 +42,13 @@ export default function Chatbot({ open, onClose }: ChatbotProps) {
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const latestIndexRef = useRef<number | null>(null);
+  const messagesRef = useRef<Message[]>([]);
   const { messages, setMessages } = useChatbot();
+
+  // Keep messagesRef in sync so streaming callbacks always see latest
+  useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
   const { chatHistory, createSession, fetchChatHistory } = useChatSession();
   const { fetchMessages, streamMessage } = useChatMessages();
   const navigate = useNavigate();
@@ -126,21 +132,26 @@ export default function Chatbot({ open, onClose }: ChatbotProps) {
             content: text,
           };
 
-          latestIndexRef.current = messages.length;
-          setMessages([...messages, newMsg]);
+          const current = messagesRef.current;
+          const next = [...current, newMsg];
+          latestIndexRef.current = current.length;
+          messagesRef.current = next;
+          setMessages(next);
 
           return;
         }
 
         // APPEND to existing message
         const idx = latestIndexRef.current;
-        if (idx !== null && messages[idx]) {
-          const updated = [...messages];
+        const current = messagesRef.current;
+        if (idx !== null && current[idx]) {
+          const updated = [...current];
           updated[idx] = {
             ...updated[idx],
             content: (updated[idx].content || "") + text,
           };
 
+          messagesRef.current = updated;
           setMessages(updated);
         }
       },
@@ -148,14 +159,28 @@ export default function Chatbot({ open, onClose }: ChatbotProps) {
         console.error("Streaming error:", error);
 
         const idx = latestIndexRef.current;
-        if (idx !== null && messages[idx]) {
-          const updated = [...messages];
+        const current = messagesRef.current;
+
+        if (idx !== null && current[idx]) {
+          const updated = [...current];
           updated[idx] = {
             ...updated[idx],
             content: "Error fetching response",
           };
 
+          messagesRef.current = updated;
           setMessages(updated);
+        } else {
+          const errorMsg: Message = {
+            messageId: Date.now() + 1,
+            role: "assistant",
+            navigationLink: null,
+            content: "Error fetching response",
+          };
+
+          const next = [...current, errorMsg];
+          messagesRef.current = next;
+          setMessages(next);
         }
       }
     );
