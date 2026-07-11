@@ -111,7 +111,7 @@ export const mapRecentEvent = (
 ): DashboardRecentEvent => ({
   id: raw.id,
   title: raw.title,
-  summary: raw.summary,
+  summary: raw.summary ?? "",
   threatLevel: raw.threat_level,
   eventType: raw.event_type,
   enrichedAt: raw.enriched_at ?? "",
@@ -178,7 +178,7 @@ export const mapEventDetail = (
   id: raw.id,
 
   title: raw.title,
-  summary: raw.summary,
+  summary: raw.summary ?? "",
 
   threatLevel: raw.threat_level,
   eventType: raw.event_type,
@@ -239,7 +239,7 @@ export const mapThreatEvent = (
 ): ThreatEvent => ({
   id: raw.id,
   title: raw.title,
-  summary: raw.summary,
+  summary: raw.summary ?? "",
   threatLevel: raw.threat_level,
   eventType: raw.event_type,
   enrichedAt: raw.enriched_at ?? "",
