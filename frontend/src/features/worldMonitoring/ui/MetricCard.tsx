@@ -1,6 +1,6 @@
 import { Box, Card, CardContent, Typography } from "@mui/material";
 
-import { worldMonitorPalette } from "../model/types";
+import { defenseColors } from "@/shared/theme";
 
 interface MetricCardProps {
   label: string;
@@ -13,9 +13,8 @@ export const MetricCard = ({ label, value, helper }: MetricCardProps) => {
     <Card
       sx={{
         borderRadius: 3,
-        border: `1px solid ${worldMonitorPalette.border}`,
-        background:
-          "linear-gradient(180deg, rgba(18,35,59,0.96), rgba(9,22,37,0.98))",
+        border: `1px solid ${defenseColors.border.default}`,
+        background: `linear-gradient(180deg, ${defenseColors.background.surfaceAlt}, ${defenseColors.background.surface})`,
         position: "relative",
         overflow: "hidden",
       }}
@@ -27,15 +26,14 @@ export const MetricCard = ({ label, value, helper }: MetricCardProps) => {
           left: 0,
           right: 0,
           height: 3,
-          background:
-            "linear-gradient(90deg, rgba(78,195,255,0.9), rgba(255,138,61,0.85))",
+          background: `linear-gradient(90deg, ${defenseColors.primary.main}, ${defenseColors.status.warning})`,
         }}
       />
 
       <CardContent sx={{ p: 2 }}>
         <Typography
           variant="caption"
-          sx={{ color: worldMonitorPalette.textMuted }}
+          sx={{ color: defenseColors.text.muted }}
         >
           {label}
         </Typography>
@@ -43,7 +41,7 @@ export const MetricCard = ({ label, value, helper }: MetricCardProps) => {
         <Typography
           variant="h4"
           sx={{
-            color: worldMonitorPalette.text,
+            color: defenseColors.text.primary,
             fontWeight: 800,
             my: 0.5,
           }}
@@ -51,7 +49,7 @@ export const MetricCard = ({ label, value, helper }: MetricCardProps) => {
           {value}
         </Typography>
 
-        <Typography variant="body2" sx={{ color: worldMonitorPalette.textMuted }}>
+        <Typography variant="body2" sx={{ color: defenseColors.text.muted }}>
           {helper}
         </Typography>
       </CardContent>

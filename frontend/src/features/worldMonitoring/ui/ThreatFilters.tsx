@@ -20,13 +20,13 @@ import CheckBoxIcon from "@mui/icons-material/CheckBox";
 
 import type { ThreatFilters, ThreatMetadata } from "../model/types";
 
-import { worldMonitorPalette } from "../model/types";
+import { defenseColors } from "@/shared/theme";
 
 const MULTI_SELECT_MENU_PROPS = {
   PaperProps: {
     sx: {
-      backgroundColor: worldMonitorPalette.panel,
-      border: `1px solid ${worldMonitorPalette.borderStrong}`,
+      backgroundColor: defenseColors.background.surface,
+      border: `1px solid ${defenseColors.border.strong}`,
       maxHeight: 280,
     },
   },
@@ -81,9 +81,8 @@ export function ThreatFilters({
         gap: 1.5,
         p: 1.5,
         borderRadius: 3,
-        border: `1px solid ${worldMonitorPalette.border}`,
-        background:
-          "linear-gradient(180deg, rgba(18,35,59,0.95), rgba(9,22,37,0.98))",
+        border: `1px solid ${defenseColors.border.default}`,
+        background: `linear-gradient(180deg, ${defenseColors.background.surfaceAlt}, ${defenseColors.background.surface})`,
       }}
     >
       <Stack
@@ -93,7 +92,7 @@ export function ThreatFilters({
           minWidth: 200,
         }}
       >
-        <Typography variant="caption" sx={{ color: worldMonitorPalette.textMuted }}>
+        <Typography variant="caption" sx={{ color: defenseColors.text.muted }}>
           Search
         </Typography>
         <TextField
@@ -104,12 +103,12 @@ export function ThreatFilters({
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
-                <SearchIcon sx={{ color: worldMonitorPalette.textMuted }} />
+                <SearchIcon sx={{ color: defenseColors.text.muted }} />
               </InputAdornment>
             ),
             sx: {
-              color: worldMonitorPalette.text,
-              backgroundColor: "rgba(255,255,255,0.03)",
+              color: defenseColors.text.primary,
+              backgroundColor: defenseColors.border.soft,
             },
           }}
         />
@@ -122,7 +121,7 @@ export function ThreatFilters({
           minWidth: 280,
         }}
       >
-        <Typography variant="caption" sx={{ color: worldMonitorPalette.textMuted }}>
+        <Typography variant="caption" sx={{ color: defenseColors.text.muted }}>
           Threat Level
         </Typography>
         <ToggleButtonGroup
@@ -139,12 +138,12 @@ export function ThreatFilters({
                 minWidth: 0,
                 px: 1.25,
                 py: 0.5,
-                color: worldMonitorPalette.textMuted,
-                borderColor: worldMonitorPalette.border,
+                color: defenseColors.text.muted,
+                borderColor: defenseColors.border.default,
                 whiteSpace: "nowrap",
                 "&.Mui-selected": {
-                  color: worldMonitorPalette.text,
-                  backgroundColor: worldMonitorPalette.accentSoft,
+                  color: defenseColors.text.primary,
+                  backgroundColor: defenseColors.primary.soft,
                 },
               }}
             >
@@ -161,7 +160,7 @@ export function ThreatFilters({
           minWidth: 150,
         }}
       >
-        <Typography variant="caption" sx={{ color: worldMonitorPalette.textMuted }}>
+        <Typography variant="caption" sx={{ color: defenseColors.text.muted }}>
           Event Types
         </Typography>
         <Autocomplete
@@ -190,8 +189,8 @@ export function ThreatFilters({
                 label={option}
                 size="small"
                 sx={{
-                  color: worldMonitorPalette.text,
-                  backgroundColor: worldMonitorPalette.accentSoft,
+                  color: defenseColors.text.primary,
+                  backgroundColor: defenseColors.primary.soft,
                 }}
               />
             ))
@@ -205,8 +204,8 @@ export function ThreatFilters({
           )}
           sx={{
             "& .MuiOutlinedInput-root": {
-              color: worldMonitorPalette.text,
-              backgroundColor: "rgba(255,255,255,0.03)",
+              color: defenseColors.text.primary,
+              backgroundColor: defenseColors.border.soft,
             },
           }}
         />
@@ -219,7 +218,7 @@ export function ThreatFilters({
           minWidth: 150,
         }}
       >
-        <Typography variant="caption" sx={{ color: worldMonitorPalette.textMuted }}>
+        <Typography variant="caption" sx={{ color: defenseColors.text.muted }}>
           Sources
         </Typography>
         <Autocomplete
@@ -248,8 +247,8 @@ export function ThreatFilters({
                 label={option}
                 size="small"
                 sx={{
-                  color: worldMonitorPalette.text,
-                  backgroundColor: worldMonitorPalette.accentSoft,
+                  color: defenseColors.text.primary,
+                  backgroundColor: defenseColors.primary.soft,
                 }}
               />
             ))
@@ -263,8 +262,8 @@ export function ThreatFilters({
           )}
           sx={{
             "& .MuiOutlinedInput-root": {
-              color: worldMonitorPalette.text,
-              backgroundColor: "rgba(255,255,255,0.03)",
+              color: defenseColors.text.primary,
+              backgroundColor: defenseColors.border.soft,
             },
           }}
         />
@@ -277,7 +276,7 @@ export function ThreatFilters({
           minWidth: 140,
         }}
       >
-        <Typography variant="caption" sx={{ color: worldMonitorPalette.textMuted }}>
+        <Typography variant="caption" sx={{ color: defenseColors.text.muted }}>
           Sort
         </Typography>
         <FormControl size="small" fullWidth>
@@ -286,7 +285,7 @@ export function ThreatFilters({
             onChange={(e) => onSortChange(e.target.value)}
             input={<OutlinedInput notched={false} />}
             MenuProps={MULTI_SELECT_MENU_PROPS}
-            sx={{ color: worldMonitorPalette.text }}
+            sx={{ color: defenseColors.text.primary }}
           >
             {(metadata?.sortOptions ?? []).map((option) => (
               <MenuItem key={option.value} value={option.value}>
@@ -319,8 +318,8 @@ export function ThreatFilters({
             onClick={onResetFilters}
             sx={{
               color: hasActiveFilters
-                ? worldMonitorPalette.accent
-                : worldMonitorPalette.textMuted,
+                ? defenseColors.primary.main
+                : defenseColors.text.muted,
               cursor: hasActiveFilters ? "pointer" : "default",
               textDecoration: hasActiveFilters ? "underline" : "none",
               pointerEvents: hasActiveFilters ? "auto" : "none",

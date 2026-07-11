@@ -1,7 +1,7 @@
 import { Card, CardContent, Chip, Paper, Stack, Typography } from "@mui/material";
 
 import type { DashboardHotspot } from "../model/types";
-import { worldMonitorPalette } from "../model/types";
+import { defenseColors } from "@/shared/theme";
 import { formatEventTypeLabel, formatRelative } from "../model/mappers";
 
 interface OperationalHotspotsProps {
@@ -18,15 +18,15 @@ export const OperationalHotspots = ({ hotspots }: OperationalHotspotsProps) => {
         display: "flex",
         flexDirection: "column",
         borderRadius: 3,
-        border: `1px solid ${worldMonitorPalette.border}`,
-        backgroundColor: worldMonitorPalette.panel,
+        border: `1px solid ${defenseColors.border.default}`,
+        backgroundColor: defenseColors.background.surface,
         overflow: "hidden",
       }}
     >
       <Typography
         variant="h6"
         sx={{
-          color: worldMonitorPalette.text,
+          color: defenseColors.text.primary,
           fontWeight: 800,
           mb: 2,
         }}
@@ -50,8 +50,8 @@ export const OperationalHotspots = ({ hotspots }: OperationalHotspotsProps) => {
             key={spot.locationName}
             sx={{
               borderRadius: 2,
-              border: `1px solid ${worldMonitorPalette.border}`,
-              backgroundColor: "rgba(255,255,255,0.02)",
+              border: `1px solid ${defenseColors.border.default}`,
+              backgroundColor: defenseColors.border.soft,
             }}
           >
             <CardContent sx={{ p: 1.5, "&:last-child": { pb: 1.5 } }}>
@@ -62,7 +62,7 @@ export const OperationalHotspots = ({ hotspots }: OperationalHotspotsProps) => {
             >
               <Typography
                 sx={{
-                  color: worldMonitorPalette.text,
+                  color: defenseColors.text.primary,
                   fontWeight: 600,
                 }}
               >
@@ -73,8 +73,8 @@ export const OperationalHotspots = ({ hotspots }: OperationalHotspotsProps) => {
                 size="small"
                 label={`${spot.eventCount} events`}
                 sx={{
-                  color: worldMonitorPalette.textMuted,
-                  backgroundColor: "rgba(255,255,255,0.04)",
+                  color: defenseColors.text.muted,
+                  backgroundColor: defenseColors.border.soft,
                 }}
               />
             </Stack>
@@ -91,8 +91,8 @@ export const OperationalHotspots = ({ hotspots }: OperationalHotspotsProps) => {
                   size="small"
                   label={formatEventTypeLabel(spot.dominantEventType)}
                   sx={{
-                    color: worldMonitorPalette.accent,
-                    backgroundColor: worldMonitorPalette.accentSoft,
+                    color: defenseColors.primary.main,
+                    backgroundColor: defenseColors.primary.soft,
                   }}
                 />
               )}
@@ -101,8 +101,8 @@ export const OperationalHotspots = ({ hotspots }: OperationalHotspotsProps) => {
                 size="small"
                 label={`${spot.criticalHighCount} high priority`}
                 sx={{
-                  color: "#ff8a3d",
-                  backgroundColor: "rgba(255,138,61,0.14)",
+                  color: defenseColors.status.warning,
+                  backgroundColor: `${defenseColors.status.warning}24`,
                 }}
               />
             </Stack>
@@ -110,7 +110,7 @@ export const OperationalHotspots = ({ hotspots }: OperationalHotspotsProps) => {
             <Typography
               variant="caption"
               sx={{
-                color: worldMonitorPalette.textMuted,
+                color: defenseColors.text.muted,
                 mt: 1,
                 display: "block",
               }}

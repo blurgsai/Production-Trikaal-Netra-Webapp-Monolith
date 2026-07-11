@@ -1,9 +1,16 @@
+import { defenseColors } from "@/shared/theme";
+
+export const worldMonitorPalette = {
+  background: defenseColors.background.page,
+  border: defenseColors.border.default,
+  textMuted: defenseColors.text.muted,
+  accent: defenseColors.primary.main,
+} as const;
+
 export { Dashboard } from "./ui/Dashboard";
 export { Threats } from "./ui/Threats";
 export { Articles } from "./ui/Articles";
 export { ArticleDetailDialog } from "./ui/ArticleDetailDialog";
-
-export { worldMonitorPalette } from "./model/types";
 
 export type {
   ThreatFilters,

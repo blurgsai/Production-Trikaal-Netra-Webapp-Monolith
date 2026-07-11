@@ -20,7 +20,7 @@ import type {
   Location,
   StructuredField,
 } from "../model/types";
-import { worldMonitorPalette } from "../model/types";
+import { defenseColors } from "@/shared/theme";
 import {
   formatDateTime,
   formatEventTypeLabel,
@@ -46,7 +46,7 @@ export default function EventDetailDialog({
     <DialogContent sx={{ p: 0 }}>
       {loading || !eventDetail ? (
         <Box sx={{ minHeight: 320, display: "grid", placeItems: "center" }}>
-          <CircularProgress sx={{ color: worldMonitorPalette.accent }} />
+          <CircularProgress sx={{ color: defenseColors.primary.main }} />
         </Box>
       ) : (
         <Stack spacing={0} sx={{ maxHeight: "78vh" }}>
@@ -74,8 +74,8 @@ export default function EventDetailDialog({
                 size="small"
                 label={formatEventTypeLabel(eventDetail.eventType)}
                 sx={{
-                  color: worldMonitorPalette.accent,
-                  backgroundColor: worldMonitorPalette.accentSoft,
+                  color: defenseColors.primary.main,
+                  backgroundColor: defenseColors.primary.soft,
                 }}
               />
               {eventDetail.primaryLocation?.name && (
@@ -83,8 +83,8 @@ export default function EventDetailDialog({
                   size="small"
                   label={eventDetail.primaryLocation.name}
                   sx={{
-                    color: worldMonitorPalette.textMuted,
-                    backgroundColor: "rgba(255,255,255,0.04)",
+                    color: defenseColors.text.muted,
+                    backgroundColor: defenseColors.border.soft,
                   }}
                 />
               )}
@@ -99,13 +99,13 @@ export default function EventDetailDialog({
 
             <Typography
               variant="body1"
-              sx={{ color: worldMonitorPalette.textMuted }}
+              sx={{ color: defenseColors.text.muted }}
             >
               {eventDetail.summary}
             </Typography>
           </Box>
 
-          <Divider sx={{ borderColor: worldMonitorPalette.border }} />
+          <Divider sx={{ borderColor: defenseColors.border.default }} />
 
           {/* ── Scrollable body ── */}
           <Box sx={{ p: 3, overflowY: "auto" }}>
@@ -115,7 +115,7 @@ export default function EventDetailDialog({
                 <Box>
                   <Typography
                     variant="subtitle2"
-                    sx={{ mb: 1, color: worldMonitorPalette.text }}
+                    sx={{ mb: 1, color: defenseColors.text.primary }}
                   >
                     Structured Intelligence
                   </Typography>
@@ -127,9 +127,9 @@ export default function EventDetailDialog({
                           label={`${field.label}: ${field.value}`}
                           sx={{
                             maxWidth: "100%",
-                            color: worldMonitorPalette.text,
-                            backgroundColor: "rgba(255,255,255,0.04)",
-                            border: `1px solid ${worldMonitorPalette.border}`,
+                            color: defenseColors.text.primary,
+                            backgroundColor: defenseColors.border.soft,
+                            border: `1px solid ${defenseColors.border.default}`,
                           }}
                         />
                       ),
@@ -142,7 +142,7 @@ export default function EventDetailDialog({
               <Box>
                 <Typography
                   variant="subtitle2"
-                  sx={{ mb: 1, color: worldMonitorPalette.text }}
+                  sx={{ mb: 1, color: defenseColors.text.primary }}
                 >
                   AI Assessment
                 </Typography>
@@ -150,13 +150,13 @@ export default function EventDetailDialog({
                   sx={{
                     p: 1.75,
                     borderRadius: 2,
-                    border: `1px solid ${worldMonitorPalette.border}`,
-                    backgroundColor: "rgba(78,195,255,0.08)",
+                    border: `1px solid ${defenseColors.border.default}`,
+                    backgroundColor: defenseColors.primary.soft,
                   }}
                 >
                   <Typography
                     variant="body2"
-                    sx={{ color: worldMonitorPalette.textMuted }}
+                    sx={{ color: defenseColors.text.muted }}
                   >
                     {eventDetail.reasoning ?? "No AI reasoning available."}
                   </Typography>
@@ -168,7 +168,7 @@ export default function EventDetailDialog({
                 <Box>
                   <Typography
                     variant="subtitle2"
-                    sx={{ mb: 1, color: worldMonitorPalette.text }}
+                    sx={{ mb: 1, color: defenseColors.text.primary }}
                   >
                     Location Context
                   </Typography>
@@ -180,13 +180,13 @@ export default function EventDetailDialog({
                         sx={{
                           color:
                             location.role === "primary"
-                              ? worldMonitorPalette.accent
-                              : worldMonitorPalette.textMuted,
+                              ? defenseColors.primary.main
+                              : defenseColors.text.muted,
                           backgroundColor:
                             location.role === "primary"
-                              ? worldMonitorPalette.accentSoft
-                              : "rgba(255,255,255,0.04)",
-                          border: `1px solid ${worldMonitorPalette.border}`,
+                              ? defenseColors.primary.soft
+                              : defenseColors.border.soft,
+                          border: `1px solid ${defenseColors.border.default}`,
                         }}
                       />
                     ))}
@@ -199,7 +199,7 @@ export default function EventDetailDialog({
                 <Box>
                   <Typography
                     variant="subtitle2"
-                    sx={{ mb: 1, color: worldMonitorPalette.text }}
+                    sx={{ mb: 1, color: defenseColors.text.primary }}
                   >
                     Linked Article
                   </Typography>
@@ -207,8 +207,8 @@ export default function EventDetailDialog({
                     sx={{
                       p: 1.75,
                       borderRadius: 2,
-                      border: `1px solid ${worldMonitorPalette.border}`,
-                      backgroundColor: "rgba(255,255,255,0.03)",
+                      border: `1px solid ${defenseColors.border.default}`,
+                      backgroundColor: defenseColors.border.soft,
                     }}
                   >
                     {eventDetail.linkedArticlePreview.imageUrl && (
@@ -221,7 +221,7 @@ export default function EventDetailDialog({
                           borderRadius: 2,
                           mb: 1.5,
                           objectFit: "cover",
-                          border: `1px solid ${worldMonitorPalette.border}`,
+                          border: `1px solid ${defenseColors.border.default}`,
                         }}
                       />
                     )}
@@ -235,7 +235,7 @@ export default function EventDetailDialog({
                       <Typography
                         variant="caption"
                         sx={{
-                          color: worldMonitorPalette.textMuted,
+                          color: defenseColors.text.muted,
                           display: "block",
                           mb: 1,
                         }}
@@ -248,7 +248,7 @@ export default function EventDetailDialog({
                     )}
                     <Typography
                       variant="body2"
-                      sx={{ color: worldMonitorPalette.textMuted }}
+                      sx={{ color: defenseColors.text.muted }}
                     >
                       {eventDetail.linkedArticlePreview.summary ??
                         "Open the linked article for full provenance."}
@@ -270,7 +270,7 @@ export default function EventDetailDialog({
                         onClick={() =>
                           onOpenArticle?.(eventDetail.linkedArticlePreview!.id)
                         }
-                        sx={{ color: worldMonitorPalette.accent }}
+                        sx={{ color: defenseColors.primary.main }}
                       >
                         Open Article
                       </Button>
@@ -283,7 +283,7 @@ export default function EventDetailDialog({
               <Box>
                 <Typography
                   variant="subtitle2"
-                  sx={{ mb: 1, color: worldMonitorPalette.text }}
+                  sx={{ mb: 1, color: defenseColors.text.primary }}
                 >
                   Metadata
                 </Typography>
@@ -291,14 +291,14 @@ export default function EventDetailDialog({
                   {eventDetail.enrichedAt && (
                     <Typography
                       variant="body2"
-                      sx={{ color: worldMonitorPalette.textMuted }}
+                      sx={{ color: defenseColors.text.muted }}
                     >
                       Enriched At: {formatDateTime(eventDetail.enrichedAt)}
                     </Typography>
                   )}
                   <Typography
                     variant="body2"
-                    sx={{ color: worldMonitorPalette.textMuted }}
+                    sx={{ color: defenseColors.text.muted }}
                   >
                     Relevance Score:{" "}
                     {eventDetail.relevanceScore ?? "Not scored"}
@@ -311,7 +311,7 @@ export default function EventDetailDialog({
                 <Box>
                   <Typography
                     variant="subtitle2"
-                    sx={{ mb: 1, color: worldMonitorPalette.text }}
+                    sx={{ mb: 1, color: defenseColors.text.primary }}
                   >
                     Article Preview
                   </Typography>
@@ -319,8 +319,8 @@ export default function EventDetailDialog({
                     sx={{
                       p: 1.75,
                       borderRadius: 2,
-                      border: `1px solid ${worldMonitorPalette.border}`,
-                      backgroundColor: "rgba(255,255,255,0.03)",
+                      border: `1px solid ${defenseColors.border.default}`,
+                      backgroundColor: defenseColors.border.soft,
                     }}
                   >
                     {articleDetail.imageUrl && (
@@ -333,7 +333,7 @@ export default function EventDetailDialog({
                           borderRadius: 2,
                           mb: 1.5,
                           objectFit: "cover",
-                          border: `1px solid ${worldMonitorPalette.border}`,
+                          border: `1px solid ${defenseColors.border.default}`,
                         }}
                       />
                     )}
@@ -347,7 +347,7 @@ export default function EventDetailDialog({
                       <Typography
                         variant="caption"
                         sx={{
-                          color: worldMonitorPalette.textMuted,
+                          color: defenseColors.text.muted,
                           display: "block",
                           mb: 1,
                         }}
@@ -357,7 +357,7 @@ export default function EventDetailDialog({
                     )}
                     <Typography
                       variant="body2"
-                      sx={{ color: worldMonitorPalette.textMuted }}
+                      sx={{ color: defenseColors.text.muted }}
                     >
                       {articleDetail.summary ??
                         articleDetail.processedContent ??
@@ -395,11 +395,11 @@ export default function EventDetailDialog({
       maxWidth="md"
       PaperProps={{
         sx: {
-          backgroundColor: worldMonitorPalette.panel,
-          border: `1px solid ${worldMonitorPalette.borderStrong}`,
-          color: worldMonitorPalette.text,
+          backgroundColor: defenseColors.background.surface,
+          border: `1px solid ${defenseColors.border.strong}`,
+          color: defenseColors.text.primary,
           backgroundImage:
-            "radial-gradient(circle at top right, rgba(78,195,255,0.08), transparent 35%)",
+            `radial-gradient(circle at top right, ${defenseColors.primary.soft}, transparent 35%)`,
         },
       }}
     >
@@ -408,8 +408,8 @@ export default function EventDetailDialog({
           m: 0,
           p: 2,
           pr: 6,
-          color: worldMonitorPalette.text,
-          borderBottom: `1px solid ${worldMonitorPalette.border}`,
+          color: defenseColors.text.primary,
+          borderBottom: `1px solid ${defenseColors.border.default}`,
         }}
       >
         Event Detail
@@ -421,7 +421,7 @@ export default function EventDetailDialog({
           position: "absolute",
           right: 8,
           top: 8,
-          color: worldMonitorPalette.textMuted,
+          color: defenseColors.text.muted,
         }}
       >
         <CloseIcon />

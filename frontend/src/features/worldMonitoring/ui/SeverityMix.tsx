@@ -1,7 +1,7 @@
 import { Chip, Paper, Stack, Typography } from "@mui/material";
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 
-import { worldMonitorPalette } from "../model/types";
+import { defenseColors } from "@/shared/theme";
 import type { DashboardSeverityDistribution } from "../model/types";
 
 interface SeverityMixProps {
@@ -18,15 +18,15 @@ export const SeverityMix = ({
       sx={{
         p: 2,
         borderRadius: 3,
-        border: `1px solid ${worldMonitorPalette.border}`,
-        backgroundColor: worldMonitorPalette.panel,
+        border: `1px solid ${defenseColors.border.default}`,
+        backgroundColor: defenseColors.background.surface,
         minHeight: 320,
       }}
     >
       <Typography
         variant="h6"
         sx={{
-          color: worldMonitorPalette.text,
+          color: defenseColors.text.primary,
           fontWeight: 800,
           mb: 2,
         }}

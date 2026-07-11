@@ -9,7 +9,7 @@ import {
   YAxis,
 } from "recharts";
 
-import { worldMonitorPalette } from "../model/types";
+import { defenseColors } from "@/shared/theme";
 import type { DashboardEventTypeDistribution } from "../model/types";
 
 interface EventTypesProps {
@@ -26,15 +26,15 @@ export const EventTypes = ({
       sx={{
         p: 2,
         borderRadius: 3,
-        border: `1px solid ${worldMonitorPalette.border}`,
-        backgroundColor: worldMonitorPalette.panel,
+        border: `1px solid ${defenseColors.border.default}`,
+        backgroundColor: defenseColors.background.surface,
         minHeight: 320,
       }}
     >
       <Typography
         variant="h6"
         sx={{
-          color: worldMonitorPalette.text,
+          color: defenseColors.text.primary,
           fontWeight: 800,
           mb: 2,
         }}
@@ -46,7 +46,7 @@ export const EventTypes = ({
         <Typography
           variant="body2"
           sx={{
-            color: worldMonitorPalette.textMuted,
+            color: defenseColors.text.muted,
             mb: 1,
           }}
         >
@@ -54,7 +54,7 @@ export const EventTypes = ({
           <Box
             component="span"
             sx={{
-              color: worldMonitorPalette.text,
+              color: defenseColors.text.primary,
               fontWeight: 700,
               ml: 0.5,
             }}
@@ -67,32 +67,32 @@ export const EventTypes = ({
       <ResponsiveContainer width="100%" height={240}>
         <BarChart data={eventTypeData} layout="vertical">
           <CartesianGrid
-            stroke={worldMonitorPalette.border}
+            stroke={defenseColors.border.default}
             horizontal={false}
           />
 
-          <XAxis type="number" stroke={worldMonitorPalette.textMuted} />
+          <XAxis type="number" stroke={defenseColors.text.muted} />
 
           <YAxis
             dataKey="label"
             type="category"
             width={150}
-            stroke={worldMonitorPalette.textMuted}
+            stroke={defenseColors.text.muted}
           />
 
           <Tooltip
             contentStyle={{
-              border: `1px solid ${worldMonitorPalette.borderStrong}`,
-              color: worldMonitorPalette.textSecondary,
+              border: `1px solid ${defenseColors.border.strong}`,
+              color: defenseColors.text.secondary,
             }}
             labelStyle={{
-              color: worldMonitorPalette.textSecondary,
+              color: defenseColors.text.secondary,
             }}
           />
 
           <Bar
             dataKey="value"
-            fill={worldMonitorPalette.accent}
+            fill={defenseColors.primary.main}
             radius={[0, 8, 8, 0]}
           />
         </BarChart>
