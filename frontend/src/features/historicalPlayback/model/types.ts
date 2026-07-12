@@ -1,8 +1,3 @@
-export interface PlaybackAttribute {
-  key: string;
-  path: string;
-}
-
 export interface PlaybackRange {
   start: string;
   end: string;
@@ -51,14 +46,6 @@ export interface PlaybackVessel {
   index: number;
 }
 
-export interface PlaybackQuery {
-  baseTime: string;
-  chunkOffset: number;
-  granularity: TimeGranularity;
-  geometry: GeoJSON.Geometry;
-  filters: Record<string, unknown>;
-}
-
 export interface VesselPoint {
   lat: number;
   lng: number;
@@ -77,3 +64,71 @@ export interface AnimationVessel {
   tweenProgress: number;
   isAnimating: boolean;
 }
+
+// ── Progressive filter domain types (user-friendly names, not DB columns) ──
+
+export type FilterField =
+  | "vesselId"
+  | "mmsi"
+  | "speed"
+  | "heading"
+  | "course"
+  | "navigationStatus"
+  | "latitude"
+  | "longitude"
+  | "kinematicsSpeed"
+  | "shipName"
+  | "destination"
+  | "callsign";
+
+export type FilterOperator =
+  | "eq"
+  | "ne"
+  | "gt"
+  | "gte"
+  | "lt"
+  | "lte"
+  | "like";
+
+export type FilterCombinator = "AND" | "OR";
+
+export interface PlaybackFilter {
+  field: FilterField;
+  operator: FilterOperator;
+  value: string;
+  combinator?: FilterCombinator;
+}
+
+export interface FilterFieldOption {
+  field: FilterField;
+  label: string;
+  isNumeric: boolean;
+}
+
+export const FILTER_FIELD_OPTIONS: FilterFieldOption[] = [
+  { field: "vesselId", label: "Vessel ID", isNumeric: true },
+  { field: "mmsi", label: "MMSI", isNumeric: true },
+  { field: "speed", label: "Speed (knots)", isNumeric: true },
+  { field: "heading", label: "Heading", isNumeric: true },
+  { field: "course", label: "Course Over Ground", isNumeric: true },
+  { field: "navigationStatus", label: "Navigation Status", isNumeric: true },
+  { field: "latitude", label: "Latitude", isNumeric: true },
+  { field: "longitude", label: "Longitude", isNumeric: true },
+  { field: "kinematicsSpeed", label: "Kinematics Speed (m/s)", isNumeric: true },
+  { field: "shipName", label: "Ship Name", isNumeric: false },
+  { field: "destination", label: "Destination", isNumeric: false },
+  { field: "callsign", label: "Callsign", isNumeric: false },
+];
+
+export const FILTER_OPERATOR_OPTIONS: {
+  value: FilterOperator;
+  label: string;
+}[] = [
+  { value: "eq", label: "=" },
+  { value: "ne", label: "!=" },
+  { value: "gt", label: ">" },
+  { value: "gte", label: ">=" },
+  { value: "lt", label: "<" },
+  { value: "lte", label: "<=" },
+  { value: "like", label: "LIKE" },
+];

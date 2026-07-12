@@ -68,7 +68,7 @@ class TestFetchTrajectory:
 class TestFetchPlayback:
     @pytest.mark.asyncio
     async def test_successful_fetch(self, mock_http_client, mock_response):
-        mock_http_client.get.return_value = mock_response
+        mock_http_client.post.return_value = mock_response
         result = await fetch_playback(
             mock_http_client,
             minx=65.0, miny=15.0, maxx=66.0, maxy=16.0,
@@ -76,13 +76,13 @@ class TestFetchPlayback:
         )
 
         assert result == "ok"
-        mock_http_client.get.assert_called_once()
+        mock_http_client.post.assert_called_once()
 
     @pytest.mark.asyncio
     async def test_raises_on_http_error(self, mock_http_client):
-        req = httpx.Request("GET", "http://test")
+        req = httpx.Request("POST", "http://test")
         error_resp = httpx.Response(500, text="Internal Server Error", request=req)
-        mock_http_client.get.return_value = error_resp
+        mock_http_client.post.return_value = error_resp
 
         with pytest.raises(httpx.HTTPStatusError):
             await fetch_playback(
@@ -93,7 +93,7 @@ class TestFetchPlayback:
 
     @pytest.mark.asyncio
     async def test_raises_on_request_error(self, mock_http_client):
-        mock_http_client.get.side_effect = httpx.TimeoutException("timed out")
+        mock_http_client.post.side_effect = httpx.TimeoutException("timed out")
 
         with pytest.raises(httpx.TimeoutException):
             await fetch_playback(
@@ -104,41 +104,41 @@ class TestFetchPlayback:
 
     @pytest.mark.asyncio
     async def test_passes_bbox_and_dates_as_params(self, mock_http_client, mock_response):
-        mock_http_client.get.return_value = mock_response
+        mock_http_client.post.return_value = mock_response
         await fetch_playback(
             mock_http_client,
             minx=65.0, miny=15.0, maxx=66.0, maxy=16.0,
             start_str="2024-12-04 17:00:00", end_str="2024-12-04 18:00:00",
         )
 
-        call_args = mock_http_client.get.call_args
-        params = call_args.kwargs["params"]
-        assert params["minx"] == "65.0"
-        assert params["maxx"] == "66.0"
-        assert params["miny"] == "15.0"
-        assert params["maxy"] == "16.0"
-        assert params["start_str"] == "2024-12-04 17:00:00"
-        assert params["end_str"] == "2024-12-04 18:00:00"
+        call_args = mock_http_client.post.call_args
+        content = call_args.kwargs["content"]
+        assert "65.0" in content
+        assert "66.0" in content
+        assert "15.0" in content
+        assert "16.0" in content
+        assert "2024-12-04 17:00:00" in content
+        assert "2024-12-04 18:00:00" in content
 
     @pytest.mark.asyncio
     async def test_query_contains_tab_separated_format(self, mock_http_client, mock_response):
-        mock_http_client.get.return_value = mock_response
+        mock_http_client.post.return_value = mock_response
         await fetch_playback(
             mock_http_client,
             minx=65.0, miny=15.0, maxx=66.0, maxy=16.0,
             start_str="2024-12-04 17:00:00", end_str="2024-12-04 18:00:00",
         )
 
-        call_args = mock_http_client.get.call_args
-        query = call_args.kwargs["params"]["query"]
-        assert "FORMAT TabSeparated" in query
-        assert "ais_processed_flat" in query
-        assert "heading" in query
+        call_args = mock_http_client.post.call_args
+        content = call_args.kwargs["content"]
+        assert "FORMAT TabSeparated" in content
+        assert "ais_processed_flat" in content
+        assert "heading" in content
 
     @pytest.mark.asyncio
     async def test_returns_response_text(self, mock_http_client, sample_playback_raw):
-        req = httpx.Request("GET", "http://test")
-        mock_http_client.get.return_value = httpx.Response(200, text=sample_playback_raw, request=req)
+        req = httpx.Request("POST", "http://test")
+        mock_http_client.post.return_value = httpx.Response(200, text=sample_playback_raw, request=req)
         result = await fetch_playback(
             mock_http_client,
             minx=65.0, miny=15.0, maxx=66.0, maxy=16.0,

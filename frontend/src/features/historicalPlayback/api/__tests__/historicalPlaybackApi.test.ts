@@ -1,129 +1,125 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 
-import {
-  fetchPlaybackAttributes,
-  fetchPlaybackVessels,
-} from "../historicalPlaybackApi";
+import { fetchVesselTrajectories } from "../historicalPlaybackApi";
 
-import type { PlaybackQueryPayload } from "../types";
+import type { TrajectoryRequestApi, TrajectoryResponseApi } from "../types";
 
-describe("historicalPlayback API (integration with MSW)", () => {
-  describe("fetchPlaybackAttributes", () => {
-    it("fetches and returns attributes from mock endpoint", async () => {
-      const result = await fetchPlaybackAttributes();
+vi.mock("@/shared/api", () => ({
+  axiosInstance: {
+    post: vi.fn(),
+  },
+}));
 
-      expect(result.attributes).toBeDefined();
-      expect(result.attributes.length).toBeGreaterThan(0);
-      expect(result.attributes[0]).toHaveProperty("key");
-      expect(result.attributes[0]).toHaveProperty("path");
-    });
+import { axiosInstance } from "@/shared/api";
 
-    it("returns all 6 attributes", async () => {
-      const result = await fetchPlaybackAttributes();
-      expect(result.attributes).toHaveLength(6);
-    });
+const mockedPost = vi.mocked(axiosInstance.post);
 
-    it("includes expected attribute keys", async () => {
-      const result = await fetchPlaybackAttributes();
-      const keys = result.attributes.map((a) => a.key);
-      expect(keys).toContain("vessel_type");
-      expect(keys).toContain("flag");
-      expect(keys).toContain("speed");
-      expect(keys).toContain("heading");
-    });
+const mockResponse: TrajectoryResponseApi = {
+  trajectories: {
+    V0001: [
+      { ts: "2024-12-04T16:00:00Z", lat: 15.9, lon: 65.2, heading: 45, speed: 10 },
+      { ts: "2024-12-04T16:00:15Z", lat: 15.91, lon: 65.21, heading: 46, speed: 11 },
+    ],
+    V0002: [
+      { ts: "2024-12-04T16:00:00Z", lat: 16.1, lon: 65.5, heading: 90, speed: 5 },
+    ],
+  },
+  timestamps: [
+    "2024-12-04T16:00:00Z",
+    "2024-12-04T16:00:15Z",
+  ],
+};
+
+const basePayload: TrajectoryRequestApi = {
+  polygon: {
+    type: "Polygon",
+    coordinates: [
+      [
+        [65, 15],
+        [66, 15],
+        [66, 16],
+        [65, 16],
+        [65, 15],
+      ],
+    ],
+  },
+  start_time: "2024-12-04T16:00:00Z",
+  end_time: "2024-12-04T16:01:00Z",
+};
+
+describe("historicalPlayback API", () => {
+  beforeEach(() => {
+    vi.restoreAllMocks();
   });
 
-  describe("fetchPlaybackVessels", () => {
-    const payload: PlaybackQueryPayload = {
-      base_time: "2024-12-04T16:00:00Z",
-      chunk_offset: 0,
-      granularity: "minute",
-      geometry: {
-        type: "Polygon",
-        coordinates: [
-          [
-            [65, 15],
-            [66, 15],
-            [66, 16],
-            [65, 16],
-            [65, 15],
-          ],
+  it("fetchVesselTrajectories sends POST to /vessels/trajectory", async () => {
+    mockedPost.mockResolvedValue({ data: mockResponse });
+
+    await fetchVesselTrajectories(basePayload);
+
+    expect(axiosInstance.post).toHaveBeenCalledWith(
+      "/vessels/trajectory",
+      basePayload,
+    );
+  });
+
+  it("fetchVesselTrajectories returns response data", async () => {
+    mockedPost.mockResolvedValue({ data: mockResponse });
+
+    const result = await fetchVesselTrajectories(basePayload);
+
+    expect(result.trajectories).toBeDefined();
+    expect(result.timestamps).toHaveLength(2);
+    expect(Object.keys(result.trajectories)).toEqual(["V0001", "V0002"]);
+  });
+
+  it("fetchVesselTrajectories returns vessel points with correct fields", async () => {
+    mockedPost.mockResolvedValue({ data: mockResponse });
+
+    const result = await fetchVesselTrajectories(basePayload);
+    const firstVessel = result.trajectories.V0001;
+
+    expect(firstVessel).toHaveLength(2);
+    expect(firstVessel[0]).toHaveProperty("ts");
+    expect(firstVessel[0]).toHaveProperty("lat");
+    expect(firstVessel[0]).toHaveProperty("lon");
+    expect(firstVessel[0]).toHaveProperty("heading");
+  });
+
+  it("fetchVesselTrajectories timestamps have UTC Z suffix", async () => {
+    mockedPost.mockResolvedValue({ data: mockResponse });
+
+    const result = await fetchVesselTrajectories(basePayload);
+    expect(result.timestamps[0]).toMatch(/Z$/);
+    expect(result.trajectories.V0001[0].ts).toMatch(/Z$/);
+  });
+
+  it("fetchVesselTrajectories throws on API error", async () => {
+    mockedPost.mockRejectedValue(new Error("Network error"));
+
+    await expect(fetchVesselTrajectories(basePayload)).rejects.toThrow(
+      "Network error",
+    );
+  });
+
+  it("fetchVesselTrajectories works with different time windows", async () => {
+    const chunk1Response: TrajectoryResponseApi = {
+      trajectories: {
+        V0001: [
+          { ts: "2024-12-04T16:01:00Z", lat: 15.95, lon: 65.25, heading: 47, speed: 12 },
         ],
       },
-      filters: {},
+      timestamps: ["2024-12-04T16:01:00Z"],
     };
+    mockedPost.mockResolvedValue({ data: chunk1Response });
 
-    it("fetches chunk 0 data with correct structure", async () => {
-      const result = await fetchPlaybackVessels(payload);
-
-      expect(result.chunk_offset).toBe(0);
-      expect(result.chunk_start).toBeDefined();
-      expect(result.chunk_end).toBeDefined();
-      expect(result.timestamps).toHaveLength(5);
-      expect(result.vessels).toBeDefined();
+    const result = await fetchVesselTrajectories({
+      ...basePayload,
+      start_time: "2024-12-04T16:01:00Z",
+      end_time: "2024-12-04T16:02:00Z",
     });
 
-    it("returns vessel data with position points", async () => {
-      const result = await fetchPlaybackVessels(payload);
-      const vesselIds = Object.keys(result.vessels);
-
-      expect(vesselIds.length).toBeGreaterThan(0);
-      const firstVessel = result.vessels[vesselIds[0]];
-      expect(firstVessel).toHaveLength(5);
-      expect(firstVessel[0]).toHaveProperty("ts");
-      expect(firstVessel[0]).toHaveProperty("lat");
-      expect(firstVessel[0]).toHaveProperty("lon");
-      expect(firstVessel[0]).toHaveProperty("heading");
-    });
-
-    it("fetches different data for chunk 1", async () => {
-      const result0 = await fetchPlaybackVessels({
-        ...payload,
-        chunk_offset: 0,
-      });
-      const result1 = await fetchPlaybackVessels({
-        ...payload,
-        chunk_offset: 1,
-      });
-
-      expect(result1.chunk_offset).toBe(1);
-      expect(result1.chunk_start).not.toBe(result0.chunk_start);
-    });
-
-    it("timestamps are in UTC (have Z suffix)", async () => {
-      const result = await fetchPlaybackVessels(payload);
-      expect(result.timestamps[0]).toMatch(/Z$/);
-      expect(result.vessels[Object.keys(result.vessels)[0]][0].ts).toMatch(/Z$/);
-    });
-
-    it("supports hour granularity", async () => {
-      const result = await fetchPlaybackVessels({
-        ...payload,
-        granularity: "hour",
-        chunk_offset: 0,
-      });
-      expect(result.chunk_offset).toBe(0);
-      expect(result.timestamps).toHaveLength(5);
-    });
-
-    it("supports day granularity", async () => {
-      const result = await fetchPlaybackVessels({
-        ...payload,
-        granularity: "day",
-        chunk_offset: 0,
-      });
-      expect(result.chunk_offset).toBe(0);
-      expect(result.timestamps).toHaveLength(5);
-    });
-
-    it("supports week granularity", async () => {
-      const result = await fetchPlaybackVessels({
-        ...payload,
-        granularity: "week",
-        chunk_offset: 0,
-      });
-      expect(result.chunk_offset).toBe(0);
-      expect(result.timestamps).toHaveLength(5);
-    });
+    expect(result.timestamps[0]).toBe("2024-12-04T16:01:00Z");
+    expect(result.trajectories.V0001[0].lat).toBe(15.95);
   });
 });

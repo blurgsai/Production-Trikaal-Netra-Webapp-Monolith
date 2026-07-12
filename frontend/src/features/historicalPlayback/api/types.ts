@@ -1,31 +1,39 @@
-export interface PlaybackAttributeApi {
-  key: string;
-  path: string;
-}
-
-export interface PlaybackAttributesResponse {
-  attributes: PlaybackAttributeApi[];
-}
-
-export interface PlaybackQueryPayload {
-  base_time: string;
-  chunk_offset: number;
-  granularity: string;
-  geometry: GeoJSON.Geometry;
-  filters: Record<string, unknown>;
-}
-
-export interface PlaybackPointApi {
+export interface TrajectoryPointApi {
   ts: string;
   lat: number;
   lon: number;
   heading: number;
+  speed: number;
 }
 
-export interface PlaybackChunkResponse {
-  chunk_offset: number;
-  chunk_start: string;
-  chunk_end: string;
+export type TrajectoryFilterOperatorApi =
+  | "eq"
+  | "ne"
+  | "gt"
+  | "gte"
+  | "lt"
+  | "lte"
+  | "like";
+
+export type TrajectoryFilterCombinatorApi = "AND" | "OR";
+
+export interface TrajectoryFilterApi {
+  column: string;
+  operator: TrajectoryFilterOperatorApi;
+  value: string | number;
+  combinator?: TrajectoryFilterCombinatorApi;
+}
+
+export interface TrajectoryRequestApi {
+  vessel_ids?: string[];
+  polygon?: GeoJSON.Geometry;
+  start_time?: string;
+  end_time?: string;
+  time_seconds?: number;
+  filters?: TrajectoryFilterApi[];
+}
+
+export interface TrajectoryResponseApi {
+  trajectories: Record<string, TrajectoryPointApi[]>;
   timestamps: string[];
-  vessels: Record<string, PlaybackPointApi[]>;
 }

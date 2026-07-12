@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 
-import { fetchPlaybackVessels } from "../api/historicalPlaybackApi";
-import { DataBufferManager } from "../model/dataBufferManager";
+import { fetchVesselTrajectories } from "../api/historicalPlaybackApi";
+import { TrajectoryBufferManager } from "../model/dataBufferManager";
 
-import type { PlaybackChunk, TimeGranularity } from "../model/types";
+import type { PlaybackChunk, PlaybackFilter, TimeGranularity } from "../model/types";
 
 interface SliderChangeResult {
   chunkOffset: number;
@@ -11,30 +11,30 @@ interface SliderChangeResult {
 }
 
 export interface UsePlaybackBufferResult {
-  bufferManager: DataBufferManager | null;
+  bufferManager: TrajectoryBufferManager | null;
   currentChunk: number;
   isBuffering: boolean;
   bufferError: Error | null;
   initializeBuffer: (
     baseTime: string,
+    endTime: string,
     geometry: GeoJSON.Geometry,
-    filters: Record<string, unknown>,
     granularity: TimeGranularity,
-  ) => DataBufferManager;
+    filters: PlaybackFilter[],
+  ) => TrajectoryBufferManager;
   handleSliderChange: (
     timeSeconds: number,
   ) => Promise<SliderChangeResult | null>;
   getChunkData: (chunkOffset: number) => Promise<PlaybackChunk>;
   updateBufferConfig: (
     geometry: GeoJSON.Geometry,
-    filters: Record<string, unknown>,
   ) => void;
   clearBuffer: () => void;
 }
 
 export function usePlaybackBuffer(): UsePlaybackBufferResult {
   const [bufferManager, setBufferManager] =
-    useState<DataBufferManager | null>(null);
+    useState<TrajectoryBufferManager | null>(null);
 
   const [currentChunk, setCurrentChunk] = useState(0);
 
@@ -44,21 +44,23 @@ export function usePlaybackBuffer(): UsePlaybackBufferResult {
 
   const lastChunkRef = useRef(-1);
 
-  const bufferManagerRef = useRef<DataBufferManager | null>(null);
+  const bufferManagerRef = useRef<TrajectoryBufferManager | null>(null);
 
   const initializeBuffer = useCallback(
     (
       baseTime: string,
+      endTime: string,
       geometry: GeoJSON.Geometry,
-      filters: Record<string, unknown>,
       granularity: TimeGranularity,
+      filters: PlaybackFilter[],
     ) => {
-      const manager = new DataBufferManager(
+      const manager = new TrajectoryBufferManager(
         baseTime,
+        endTime,
         geometry,
-        filters,
         granularity,
-        fetchPlaybackVessels,
+        filters,
+        fetchVesselTrajectories,
       );
       setBufferManager(manager);
       bufferManagerRef.current = manager;
@@ -120,9 +122,9 @@ export function usePlaybackBuffer(): UsePlaybackBufferResult {
   );
 
   const updateBufferConfig = useCallback(
-    (geometry: GeoJSON.Geometry, filters: Record<string, unknown>) => {
+    (geometry: GeoJSON.Geometry) => {
       if (bufferManagerRef.current) {
-        bufferManagerRef.current.updateConfig(geometry, filters);
+        bufferManagerRef.current.updateConfig(geometry);
         setBufferError(null);
       }
     },

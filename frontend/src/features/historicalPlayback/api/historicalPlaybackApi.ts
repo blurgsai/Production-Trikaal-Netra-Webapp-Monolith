@@ -1,23 +1,16 @@
+import { axiosInstance } from "@/shared/api";
+
 import type {
-  PlaybackAttributesResponse,
-  PlaybackChunkResponse,
-  PlaybackQueryPayload,
+  TrajectoryRequestApi,
+  TrajectoryResponseApi,
 } from "./types";
 
-export async function fetchPlaybackAttributes(): Promise<PlaybackAttributesResponse> {
-  const res = await fetch("/mock/playback/attributes.json");
-  if (!res.ok) throw new Error("Failed to fetch playback attributes");
-  return res.json();
-}
-
-export async function fetchPlaybackVessels(
-  payload: PlaybackQueryPayload,
-): Promise<PlaybackChunkResponse> {
-  const { granularity, chunk_offset } = payload;
-  const res = await fetch(`/mock/playback/${granularity}-${chunk_offset}.json`);
-  if (!res.ok)
-    throw new Error(
-      `Failed to fetch ${granularity} ${chunk_offset} playback data`,
-    );
-  return res.json();
+export async function fetchVesselTrajectories(
+  payload: TrajectoryRequestApi,
+): Promise<TrajectoryResponseApi> {
+  const { data } = await axiosInstance.post<TrajectoryResponseApi>(
+    "/vessels/trajectory",
+    payload,
+  );
+  return data;
 }

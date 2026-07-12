@@ -3,10 +3,16 @@ from fastapi import APIRouter, Depends
 
 from src.features.vessels.models import (
     PlaybackWindowRequest,
+    TrajectoryRequest,
     VesselPlaybackResponse,
+    VesselTrajectoriesResponse,
     VesselTrajectoryResponse,
 )
-from src.features.vessels.services import get_vessel_playback, get_vessel_trajectory
+from src.features.vessels.services import (
+    get_vessel_playback,
+    get_vessel_trajectories,
+    get_vessel_trajectory,
+)
 from src.shared.auth import get_current_user
 from src.shared.dependencies import get_http_client
 
@@ -30,3 +36,20 @@ async def get_playback(
     current_user: dict = Depends(get_current_user),
 ):
     return await get_vessel_playback(client, req.polygon, req.start, req.end)
+
+
+@router.post("/trajectory", response_model=VesselTrajectoriesResponse)
+async def get_trajectories(
+    req: TrajectoryRequest,
+    client: httpx.AsyncClient = Depends(get_http_client),
+    current_user: dict = Depends(get_current_user),
+):
+    return await get_vessel_trajectories(
+        client,
+        vessel_ids=req.vessel_ids,
+        polygon=req.polygon,
+        start_time=req.start_time,
+        end_time=req.end_time,
+        time_seconds=req.time_seconds,
+        filters=req.filters,
+    )

@@ -4,12 +4,12 @@ import {
   IconButton,
   Slider,
   Typography,
-  Menu,
   MenuItem,
   Button,
   Tooltip,
   LinearProgress,
   Stack,
+  Popover,
 } from "@mui/material";
 import { useTheme, alpha } from "@mui/material/styles";
 import {
@@ -55,21 +55,16 @@ export default function AnimationControls({
   const SEEK_STEP = Math.max(duration / 50, 1);
 
   const formatCompactTime = useCallback((seconds: number) => {
-    const totalSeconds = Math.max(0, seconds);
-    const hours = Math.floor(totalSeconds / 3600);
-    const mins = Math.floor((totalSeconds % 3600) / 60);
-    const secs = Math.floor(totalSeconds % 60);
-
-    if (duration < 3600) {
-      return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
-    }
-    if (duration < 86400) {
-      return `${hours.toString().padStart(2, "0")}:${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
-    }
     if (!startTime) return "--";
     const startDate = new Date(startTime);
-    const utcDate = new Date(startDate.getTime() + seconds * 1000);
-    return `${String(utcDate.getMonth() + 1).padStart(2, "0")}/${String(utcDate.getDate()).padStart(2, "0")} ${String(utcDate.getHours()).padStart(2, "0")}:${String(utcDate.getMinutes()).padStart(2, "0")}`;
+    const localDate = new Date(startDate.getTime() + seconds * 1000);
+    const datePart = `${String(localDate.getMonth() + 1).padStart(2, "0")}/${String(localDate.getDate()).padStart(2, "0")}`;
+    const timePart = `${String(localDate.getHours()).padStart(2, "0")}:${String(localDate.getMinutes()).padStart(2, "0")}`;
+
+    if (duration < 3600) {
+      return `${datePart} ${timePart}:${String(localDate.getSeconds()).padStart(2, "0")}`;
+    }
+    return `${datePart} ${timePart}`;
   }, [duration, startTime]);
 
   useEffect(() => {
@@ -109,6 +104,9 @@ export default function AnimationControls({
 
   return (
     <Box
+      onMouseDown={(e) => e.stopPropagation()}
+      onClick={(e) => e.stopPropagation()}
+      onDoubleClick={(e) => e.stopPropagation()}
       sx={{
         position: "absolute",
         bottom: 36,
@@ -197,26 +195,33 @@ export default function AnimationControls({
           </Button>
         </Tooltip>
 
-        <Menu
-          anchorEl={anchorEl}
+        <Popover
           open={Boolean(anchorEl)}
+          anchorEl={anchorEl}
           onClose={() => setAnchorEl(null)}
-          PaperProps={{ sx: { minWidth: 90 } }}
+          anchorOrigin={{ vertical: "top", horizontal: "center" }}
+          transformOrigin={{ vertical: "bottom", horizontal: "center" }}
+          hideBackdrop
+          disableEnforceFocus
+          disableAutoFocus
+          slotProps={{ paper: { sx: { minWidth: 90, zIndex: 10000, mt: -0.5 } } }}
         >
-          {PLAYBACK_SPEEDS.map((speed) => (
-            <MenuItem
-              key={speed}
-              selected={speed === playbackSpeed}
-              onClick={() => {
-                onSpeedChange(speed);
-                setAnchorEl(null);
-              }}
-              sx={{ justifyContent: "center" }}
-            >
-              {speed}x
-            </MenuItem>
-          ))}
-        </Menu>
+          <Box sx={{ py: 0.5 }}>
+            {PLAYBACK_SPEEDS.map((speed) => (
+              <MenuItem
+                key={speed}
+                selected={speed === playbackSpeed}
+                onClick={() => {
+                  onSpeedChange(speed);
+                  setAnchorEl(null);
+                }}
+                sx={{ justifyContent: "center", minHeight: 36 }}
+              >
+                {speed}x
+              </MenuItem>
+            ))}
+          </Box>
+        </Popover>
 
         <Tooltip title="Exit playback (Esc)" arrow>
           <IconButton

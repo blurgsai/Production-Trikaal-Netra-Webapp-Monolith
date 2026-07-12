@@ -18,7 +18,6 @@ const mockGeometry: GeoJSON.Geometry = {
   ],
 };
 
-const mockFilters: Record<string, unknown> = {};
 
 const mockChunkData: PlaybackChunk = {
   chunkOffset: 0,
@@ -108,15 +107,16 @@ describe("usePlaybackBuffer", () => {
   });
 
   // --- initializeBuffer ---
-  it("initializeBuffer creates a DataBufferManager", () => {
+  it("initializeBuffer creates a TrajectoryBufferManager", () => {
     const { result } = renderHook(() => usePlaybackBuffer());
 
     act(() => {
       result.current.initializeBuffer(
         "2024-12-04T16:00:00Z",
+        "2024-12-04T17:00:00Z",
         mockGeometry,
-        mockFilters,
         GRAN,
+        [],
       );
     });
 
@@ -130,9 +130,10 @@ describe("usePlaybackBuffer", () => {
     act(() => {
       manager = result.current.initializeBuffer(
         "2024-12-04T16:00:00Z",
+        "2024-12-04T17:00:00Z",
         mockGeometry,
-        mockFilters,
         GRAN,
+        [],
       );
     });
 
@@ -145,9 +146,10 @@ describe("usePlaybackBuffer", () => {
     act(() => {
       result.current.initializeBuffer(
         "2024-12-04T16:00:00Z",
+        "2024-12-04T17:00:00Z",
         mockGeometry,
-        mockFilters,
         GRAN,
+        [],
       );
     });
 
@@ -160,18 +162,20 @@ describe("usePlaybackBuffer", () => {
     act(() => {
       result.current.initializeBuffer(
         "2024-12-04T16:00:00Z",
+        "2024-12-04T17:00:00Z",
         mockGeometry,
-        mockFilters,
         GRAN,
+        [],
       );
     });
 
     act(() => {
       result.current.initializeBuffer(
         "2024-12-04T17:00:00Z",
+        "2024-12-04T18:00:00Z",
         mockGeometry,
-        mockFilters,
         GRAN,
+        [],
       );
     });
 
@@ -184,9 +188,10 @@ describe("usePlaybackBuffer", () => {
     act(() => {
       result.current.initializeBuffer(
         "2024-12-04T16:00:00Z",
+        "2024-12-04T18:00:00Z",
         mockGeometry,
-        mockFilters,
         "hour",
+        [],
       );
     });
 
@@ -199,9 +204,10 @@ describe("usePlaybackBuffer", () => {
     act(() => {
       result.current.initializeBuffer(
         "2024-12-04T16:00:00Z",
+        "2024-12-05T16:00:00Z",
         mockGeometry,
-        mockFilters,
         "day",
+        [],
       );
     });
 
@@ -214,9 +220,10 @@ describe("usePlaybackBuffer", () => {
     act(() => {
       result.current.initializeBuffer(
         "2024-12-04T16:00:00Z",
+        "2024-12-11T16:00:00Z",
         mockGeometry,
-        mockFilters,
         "week",
+        [],
       );
     });
 
@@ -240,9 +247,10 @@ describe("usePlaybackBuffer", () => {
     act(() => {
       result.current.initializeBuffer(
         "2024-12-04T16:00:00Z",
+        "2024-12-04T17:00:00Z",
         mockGeometry,
-        mockFilters,
         GRAN,
+        [],
       );
     });
 
@@ -276,9 +284,10 @@ describe("usePlaybackBuffer", () => {
     act(() => {
       result.current.initializeBuffer(
         "2024-12-04T16:00:00Z",
+        "2024-12-04T17:00:00Z",
         mockGeometry,
-        mockFilters,
         GRAN,
+        [],
       );
     });
 
@@ -299,9 +308,10 @@ describe("usePlaybackBuffer", () => {
     act(() => {
       result.current.initializeBuffer(
         "2024-12-04T16:00:00Z",
+        "2024-12-04T17:00:00Z",
         mockGeometry,
-        mockFilters,
         GRAN,
+        [],
       );
     });
 
@@ -321,9 +331,10 @@ describe("usePlaybackBuffer", () => {
     act(() => {
       result.current.initializeBuffer(
         "2024-12-04T16:00:00Z",
+        "2024-12-04T17:00:00Z",
         mockGeometry,
-        mockFilters,
         GRAN,
+        [],
       );
     });
 
@@ -348,9 +359,10 @@ describe("usePlaybackBuffer", () => {
     act(() => {
       result.current.initializeBuffer(
         "2024-12-04T16:00:00Z",
+        "2024-12-04T17:00:00Z",
         mockGeometry,
-        mockFilters,
         GRAN,
+        [],
       );
     });
 
@@ -374,9 +386,10 @@ describe("usePlaybackBuffer", () => {
     act(() => {
       result.current.initializeBuffer(
         "2024-12-04T16:00:00Z",
+        "2024-12-04T17:00:00Z",
         mockGeometry,
-        mockFilters,
         GRAN,
+        [],
       );
     });
 
@@ -408,9 +421,10 @@ describe("usePlaybackBuffer", () => {
     act(() => {
       result.current.initializeBuffer(
         "2024-12-04T16:00:00Z",
+        "2024-12-04T17:00:00Z",
         mockGeometry,
-        mockFilters,
         GRAN,
+        [],
       );
     });
 
@@ -442,9 +456,10 @@ describe("usePlaybackBuffer", () => {
     act(() => {
       result.current.initializeBuffer(
         "2024-12-04T16:00:00Z",
+        "2024-12-04T17:00:00Z",
         mockGeometry,
-        mockFilters,
         GRAN,
+        [],
       );
     });
 
@@ -468,9 +483,10 @@ describe("usePlaybackBuffer", () => {
     act(() => {
       result.current.initializeBuffer(
         "2024-12-04T16:00:00Z",
+        "2024-12-04T17:00:00Z",
         mockGeometry,
-        mockFilters,
         GRAN,
+        [],
       );
     });
 
@@ -494,9 +510,10 @@ describe("usePlaybackBuffer", () => {
     act(() => {
       result.current.initializeBuffer(
         "2024-12-04T16:00:00Z",
+        "2024-12-04T17:00:00Z",
         mockGeometry,
-        mockFilters,
         GRAN,
+        [],
       );
     });
 
@@ -528,14 +545,19 @@ describe("usePlaybackBuffer", () => {
     act(() => {
       result.current.initializeBuffer(
         "2024-12-04T16:00:00Z",
+        "2024-12-04T17:00:00Z",
         mockGeometry,
-        mockFilters,
         GRAN,
+        [],
       );
     });
 
     const manager = result.current.bufferManager!;
     vi.spyOn(manager, "getChunkOffset").mockReturnValue(0);
+    vi.spyOn(manager, "handleSliderChange").mockResolvedValue({
+      chunkOffset: 0,
+      data: mockChunkData,
+    });
 
     await act(async () => {
       await result.current.handleSliderChange(30);
@@ -555,9 +577,10 @@ describe("usePlaybackBuffer", () => {
     act(() => {
       result.current.initializeBuffer(
         "2024-12-04T16:00:00Z",
+        "2024-12-04T17:00:00Z",
         mockGeometry,
-        mockFilters,
         GRAN,
+        [],
       );
     });
 
@@ -584,9 +607,10 @@ describe("usePlaybackBuffer", () => {
     act(() => {
       result.current.initializeBuffer(
         "2024-12-04T16:00:00Z",
+        "2024-12-04T17:00:00Z",
         mockGeometry,
-        mockFilters,
         GRAN,
+        [],
       );
     });
 
@@ -611,9 +635,10 @@ describe("usePlaybackBuffer", () => {
     act(() => {
       result.current.initializeBuffer(
         "2024-12-04T16:00:00Z",
+        "2024-12-04T17:00:00Z",
         mockGeometry,
-        mockFilters,
         GRAN,
+        [],
       );
     });
 
@@ -636,9 +661,10 @@ describe("usePlaybackBuffer", () => {
     act(() => {
       result.current.initializeBuffer(
         "2024-12-04T16:00:00Z",
+        "2024-12-04T17:00:00Z",
         mockGeometry,
-        mockFilters,
         GRAN,
+        [],
       );
     });
 
@@ -677,7 +703,7 @@ describe("usePlaybackBuffer", () => {
     const { result } = renderHook(() => usePlaybackBuffer());
 
     act(() => {
-      result.current.updateBufferConfig(mockGeometry, mockFilters);
+      result.current.updateBufferConfig(mockGeometry);
     });
 
     expect(result.current.bufferManager).toBeNull();
@@ -689,9 +715,10 @@ describe("usePlaybackBuffer", () => {
     act(() => {
       result.current.initializeBuffer(
         "2024-12-04T16:00:00Z",
+        "2024-12-04T17:00:00Z",
         mockGeometry,
-        mockFilters,
         GRAN,
+        [],
       );
     });
 
@@ -712,10 +739,10 @@ describe("usePlaybackBuffer", () => {
     };
 
     act(() => {
-      result.current.updateBufferConfig(newGeometry, { type: "cargo" });
+      result.current.updateBufferConfig(newGeometry);
     });
 
-    expect(updateSpy).toHaveBeenCalledWith(newGeometry, { type: "cargo" });
+    expect(updateSpy).toHaveBeenCalledWith(newGeometry);
   });
 
   it("updateBufferConfig clears bufferError", async () => {
@@ -724,9 +751,10 @@ describe("usePlaybackBuffer", () => {
     act(() => {
       result.current.initializeBuffer(
         "2024-12-04T16:00:00Z",
+        "2024-12-04T17:00:00Z",
         mockGeometry,
-        mockFilters,
         GRAN,
+        [],
       );
     });
 
@@ -745,7 +773,7 @@ describe("usePlaybackBuffer", () => {
     expect(result.current.bufferError).not.toBeNull();
 
     act(() => {
-      result.current.updateBufferConfig(mockGeometry, mockFilters);
+      result.current.updateBufferConfig(mockGeometry);
     });
 
     expect(result.current.bufferError).toBeNull();
@@ -758,9 +786,10 @@ describe("usePlaybackBuffer", () => {
     act(() => {
       result.current.initializeBuffer(
         "2024-12-04T16:00:00Z",
+        "2024-12-04T17:00:00Z",
         mockGeometry,
-        mockFilters,
         GRAN,
+        [],
       );
     });
 
@@ -779,9 +808,10 @@ describe("usePlaybackBuffer", () => {
     act(() => {
       result.current.initializeBuffer(
         "2024-12-04T16:00:00Z",
+        "2024-12-04T17:00:00Z",
         mockGeometry,
-        mockFilters,
         GRAN,
+        [],
       );
     });
 
@@ -809,9 +839,10 @@ describe("usePlaybackBuffer", () => {
     act(() => {
       result.current.initializeBuffer(
         "2024-12-04T16:00:00Z",
+        "2024-12-04T17:00:00Z",
         mockGeometry,
-        mockFilters,
         GRAN,
+        [],
       );
     });
 
@@ -841,9 +872,10 @@ describe("usePlaybackBuffer", () => {
     act(() => {
       result.current.initializeBuffer(
         "2024-12-04T16:00:00Z",
+        "2024-12-04T17:00:00Z",
         mockGeometry,
-        mockFilters,
         GRAN,
+        [],
       );
     });
 
@@ -874,9 +906,10 @@ describe("usePlaybackBuffer", () => {
     act(() => {
       result.current.initializeBuffer(
         "2024-12-04T16:00:00Z",
+        "2024-12-04T17:00:00Z",
         mockGeometry,
-        mockFilters,
         GRAN,
+        [],
       );
     });
 
@@ -931,9 +964,10 @@ describe("usePlaybackBuffer", () => {
     act(() => {
       result.current.initializeBuffer(
         "2024-12-04T16:00:00Z",
+        "2024-12-04T17:00:00Z",
         mockGeometry,
-        mockFilters,
         GRAN,
+        [],
       );
     });
 
@@ -959,9 +993,10 @@ describe("usePlaybackBuffer", () => {
     act(() => {
       result.current.initializeBuffer(
         "2024-12-04T16:00:00Z",
+        "2024-12-04T17:00:00Z",
         mockGeometry,
-        mockFilters,
         GRAN,
+        [],
       );
     });
 
@@ -985,9 +1020,10 @@ describe("usePlaybackBuffer", () => {
     act(() => {
       result.current.initializeBuffer(
         "2024-12-04T16:00:00Z",
+        "2024-12-04T17:00:00Z",
         mockGeometry,
-        mockFilters,
         GRAN,
+        [],
       );
     });
 
@@ -1009,27 +1045,155 @@ describe("usePlaybackBuffer", () => {
     act(() => {
       result.current.initializeBuffer(
         "2024-12-04T16:00:00Z",
+        "2024-12-04T17:00:00Z",
         { type: "Point", coordinates: [0, 0] },
-        {},
         GRAN,
+        [],
       );
     });
 
     expect(result.current.bufferManager).not.toBeNull();
   });
 
-  it("initializeBuffer with complex filters works", () => {
+  it("initializeBuffer with complex geometry works", () => {
     const { result } = renderHook(() => usePlaybackBuffer());
 
     act(() => {
       result.current.initializeBuffer(
         "2024-12-04T16:00:00Z",
+        "2024-12-04T17:00:00Z",
         mockGeometry,
-        { vessel_type: "cargo", flag: "IN", speed_min: 10 },
         GRAN,
+        [],
       );
     });
 
     expect(result.current.bufferManager).not.toBeNull();
+  });
+
+  // ── Filter integration tests ──
+
+  it("initializeBuffer accepts filters and creates a bufferManager", () => {
+    const { result } = renderHook(() => usePlaybackBuffer());
+
+    act(() => {
+      result.current.initializeBuffer(
+        "2024-12-04T16:00:00Z",
+        "2024-12-04T17:00:00Z",
+        mockGeometry,
+        GRAN,
+        [{ field: "speed", operator: "gt", value: "10" }],
+      );
+    });
+
+    expect(result.current.bufferManager).not.toBeNull();
+  });
+
+  it("initializeBuffer with empty filters creates a bufferManager", () => {
+    const { result } = renderHook(() => usePlaybackBuffer());
+
+    act(() => {
+      result.current.initializeBuffer(
+        "2024-12-04T16:00:00Z",
+        "2024-12-04T17:00:00Z",
+        mockGeometry,
+        GRAN,
+        [],
+      );
+    });
+
+    expect(result.current.bufferManager).not.toBeNull();
+  });
+
+  it("initializeBuffer with multiple filters and combinators creates a bufferManager", () => {
+    const { result } = renderHook(() => usePlaybackBuffer());
+
+    act(() => {
+      result.current.initializeBuffer(
+        "2024-12-04T16:00:00Z",
+        "2024-12-04T17:00:00Z",
+        mockGeometry,
+        GRAN,
+        [
+          { field: "speed", operator: "gt", value: "5" },
+          { field: "shipName", operator: "like", value: "%CARGO%", combinator: "AND" },
+          { field: "heading", operator: "eq", value: "0", combinator: "OR" },
+        ],
+      );
+    });
+
+    expect(result.current.bufferManager).not.toBeNull();
+  });
+
+  it("clearBuffer after initializeBuffer with filters resets bufferManager to null", () => {
+    const { result } = renderHook(() => usePlaybackBuffer());
+
+    act(() => {
+      result.current.initializeBuffer(
+        "2024-12-04T16:00:00Z",
+        "2024-12-04T17:00:00Z",
+        mockGeometry,
+        GRAN,
+        [{ field: "speed", operator: "gt", value: "10" }],
+      );
+    });
+
+    expect(result.current.bufferManager).not.toBeNull();
+
+    act(() => {
+      result.current.clearBuffer();
+    });
+
+    expect(result.current.bufferManager).toBeNull();
+  });
+
+  it("handleSliderChange returns null when bufferManager not initialized (with filters)", async () => {
+    const { result } = renderHook(() => usePlaybackBuffer());
+
+    let sliderResult: unknown;
+    await act(async () => {
+      sliderResult = await result.current.handleSliderChange(60);
+    });
+
+    expect(sliderResult).toBeNull();
+  });
+
+  it("getChunkData throws when bufferManager not initialized (with filters)", async () => {
+    const { result } = renderHook(() => usePlaybackBuffer());
+
+    await expect(
+      act(async () => {
+        await result.current.getChunkData(0);
+      }),
+    ).rejects.toThrow("Buffer manager not initialized");
+  });
+
+  it("re-initializeBuffer with different filters creates a new bufferManager", () => {
+    const { result } = renderHook(() => usePlaybackBuffer());
+
+    act(() => {
+      result.current.initializeBuffer(
+        "2024-12-04T16:00:00Z",
+        "2024-12-04T17:00:00Z",
+        mockGeometry,
+        GRAN,
+        [{ field: "speed", operator: "gt", value: "10" }],
+      );
+    });
+    const firstManager = result.current.bufferManager;
+
+    act(() => {
+      result.current.initializeBuffer(
+        "2024-12-04T16:00:00Z",
+        "2024-12-04T17:00:00Z",
+        mockGeometry,
+        GRAN,
+        [{ field: "heading", operator: "eq", value: "0" }],
+      );
+    });
+    const secondManager = result.current.bufferManager;
+
+    expect(secondManager).not.toBeNull();
+    expect(secondManager).not.toBe(firstManager);
   });
 });

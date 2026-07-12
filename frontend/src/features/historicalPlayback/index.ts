@@ -3,6 +3,6 @@ export type {
   PlaybackRange,
   PlaybackPoint,
   PlaybackVessel,
-  PlaybackAttribute,
-  PlaybackQuery,
+  PlaybackChunk,
+  TimeGranularity,
 } from "./model";

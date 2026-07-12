@@ -1,6 +1,11 @@
 from pydantic import BaseModel
 
-from src.features.vessels.clients import PlaybackRawRow, TrajectoryRawRow
+from src.features.vessels.clients import (
+    PlaybackRawRow,
+    TrajectoryFilter,
+    TrajectoryQueryRawRow,
+    TrajectoryRawRow,
+)
 
 # ── Domain models (designed for API consumers, not ClickHouse shapes) ──
 
@@ -32,6 +37,31 @@ class PlaybackWindowRequest(BaseModel):
     polygon: dict
     start: str
     end: str
+
+
+# ── Unified trajectory endpoint models ──
+
+
+class TrajectoryPoint(BaseModel):
+    ts: str
+    lat: float
+    lon: float
+    heading: float
+    speed: float
+
+
+class TrajectoryRequest(BaseModel):
+    vessel_ids: list[str] | None = None
+    polygon: dict | None = None
+    start_time: str | None = None
+    end_time: str | None = None
+    time_seconds: int | None = None
+    filters: list[TrajectoryFilter] | None = None
+
+
+class VesselTrajectoriesResponse(BaseModel):
+    trajectories: dict[str, list[TrajectoryPoint]]
+    timestamps: list[str]
 
 
 # ── Mappers (the ONLY place that touches both raw and domain) ──
@@ -102,3 +132,31 @@ def parse_playback_raw_rows(raw_text: str) -> list[PlaybackRawRow]:
             continue
 
     return rows
+
+
+def map_trajectories_from_raw(raw_text: str) -> VesselTrajectoriesResponse:
+    trajectories: dict[str, list[TrajectoryPoint]] = {}
+    timestamps: set[str] = set()
+
+    for line in raw_text.strip().split("\n"):
+        if not line.strip():
+            continue
+        parts = line.strip().split("\t")
+        if len(parts) != 6:
+            continue
+        vessel_id, ts, lat, lon, heading, speed = parts
+        trajectories.setdefault(vessel_id, []).append(
+            TrajectoryPoint(
+                ts=ts,
+                lat=float(lat),
+                lon=float(lon),
+                heading=float(heading) if heading else 0.0,
+                speed=float(speed) if speed else 0.0,
+            )
+        )
+        timestamps.add(ts)
+
+    return VesselTrajectoriesResponse(
+        trajectories=trajectories,
+        timestamps=sorted(timestamps),
+    )

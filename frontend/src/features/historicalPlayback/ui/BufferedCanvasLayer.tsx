@@ -4,7 +4,7 @@ import L from "leaflet";
 import { Paper, Typography, CircularProgress, alpha, Snackbar, Alert } from "@mui/material";
 import AnimationControls from "./AnimationControls";
 import { usePlaybackBuffer } from "../hooks/usePlaybackBuffer";
-import type { PlaybackChunk, PlaybackPoint, PlaybackRange, AnimationVessel as Vessel, TimeGranularity } from "../model/types";
+import type { PlaybackChunk, PlaybackPoint, PlaybackRange, AnimationVessel as Vessel, TimeGranularity, PlaybackFilter } from "../model/types";
 import {
   mergeMinuteData,
   advanceVessel,
@@ -23,7 +23,6 @@ const GRANULARITY_TIME_MULTIPLIER: Record<TimeGranularity, number> = {
 };
 
 export type PlaybackGeometry = GeoJSON.Geometry;
-export type PlaybackFilters = Record<string, unknown>;
 
 type VesselMap = Record<string, PlaybackPoint[]>;
 
@@ -31,7 +30,7 @@ export interface BufferedCanvasLayerProps {
   playbackRange: PlaybackRange;
   onClosePlayback: () => void;
   geometry: PlaybackGeometry;
-  filters: PlaybackFilters;
+  filters: PlaybackFilter[];
   granularity: TimeGranularity;
 }
 
@@ -174,7 +173,7 @@ export default function BufferedCanvasLayer({
   useEffect(() => {
     if (!playbackRange.start || !geometry) return;
 
-    const manager = initializeBuffer(playbackRange.start, geometry, filters, granularity);
+    const manager = initializeBuffer(playbackRange.start, playbackRange.end, geometry, granularity, filters);
 
     globalStartTsRef.current = new Date(playbackRange.start).getTime();
     const durationMs =
@@ -345,6 +344,9 @@ export default function BufferedCanvasLayer({
 
       {isBuffering && (
         <Paper
+          onMouseDown={(e) => e.stopPropagation()}
+          onClick={(e) => e.stopPropagation()}
+          onDoubleClick={(e) => e.stopPropagation()}
           sx={{
             position: "absolute",
             top: 16,
@@ -371,6 +373,9 @@ export default function BufferedCanvasLayer({
 
       {visible && totalChunks > 0 && (
         <Paper
+          onMouseDown={(e) => e.stopPropagation()}
+          onClick={(e) => e.stopPropagation()}
+          onDoubleClick={(e) => e.stopPropagation()}
           sx={{
             position: "absolute",
             bottom: 120,

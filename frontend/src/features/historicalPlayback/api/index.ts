@@ -1,8 +1,9 @@
-export { fetchPlaybackAttributes, fetchPlaybackVessels } from "./historicalPlaybackApi";
+export { fetchVesselTrajectories } from "./historicalPlaybackApi";
 export type {
-  PlaybackAttributeApi,
-  PlaybackAttributesResponse,
-  PlaybackQueryPayload,
-  PlaybackPointApi,
-  PlaybackChunkResponse,
+  TrajectoryPointApi,
+  TrajectoryRequestApi,
+  TrajectoryResponseApi,
+  TrajectoryFilterApi,
+  TrajectoryFilterOperatorApi,
+  TrajectoryFilterCombinatorApi,
 } from "./types";
