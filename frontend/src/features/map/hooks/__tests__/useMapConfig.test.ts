@@ -22,10 +22,9 @@ vi.mock("../../model/sldGenerator", () => ({
 
 vi.mock("../../model/config", () => ({
   baseMaps: [
-    { id: "osm", title: "Light Map", url: "https://osm.test/{z}/{x}/{y}.png", attribution: "OSM" },
     { id: "dark", title: "Dark Map", url: "https://dark.test/{z}/{x}/{y}.png", attribution: "Dark" },
-    { id: "satellite", title: "Satellite Map", url: "https://sat.test/{z}/{x}/{y}.png", attribution: "Sat" },
   ],
+  defaultBaseMap: { id: "dark", title: "Dark Map", url: "https://dark.test/{z}/{x}/{y}.png", attribution: "Dark" },
   overlayLayers: [
     { id: "coastline", title: "Coastline", type: "wms", url: "wms1", layers: "l1", opacity: 1, zIndex: 1 },
     { id: "density", title: "Density", type: "tile", url: "tile1", opacity: 0.7, zIndex: 2 },
@@ -42,7 +41,7 @@ import { generateSld } from "../../model/sldGenerator";
 
 function makeDefaultDomain(overrides?: Partial<MapConfigDomain>): MapConfigDomain {
   return {
-    selectedBaseMap: { id: "osm", title: "Light Map", url: "https://osm.test", attribution: "OSM" },
+    selectedBaseMap: { id: "dark", title: "Dark Map", url: "https://dark.test", attribution: "Dark" },
     activeLayers: {},
     layerOrder: ["coastline", "density", "sea_lanes"],
     vesselConfig: {
@@ -73,9 +72,14 @@ function makeDefaultDomain(overrides?: Partial<MapConfigDomain>): MapConfigDomai
 
 function setupMockDomain(domain?: Partial<MapConfigDomain>) {
   const full = makeDefaultDomain(domain);
+  vi.mocked(loadMapConfig).mockResolvedValue({} as MapConfigApiResponse);
   vi.mocked(mapApiToDomain).mockReturnValue(full);
   vi.mocked(mapDomainToApi).mockReturnValue({} as MapConfigApiResponse);
   return full;
+}
+
+async function flushLoad() {
+  await act(async () => { await Promise.resolve(); await Promise.resolve(); });
 }
 
 describe("useMapConfig", () => {
@@ -83,6 +87,7 @@ describe("useMapConfig", () => {
     vi.clearAllMocks();
     vi.useFakeTimers();
     localStorage.clear();
+    localStorage.setItem("user_id", "test-user-id");
   });
 
   afterEach(() => {
@@ -92,9 +97,10 @@ describe("useMapConfig", () => {
   // ── Initial state (React Lifecycle) ────────────────────────────────────
 
   describe("initial state", () => {
-    it("hydrates all five pieces of state from loadMapConfig()/mapApiToDomain() on first render", () => {
+    it("hydrates all five pieces of state from loadMapConfig()/mapApiToDomain() after async load", async () => {
       const domain = setupMockDomain();
       const { result } = renderHook(() => useMapConfig());
+      await flushLoad();
       expect(result.current.selectedBaseMap).toEqual(domain.selectedBaseMap);
       expect(result.current.activeLayers).toEqual(domain.activeLayers);
       expect(result.current.layerOrder).toEqual(domain.layerOrder);
@@ -117,16 +123,18 @@ describe("useMapConfig", () => {
       expect(result.current.weatherLayers).toHaveLength(1);
     });
 
-    it("INEFFICIENCY DOCUMENTATION: loadMapConfig()/mapApiToDomain() are each invoked once per useState initializer (5 times total), not cached/shared", () => {
+    it("loadMapConfig()/mapApiToDomain() are each invoked once on mount via useEffect", async () => {
       setupMockDomain();
       renderHook(() => useMapConfig());
-      expect(loadMapConfig).toHaveBeenCalledTimes(5);
-      expect(mapApiToDomain).toHaveBeenCalledTimes(5);
+      await flushLoad();
+      expect(loadMapConfig).toHaveBeenCalledTimes(1);
+      expect(mapApiToDomain).toHaveBeenCalledTimes(1);
     });
 
-    it("does not call validateStyleExists on mount when the initial styleName is empty (Boundary: empty guard)", () => {
+    it("does not call validateStyleExists on mount when the initial styleName is empty (Boundary: empty guard)", async () => {
       setupMockDomain();
       renderHook(() => useMapConfig());
+      await flushLoad();
       expect(validateStyleExists).not.toHaveBeenCalled();
     });
   });
@@ -159,11 +167,13 @@ describe("useMapConfig", () => {
       expect(result.current.selectedBaseMap.id).toBe("satellite");
     });
 
-    it("triggers a persistence side effect via saveMapConfig", () => {
+    it("triggers a persistence side effect via saveMapConfig (debounced)", async () => {
       setupMockDomain();
       const { result } = renderHook(() => useMapConfig());
+      await flushLoad();
       vi.mocked(saveMapConfig).mockClear();
       act(() => result.current.setSelectedBaseMap({ id: "satellite", title: "Sat", url: "u", attribution: "a" }));
+      act(() => vi.advanceTimersByTime(800));
       expect(saveMapConfig).toHaveBeenCalledTimes(1);
     });
   });
@@ -210,11 +220,13 @@ describe("useMapConfig", () => {
       expect(result.current.activeLayers.coastline).toBe(true);
     });
 
-    it("triggers saveMapConfig persistence", () => {
+    it("triggers saveMapConfig persistence (debounced)", async () => {
       setupMockDomain();
       const { result } = renderHook(() => useMapConfig());
+      await flushLoad();
       vi.mocked(saveMapConfig).mockClear();
       act(() => result.current.toggleLayer("coastline"));
+      act(() => vi.advanceTimersByTime(800));
       expect(saveMapConfig).toHaveBeenCalledTimes(1);
     });
   });
@@ -257,11 +269,13 @@ describe("useMapConfig", () => {
       expect(result.current.reorderLayers).toBe(ref);
     });
 
-    it("triggers saveMapConfig persistence", () => {
+    it("triggers saveMapConfig persistence (debounced)", async () => {
       setupMockDomain();
       const { result } = renderHook(() => useMapConfig());
+      await flushLoad();
       vi.mocked(saveMapConfig).mockClear();
       act(() => result.current.reorderLayers(0, 1));
+      act(() => vi.advanceTimersByTime(800));
       expect(saveMapConfig).toHaveBeenCalledTimes(1);
     });
   });
@@ -399,11 +413,13 @@ describe("useMapConfig", () => {
       expect(result.current.vesselConfig.styleName).toBe("style_b");
     });
 
-    it("triggers saveMapConfig persistence on every vesselConfig change", () => {
+    it("triggers saveMapConfig persistence on every vesselConfig change (debounced)", async () => {
       setupMockDomain();
       const { result } = renderHook(() => useMapConfig());
+      await flushLoad();
       vi.mocked(saveMapConfig).mockClear();
       act(() => result.current.setVesselConfig({ ...result.current.vesselConfig }));
+      act(() => vi.advanceTimersByTime(800));
       expect(saveMapConfig).toHaveBeenCalledTimes(1);
     });
 
@@ -421,35 +437,35 @@ describe("useMapConfig", () => {
   // ── applyVesselStyle (Async Behavior / Failure Injection) ────────────────
 
   describe("applyVesselStyle", () => {
-    it("generates SLD from the draft's style fields in the documented order", async () => {
+    it("generates SLD from the user's userId-based style name in the documented order", async () => {
       setupMockDomain();
       vi.mocked(generateSld).mockReturnValue({ sldXml: "<xml/>", assets: [] });
-      vi.mocked(applyVesselStyle).mockResolvedValue("new_style");
+      vi.mocked(applyVesselStyle).mockResolvedValue("user_test-user-id_vessel_style");
       const { result } = renderHook(() => useMapConfig());
       const draft = { ...result.current.vesselConfig, styleName: "test" };
       await act(async () => { await result.current.applyVesselStyle(draft); });
-      expect(generateSld).toHaveBeenCalledWith(draft.styleName, draft.defaultStyle, draft.rules, draft.customShapes, draft.cluster);
+      expect(generateSld).toHaveBeenCalledWith("user_test-user-id_vessel_style", draft.defaultStyle, draft.rules, draft.customShapes, draft.cluster);
     });
 
-    it("forwards the generated SLD and styleName to the applyVesselStyle API", async () => {
+    it("forwards the userId and generated SLD to the applyVesselStyle API", async () => {
       setupMockDomain();
       const sld = { sldXml: "<sld/>", assets: [] };
       vi.mocked(generateSld).mockReturnValue(sld);
-      vi.mocked(applyVesselStyle).mockResolvedValue("final_style");
+      vi.mocked(applyVesselStyle).mockResolvedValue("user_test-user-id_vessel_style");
       const { result } = renderHook(() => useMapConfig());
       const draft = { ...result.current.vesselConfig, styleName: "draft_name" };
       await act(async () => { await result.current.applyVesselStyle(draft); });
-      expect(applyVesselStyle).toHaveBeenCalledWith("draft_name", sld);
+      expect(applyVesselStyle).toHaveBeenCalledWith("test-user-id", sld);
     });
 
-    it("commits the server-assigned styleName (which may differ from the draft's, e.g. auto-generated) into state", async () => {
+    it("commits the server-assigned styleName into state", async () => {
       setupMockDomain();
       vi.mocked(generateSld).mockReturnValue({ sldXml: "<sld/>", assets: [] });
-      vi.mocked(applyVesselStyle).mockResolvedValue("server_generated_name");
+      vi.mocked(applyVesselStyle).mockResolvedValue("user_test-user-id_vessel_style");
       const { result } = renderHook(() => useMapConfig());
       const draft = { ...result.current.vesselConfig, styleName: "" };
       await act(async () => { await result.current.applyVesselStyle(draft); });
-      expect(result.current.vesselConfig.styleName).toBe("server_generated_name");
+      expect(result.current.vesselConfig.styleName).toBe("user_test-user-id_vessel_style");
     });
 
     it("increments refreshKey after a successful apply (forces map layer refresh)", async () => {
@@ -544,11 +560,13 @@ describe("useMapConfig", () => {
       expect(result.current.mapControlSettings).toEqual({ toolbar: false, zoombar: true, minimap: true, statusbar: true });
     });
 
-    it("triggers saveMapConfig persistence", () => {
+    it("triggers saveMapConfig persistence (debounced)", async () => {
       setupMockDomain();
       const { result } = renderHook(() => useMapConfig());
+      await flushLoad();
       vi.mocked(saveMapConfig).mockClear();
       act(() => result.current.setMapControlSettings({ toolbar: false, zoombar: true, minimap: true, statusbar: true }));
+      act(() => vi.advanceTimersByTime(800));
       expect(saveMapConfig).toHaveBeenCalledTimes(1);
     });
   });
@@ -616,10 +634,10 @@ describe("useMapConfig", () => {
   // ── Persistence effect (saveMapConfig side effect coverage) ──────────────
 
   describe("persistence via saveMapConfig", () => {
-    it("saves once synchronously on mount with the initial hydrated state", () => {
+    it("does NOT save on mount — skipSaveRef guards until async load completes", async () => {
       setupMockDomain();
       renderHook(() => useMapConfig());
-      expect(saveMapConfig).toHaveBeenCalledTimes(1);
+      expect(saveMapConfig).not.toHaveBeenCalled();
     });
 
     it.each<[string, (r: ReturnType<typeof useMapConfig>) => void]>([
@@ -628,28 +646,33 @@ describe("useMapConfig", () => {
       ["layerOrder", (r) => r.reorderLayers(0, 1)],
       ["vesselConfig", (r) => r.setVesselConfig({ ...r.vesselConfig })],
       ["mapControlSettings", (r) => r.setMapControlSettings({ toolbar: false, zoombar: true, minimap: true, statusbar: true })],
-    ])("persists when %s changes", (_label, mutate) => {
+    ])("persists when %s changes (debounced)", async (_label, mutate) => {
       setupMockDomain();
       const { result } = renderHook(() => useMapConfig());
+      await flushLoad();
       vi.mocked(saveMapConfig).mockClear();
       act(() => mutate(result.current));
+      act(() => vi.advanceTimersByTime(800));
       expect(saveMapConfig).toHaveBeenCalledTimes(1);
     });
 
-    it("does NOT persist when only selectedVessel or refreshKey change", () => {
+    it("does NOT persist when only selectedVessel or refreshKey change", async () => {
       setupMockDomain();
       const { result } = renderHook(() => useMapConfig());
+      await flushLoad();
       vi.mocked(saveMapConfig).mockClear();
       act(() => result.current.setSelectedVessel({ id: "v1", locationCurrentLat: 0, locationCurrentLon: 0, headingCurrentConsensusValue: 0, speedCurrentConsensusValue: 0, rawProperties: {} }));
       act(() => vi.advanceTimersByTime(30000));
       expect(saveMapConfig).not.toHaveBeenCalled();
     });
 
-    it("calls mapDomainToApi to serialize the current combined domain state before saving", () => {
+    it("calls mapDomainToApi to serialize the current combined domain state before saving", async () => {
       setupMockDomain();
       const { result } = renderHook(() => useMapConfig());
+      await flushLoad();
       vi.mocked(mapDomainToApi).mockClear();
       act(() => result.current.toggleLayer("coastline"));
+      act(() => vi.advanceTimersByTime(800));
       expect(mapDomainToApi).toHaveBeenCalledWith(expect.objectContaining({
         selectedBaseMap: expect.any(Object),
         activeLayers: expect.any(Object),
@@ -663,13 +686,15 @@ describe("useMapConfig", () => {
   // ── React Strict Mode compatibility ──────────────────────────────────────
 
   describe("React Strict Mode compatibility", () => {
-    it("mount -> unmount -> remount yields an independently re-hydrated instance with no leaked timers/state", () => {
+    it("mount -> unmount -> remount yields an independently re-hydrated instance with no leaked timers/state", async () => {
       setupMockDomain({ vesselConfig: makeDefaultDomain().vesselConfig, activeLayers: { coastline: true } });
       const { result: r1, unmount } = renderHook(() => useMapConfig());
+      await flushLoad();
       expect(r1.current.activeLayers.coastline).toBe(true);
       unmount();
 
       const { result: r2 } = renderHook(() => useMapConfig());
+      await flushLoad();
       expect(r2.current.refreshKey).toBe(0);
       expect(r2.current.activeLayers.coastline).toBe(true);
     });

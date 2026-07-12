@@ -1,4 +1,6 @@
 export { loadMapConfig, saveMapConfig } from "./mapConfigApi";
+export { fetchCustomBaseMaps } from "./basemapsApi";
+export { fetchDynamicOverlays, fetchOverlayBounds, setCachedOverlays } from "./overlaysApi";
 export { applyVesselStyle, validateStyleExists } from "./vesselStyleApi";
 export { fetchVesselTrajectory } from "./trajectoryApi";
 export type { FetchTrajectoryParams } from "./trajectoryApi";

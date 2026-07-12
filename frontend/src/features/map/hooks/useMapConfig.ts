@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { loadMapConfig, saveMapConfig, applyVesselStyle, validateStyleExists } from "../api";
+import { loadMapConfig, saveMapConfig, applyVesselStyle, validateStyleExists, fetchCustomBaseMaps, fetchDynamicOverlays, fetchOverlayBounds, setCachedOverlays } from "../api";
 import { mapApiToDomain, mapDomainToApi } from "../model/mappers";
 import { generateSld } from "../model/sldGenerator";
-import { baseMaps, overlayLayers, weatherLayers } from "../model/config";
+import { baseMaps as defaultBaseMaps, defaultBaseMap, overlayLayers, weatherLayers } from "../model/config";
 import type { BaseMap, OverlayLayerConfig, VesselConfig, VesselInfo, ClusterConfig, TrajectoryConfig, DeadReckoningConfig, PopupFieldConfig, MapControlSettings } from "../model/types";
 
 const DEFAULT_CLUSTER_CONFIG: ClusterConfig = {
@@ -62,42 +62,55 @@ const DEFAULT_MAP_CONTROL_SETTINGS: MapControlSettings = {
 };
 
 export function useMapConfig() {
-  const [selectedBaseMap, setSelectedBaseMap] = useState<BaseMap>(() => {
-    const api = loadMapConfig();
-    const domain = mapApiToDomain(api);
-    return domain.selectedBaseMap;
-  });
-
-  const [activeLayers, setActiveLayers] = useState<Record<string, boolean>>(
-    () => {
-      const api = loadMapConfig();
-      const domain = mapApiToDomain(api);
-      return domain.activeLayers;
-    }
-  );
-
-  const [layerOrder, setLayerOrder] = useState<string[]>(() => {
-    const api = loadMapConfig();
-    const domain = mapApiToDomain(api);
-    return domain.layerOrder;
-  });
-
-  const [vesselConfig, setVesselConfig] = useState<VesselConfig>(() => {
-    const api = loadMapConfig();
-    const domain = mapApiToDomain(api);
-    return domain.vesselConfig ?? DEFAULT_VESSEL_CONFIG;
-  });
-
-  const [mapControlSettings, setMapControlSettings] = useState<MapControlSettings>(() => {
-    const api = loadMapConfig();
-    const domain = mapApiToDomain(api);
-    return domain.mapControlSettings ?? DEFAULT_MAP_CONTROL_SETTINGS;
-  });
+  const [customBaseMaps, setCustomBaseMaps] = useState<BaseMap[]>([]);
+  const [dynamicOverlays, setDynamicOverlays] = useState<OverlayLayerConfig[]>([]);
+  const [selectedBaseMap, setSelectedBaseMap] = useState<BaseMap>(() => defaultBaseMap);
+  const [activeLayers, setActiveLayers] = useState<Record<string, boolean>>({});
+  const [flyToBounds, setFlyToBounds] = useState<[number, number, number, number] | null>(null);
+  const [layerOrder, setLayerOrder] = useState<string[]>(() => overlayLayers.map((l) => l.id));
+  const [vesselConfig, setVesselConfig] = useState<VesselConfig>(DEFAULT_VESSEL_CONFIG);
+  const [mapControlSettings, setMapControlSettings] = useState<MapControlSettings>(DEFAULT_MAP_CONTROL_SETTINGS);
 
   const [selectedVessel, setSelectedVessel] = useState<VesselInfo | null>(null);
 
   const [refreshKey, setRefreshKey] = useState(0);
   const styleRequestIdRef = useRef(0);
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const skipSaveRef = useRef(true);
+
+  const allBaseMaps = [...defaultBaseMaps, ...customBaseMaps];
+  const allOverlayLayers = [...overlayLayers, ...dynamicOverlays];
+
+  useEffect(() => {
+    let cancelled = false;
+    Promise.all([fetchCustomBaseMaps(), fetchDynamicOverlays()]).then(([maps, overlays]) => {
+      if (cancelled) return;
+      const mergedBaseMaps = [...defaultBaseMaps, ...maps];
+      setCustomBaseMaps(maps);
+      setDynamicOverlays(overlays);
+      setCachedOverlays(overlays);
+      const mergedOverlayLayers = [...overlayLayers, ...overlays];
+      loadMapConfig().then((api) => {
+        if (cancelled) return;
+        const domain = mapApiToDomain(api, mergedBaseMaps, mergedOverlayLayers);
+        setSelectedBaseMap(domain.selectedBaseMap);
+        setActiveLayers(domain.activeLayers);
+        setLayerOrder((prev) => {
+          const saved = domain.layerOrder.length > 0 ? domain.layerOrder : prev;
+          const mergedIds = new Set(mergedOverlayLayers.map((l) => l.id));
+          const valid = saved.filter((id) => mergedIds.has(id));
+          const existing = new Set(valid);
+          const newIds = mergedOverlayLayers.map((l) => l.id).filter((id) => !existing.has(id));
+          return [...valid, ...newIds];
+        });
+        setVesselConfig(domain.vesselConfig ?? DEFAULT_VESSEL_CONFIG);
+        setMapControlSettings(domain.mapControlSettings ?? DEFAULT_MAP_CONTROL_SETTINGS);
+        skipSaveRef.current = false;
+      });
+    });
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (!vesselConfig.styleName) return;
@@ -111,10 +124,41 @@ export function useMapConfig() {
   }, [vesselConfig.styleName]);
 
   const toggleLayer = (layerId: string) => {
-    setActiveLayers((prev) => ({
-      ...prev,
-      [layerId]: !prev[layerId],
-    }));
+    setActiveLayers((prev) => {
+      const turningOn = !prev[layerId];
+      const next = { ...prev, [layerId]: turningOn };
+
+      if (turningOn) {
+        const layer = allOverlayLayers.find((l) => l.id === layerId);
+        if (layer?.isENC) {
+          if (layer.bounds) {
+            setFlyToBounds(layer.bounds);
+          } else {
+            fetchOverlayBounds(layerId).then((bounds) => {
+              if (bounds) {
+                setFlyToBounds(bounds);
+              }
+            });
+          }
+        }
+      }
+      return next;
+    });
+  };
+
+  const flyToLayer = (layerId: string) => {
+    const layer = allOverlayLayers.find((l) => l.id === layerId);
+    if (layer?.isENC) {
+      if (layer.bounds) {
+        setFlyToBounds(layer.bounds);
+      } else {
+        fetchOverlayBounds(layerId).then((bounds) => {
+          if (bounds) {
+            setFlyToBounds(bounds);
+          }
+        });
+      }
+    }
   };
 
   const reorderLayers = useCallback(
@@ -133,7 +177,7 @@ export function useMapConfig() {
   );
 
   const getOrderedLayers = useCallback((): OverlayLayerConfig[] => {
-    const idToLayer = new Map(overlayLayers.map((l) => [l.id, l]));
+    const idToLayer = new Map(allOverlayLayers.map((l) => [l.id, l]));
     return layerOrder
       .map((id) => idToLayer.get(id))
       .filter((l): l is OverlayLayerConfig => l !== undefined)
@@ -141,7 +185,7 @@ export function useMapConfig() {
         ...layer,
         zIndex: 1 + index,
       }));
-  }, [layerOrder]);
+  }, [layerOrder, allOverlayLayers]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -152,33 +196,39 @@ export function useMapConfig() {
 
   const applyVesselStyleCallback = useCallback(async (draft: VesselConfig) => {
     const currentRequestId = ++styleRequestIdRef.current;
+    const userId = localStorage.getItem("user_id") ?? "";
+    const styleName = `user_${userId}_vessel_style`;
     const sld = generateSld(
-      draft.styleName,
+      styleName,
       draft.defaultStyle,
       draft.rules,
       draft.customShapes,
       draft.cluster
     );
-    const styleName = await applyVesselStyle(draft.styleName, sld);
+    const finalStyleName = await applyVesselStyle(userId, sld);
     if (currentRequestId !== styleRequestIdRef.current) return;
-    setVesselConfig({ ...draft, styleName });
+    setVesselConfig({ ...draft, styleName: finalStyleName });
     setRefreshKey((prev) => prev + 1);
   }, []);
 
   useEffect(() => {
-    saveMapConfig(
-      mapDomainToApi({
-        selectedBaseMap,
-        activeLayers,
-        layerOrder,
-        vesselConfig,
-        mapControlSettings,
-      })
-    );
+    if (skipSaveRef.current) return;
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = setTimeout(() => {
+      saveMapConfig(
+        mapDomainToApi({
+          selectedBaseMap,
+          activeLayers,
+          layerOrder,
+          vesselConfig,
+          mapControlSettings,
+        })
+      );
+    }, 800);
   }, [selectedBaseMap, activeLayers, layerOrder, vesselConfig, mapControlSettings]);
 
   return {
-    baseMaps,
+    baseMaps: allBaseMaps,
     selectedBaseMap,
     setSelectedBaseMap,
     activeLayers,
@@ -192,9 +242,12 @@ export function useMapConfig() {
     setSelectedVessel,
     applyVesselStyle: applyVesselStyleCallback,
     refreshKey,
-    overlayLayers,
+    overlayLayers: allOverlayLayers,
     weatherLayers,
     mapControlSettings,
     setMapControlSettings,
+    flyToBounds,
+    setFlyToBounds,
+    flyToLayer,
   };
 }

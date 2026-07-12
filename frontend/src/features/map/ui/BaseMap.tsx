@@ -62,6 +62,8 @@ interface BaseMapProps {
   polygonFilters?: Polygon[];
   onPolygonFiltersChange?: (polygons: Polygon[]) => void;
   mapControlSettings: MapControlSettings;
+  flyToBounds?: [number, number, number, number] | null;
+  onFlyDone?: () => void;
 }
 
 function BaseMap({
@@ -82,6 +84,8 @@ function BaseMap({
   polygonFilters = [],
   onPolygonFiltersChange,
   mapControlSettings,
+  flyToBounds,
+  onFlyDone,
 }: BaseMapProps) {
   const theme = useTheme();
   const [isMeasureMode, setIsMeasureMode] = useState(false);
@@ -103,7 +107,7 @@ function BaseMap({
         attribution={selectedBaseMap.attribution}
         zIndex={0}
       />
-      <MapOverlays activeLayers={activeLayers} orderedLayers={orderedLayers} />
+      <MapOverlays activeLayers={activeLayers} orderedLayers={orderedLayers} flyToBounds={flyToBounds} onFlyDone={onFlyDone} />
       <WMSTileLayer
         url={indiaBoundaryLayer.url!}
         layers={indiaBoundaryLayer.layers!}

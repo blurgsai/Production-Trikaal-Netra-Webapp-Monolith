@@ -1,4 +1,4 @@
-import { baseMaps, defaultBaseMap, overlayLayers } from "../model/config";
+import { baseMaps, defaultBaseMap } from "../model/config";
 import type { MapConfigApiResponse, MapControlSettingsApi, CountryPrefixApi, VesselDetailsApi, VesselImageApiResponse, EezRegionApi, CustomShapeApi, StyleDefinitionApi, StyleRuleApi, StyleConditionApi, ClusterConfigApi, TrajectoryConfigApi, DeadReckoningConfigApi, PopupFieldConfigApi } from "../api/types";
 import type { VesselTableResponseApi, VesselTableFeatureApi } from "../api/vesselTableApi";
 import type { BaseMap, VesselConfig, VesselInfo, CountryPrefix, VesselDetails, VesselImage, EezRegion, CustomShape, StyleDefinition, StyleRule, VesselTableFilter, FilterCombinator, ClusterConfig, TrajectoryConfig, DeadReckoningConfig, PopupFieldConfig, MapControlSettings, VesselTableRow } from "./types";
@@ -67,9 +67,10 @@ const DEFAULT_MAP_CONTROL_SETTINGS: MapControlSettings = {
   statusbar: true,
 };
 
-export function mapApiToDomain(api: MapConfigApiResponse): MapConfigDomain {
+export function mapApiToDomain(api: MapConfigApiResponse, availableBaseMaps?: BaseMap[], availableOverlayLayers?: { id: string }[]): MapConfigDomain {
+  const lookupMaps = availableBaseMaps ?? baseMaps;
   const selectedBaseMap =
-    baseMaps.find((m) => m.id === api.selected_base_map_id) ?? defaultBaseMap;
+    lookupMaps.find((m) => m.id === api.selected_base_map_id) ?? defaultBaseMap;
 
   const activeLayers: Record<string, boolean> = {};
   if (api.active_layer_ids) {
@@ -78,9 +79,10 @@ export function mapApiToDomain(api: MapConfigApiResponse): MapConfigDomain {
     });
   }
 
-  const validIds = new Set(overlayLayers.map((l) => l.id));
+  const lookupOverlays = availableOverlayLayers ?? [];
+  const validIds = new Set(lookupOverlays.map((l) => l.id));
   const layerOrder =
-    api.layer_order?.filter((id) => validIds.has(id)) ?? overlayLayers.map((l) => l.id);
+    api.layer_order?.filter((id) => validIds.has(id)) ?? lookupOverlays.map((l) => l.id);
 
   const vc = api.vessel_config;
   const vesselConfig: VesselConfig = {

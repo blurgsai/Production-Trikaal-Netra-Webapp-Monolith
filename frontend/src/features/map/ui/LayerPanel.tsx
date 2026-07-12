@@ -27,14 +27,17 @@ import {
   useSortable,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { overlayLayers, weatherLayers, baseMaps } from "../model/config";
-import type { BaseMap } from "../model/types";
+import { weatherLayers } from "../model/config";
+import type { BaseMap, OverlayLayerConfig } from "../model/types";
 
 interface LayerPanelProps {
   selectedBaseMap: BaseMap;
   onSelectBaseMap: (map: BaseMap) => void;
+  baseMaps: BaseMap[];
+  overlayLayers: OverlayLayerConfig[];
   activeLayers: Record<string, boolean>;
   onToggle: (layerId: string) => void;
+  onFlyTo?: (layerId: string) => void;
   layerOrder: string[];
   onReorderLayers: (oldIndex: number, newIndex: number) => void;
   onClose?: () => void;
@@ -44,12 +47,16 @@ function SortableLayerItem({
   id,
   title,
   checked,
+  isENC,
   onToggle,
+  onLabelClick,
 }: {
   id: string;
   title: string;
   checked: boolean;
+  isENC?: boolean;
   onToggle: () => void;
+  onLabelClick?: () => void;
 }) {
   const {
     attributes,
@@ -81,18 +88,26 @@ function SortableLayerItem({
         "&:hover": { bgcolor: "action.hover" },
       }}
     >
-      <FormControlLabel
-        control={
-          <Switch checked={checked} onChange={onToggle} color="primary" size="small" />
-        }
-        label={<Typography variant="body2">{title}</Typography>}
-        sx={{ flex: 1, mr: 0 }}
-      />
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, flex: 1, minWidth: 0 }}>
+        <Switch checked={checked} onChange={onToggle} color="primary" size="small" />
+        <Typography
+          variant="body2"
+          fontWeight={checked ? 600 : 400}
+          onClick={onLabelClick}
+          sx={{
+            flex: 1,
+            cursor: isENC ? "pointer" : "default",
+            "&:hover": isENC ? { color: "primary.main" } : {},
+          }}
+        >
+          {title}
+        </Typography>
+      </Box>
       <IconButton
         size="small"
         {...attributes}
         {...listeners}
-        sx={{ cursor: "grab", p: 0.5, color: "text.disabled", "&:hover": { color: "text.secondary" } }}
+        sx={{ cursor: "grab", p: 0.5, color: "text.secondary", "&:hover": { color: "text.primary" } }}
       >
         <DragHandleIcon fontSize="small" />
       </IconButton>
@@ -103,8 +118,11 @@ function SortableLayerItem({
 function LayerPanel({
   selectedBaseMap,
   onSelectBaseMap,
+  baseMaps,
+  overlayLayers,
   activeLayers,
   onToggle,
+  onFlyTo,
   layerOrder,
   onReorderLayers,
 }: LayerPanelProps) {
@@ -202,7 +220,9 @@ function LayerPanel({
                   id={layer.id}
                   title={layer.title}
                   checked={Boolean(activeLayers?.[layer.id])}
+                  isENC={layer.isENC}
                   onToggle={() => onToggle(layer.id)}
+                  onLabelClick={layer.isENC && onFlyTo ? () => onFlyTo(layer.id) : undefined}
                 />
               ))}
             </FormGroup>
@@ -230,7 +250,7 @@ function LayerPanel({
                   size="small"
                 />
               }
-              label={<Typography variant="body2">{layer.title}</Typography>}
+              label={<Typography variant="body2" fontWeight={activeLayers?.[layer.id] ? 600 : 400}>{layer.title}</Typography>}
               sx={{
                 m: 0,
                 px: 1,

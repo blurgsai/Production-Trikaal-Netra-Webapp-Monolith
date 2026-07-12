@@ -76,6 +76,31 @@ const shapeIcons: Record<string, ComponentType<SvgIconProps>> = {
   custom: CustomGradientShapeIcon,
 };
 
+const colorInputStyle: React.CSSProperties = {
+  width: 32,
+  height: 32,
+  border: `1px solid ${"rgba(255,255,255,0.23)"}`,
+  borderRadius: 6,
+  cursor: "pointer",
+  padding: 2,
+  backgroundColor: "rgba(0,0,0,0.2)",
+};
+
+const toggleButtonSx = {
+  px: 1.5,
+  py: 1,
+  border: "1px solid rgba(255,255,255,0.23) !important",
+  borderRadius: "6px !important",
+  color: "rgba(255,255,255,0.5)",
+  "&.Mui-selected": {
+    borderColor: "rgba(255,255,255,0.4) !important",
+    backgroundColor: "rgba(255,255,255,0.08) !important",
+  },
+  "&.Mui-selected:hover": {
+    backgroundColor: "rgba(255,255,255,0.12) !important",
+  },
+} as const;
+
 const TEXT_OPERATORS: VesselTableFilter["operator"][] = ["=", "!=", "startsWith", "endsWith", "contains"];
 const NUMERIC_OPERATORS: VesselTableFilter["operator"][] = ["=", "!=", "<", "<=", ">", ">="];
 
@@ -285,7 +310,7 @@ function VesselConfigPanel({ config, onApply, onFetchColumns, onSearchColumnValu
             key={s}
             value={s}
             aria-label={s}
-            sx={{ px: 1.5, py: 1, border: `1px solid ${c.border.strong}`, borderRadius: 1 }}
+            sx={toggleButtonSx}
           >
             <Icon sx={{ color: value === s ? color : c.text.muted, fontSize: 24 }} />
           </ToggleButton>
@@ -298,7 +323,7 @@ function VesselConfigPanel({ config, onApply, onFetchColumns, onSearchColumnValu
             selected={value === cs.id}
             onClick={() => onChange(cs.id)}
             size="small"
-            sx={{ px: 1.5, py: 1, border: `1px solid ${c.border.strong}`, borderRadius: 1 }}
+            sx={toggleButtonSx}
           >
             <Box
               component="span"
@@ -336,7 +361,7 @@ function VesselConfigPanel({ config, onApply, onFetchColumns, onSearchColumnValu
         type="color"
         value={style.color}
         onChange={(e) => onStyleChange({ color: e.target.value })}
-        style={{ width: 36, height: 32, border: "none", borderRadius: 4, cursor: "pointer", padding: 0 }}
+        style={colorInputStyle}
       />
       <TextField
         value={style.color}
@@ -568,7 +593,7 @@ function VesselConfigPanel({ config, onApply, onFetchColumns, onSearchColumnValu
                 type="color"
                 value={local.cluster.smallClusterColor}
                 onChange={(e) => updateCluster({ smallClusterColor: e.target.value })}
-                style={{ width: 28, height: 28, border: "none", borderRadius: 4, cursor: "pointer", padding: 0 }}
+                style={colorInputStyle}
               />
               <TextField
                 size="small"
@@ -595,7 +620,7 @@ function VesselConfigPanel({ config, onApply, onFetchColumns, onSearchColumnValu
                 type="color"
                 value={local.cluster.largeClusterColor}
                 onChange={(e) => updateCluster({ largeClusterColor: e.target.value })}
-                style={{ width: 28, height: 28, border: "none", borderRadius: 4, cursor: "pointer", padding: 0 }}
+                style={colorInputStyle}
               />
               <TextField
                 size="small"
@@ -622,7 +647,7 @@ function VesselConfigPanel({ config, onApply, onFetchColumns, onSearchColumnValu
                 type="color"
                 value={local.cluster.clusterLabelColor}
                 onChange={(e) => updateCluster({ clusterLabelColor: e.target.value })}
-                style={{ width: 28, height: 28, border: "none", borderRadius: 4, cursor: "pointer", padding: 0 }}
+                style={colorInputStyle}
               />
               <TextField
                 size="small"
@@ -781,7 +806,7 @@ function VesselConfigPanel({ config, onApply, onFetchColumns, onSearchColumnValu
                 type="color"
                 value={local.trajectory.lineColor}
                 onChange={(e) => updateTrajectory({ lineColor: e.target.value })}
-                style={{ width: 28, height: 28, border: "none", borderRadius: 4, cursor: "pointer", padding: 0 }}
+                style={colorInputStyle}
               />
               <TextField
                 size="small"
@@ -822,7 +847,7 @@ function VesselConfigPanel({ config, onApply, onFetchColumns, onSearchColumnValu
                 type="color"
                 value={local.trajectory.dotColor}
                 onChange={(e) => updateTrajectory({ dotColor: e.target.value })}
-                style={{ width: 28, height: 28, border: "none", borderRadius: 4, cursor: "pointer", padding: 0 }}
+                style={colorInputStyle}
               />
               <TextField
                 size="small"
@@ -849,7 +874,7 @@ function VesselConfigPanel({ config, onApply, onFetchColumns, onSearchColumnValu
                 type="color"
                 value={local.trajectory.dotFillColor}
                 onChange={(e) => updateTrajectory({ dotFillColor: e.target.value })}
-                style={{ width: 28, height: 28, border: "none", borderRadius: 4, cursor: "pointer", padding: 0 }}
+                style={colorInputStyle}
               />
               <TextField
                 size="small"
@@ -950,7 +975,7 @@ function VesselConfigPanel({ config, onApply, onFetchColumns, onSearchColumnValu
                 type="color"
                 value={local.deadReckoning.lineColor}
                 onChange={(e) => updateDeadReckoning({ lineColor: e.target.value })}
-                style={{ width: 28, height: 28, border: "none", borderRadius: 4, cursor: "pointer", padding: 0 }}
+                style={colorInputStyle}
               />
               <TextField
                 size="small"
@@ -978,7 +1003,7 @@ function VesselConfigPanel({ config, onApply, onFetchColumns, onSearchColumnValu
                 type="color"
                 value={local.deadReckoning.pointColor}
                 onChange={(e) => updateDeadReckoning({ pointColor: e.target.value })}
-                style={{ width: 28, height: 28, border: "none", borderRadius: 4, cursor: "pointer", padding: 0 }}
+                style={colorInputStyle}
               />
               <TextField
                 size="small"

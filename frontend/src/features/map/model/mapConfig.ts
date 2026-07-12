@@ -5,22 +5,10 @@ const workspace = import.meta.env.VITE_GEOSERVER_WORKSPACE;
 
 export const baseMaps: BaseMap[] = [
   {
-    id: "osm",
-    title: "Light Map",
-    url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-    attribution: "&copy; OpenStreetMap contributors",
-  },
-  {
     id: "dark",
     title: "Dark Map",
     url: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
     attribution: "&copy; CartoDB",
-  },
-  {
-    id: "satellite",
-    title: "Satellite Map",
-    url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-    attribution: "Tiles &copy; Esri",
   },
 ];
 
@@ -37,35 +25,7 @@ export const indiaBoundaryLayer: OverlayLayerConfig = {
   zIndex: 5,
 };
 
-export const overlayLayers: OverlayLayerConfig[] = [
-  {
-    id: "ne_10m_coastline",
-    title: "Demarcated Coastline",
-    type: "wms",
-    url: geoserverUrl,
-    layers: `${workspace}:ne_10m_coastline`,
-    opacity: 1,
-    zIndex: 1,
-  },
-  {
-    id: "density_layer",
-    title: "Density Layer",
-    type: "tile",
-    url: "https://density-layer-tiles-760940605140.asia-south1.run.app/{z}/{x}/{y}.png",
-    attribution: "Density Layer",
-    opacity: 0.7,
-    zIndex: 2,
-  },
-  {
-    id: "sea_lanes",
-    title: "Sea Lanes",
-    type: "wms",
-    url: geoserverUrl,
-    layers: `${workspace}:Shipping-Lanes-v1`,
-    opacity: 1,
-    zIndex: 2,
-  },
-];
+export const overlayLayers: OverlayLayerConfig[] = [];
 
 export const weatherLayers: OverlayLayerConfig[] = [
   {

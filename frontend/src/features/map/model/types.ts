@@ -9,13 +9,16 @@ export interface BaseMap {
 export interface OverlayLayerConfig {
   id: string;
   title: string;
-  type: "wms" | "tile";
+  type: "wms" | "tile" | "geojson" | "kml" | "mvt";
   url?: string;
   layers?: string;
   styles?: string;
   opacity?: number;
   zIndex?: number;
   attribution?: string;
+  color?: string;
+  isENC?: boolean;
+  bounds?: [number, number, number, number];
 }
 
 export interface CustomShape {
