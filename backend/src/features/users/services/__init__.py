@@ -13,12 +13,12 @@ async def authenticate_user(db, username: str, password: str) -> dict:
         raise AuthenticationError()
 
     token = create_access_token(
-        {"sub": user["username"], "role": user.get("role", "operator")}
+        {"sub": user["username"], "role": user.get("role", "user")}
     )
 
     return {
         "token": token,
-        "role": user.get("role", "operator"),
+        "role": user.get("role", "user"),
         "user_id": str(user.get("_id", "")),
         "username": user["username"],
     }
@@ -31,12 +31,12 @@ async def list_users(db) -> list[dict]:
         users.append({
             "id": str(user["_id"]),
             "username": user["username"],
-            "role": user.get("role", "operator"),
+            "role": user.get("role", "user"),
         })
     return users
 
 
-async def create_user(db, username: str, password: str, role: str = "operator") -> dict:
+async def create_user(db, username: str, password: str, role: str = "user") -> dict:
     existing = await db.users.find_one({"username": username})
     if existing:
         raise ValueError(f"Username '{username}' already exists")
@@ -81,7 +81,7 @@ async def update_user(db, user_id: str, updates: dict) -> dict | None:
         return {
             "id": str(user["_id"]),
             "username": user["username"],
-            "role": user.get("role", "operator"),
+            "role": user.get("role", "user"),
         }
 
     result = await db.users.update_one(
@@ -96,7 +96,7 @@ async def update_user(db, user_id: str, updates: dict) -> dict | None:
     return {
         "id": str(user["_id"]),
         "username": user["username"],
-        "role": user.get("role", "operator"),
+        "role": user.get("role", "user"),
     }
 
 

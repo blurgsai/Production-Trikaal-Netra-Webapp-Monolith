@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { loadMapConfig, saveMapConfig, applyVesselStyle, validateStyleExists, fetchCustomBaseMaps, fetchDynamicOverlays, fetchOverlayBounds, setCachedOverlays } from "../api";
 import { mapApiToDomain, mapDomainToApi } from "../model/mappers";
 import { generateSld } from "../model/sldGenerator";
@@ -78,8 +78,8 @@ export function useMapConfig() {
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const skipSaveRef = useRef(true);
 
-  const allBaseMaps = [...defaultBaseMaps, ...customBaseMaps];
-  const allOverlayLayers = [...overlayLayers, ...dynamicOverlays];
+  const allBaseMaps = useMemo(() => [...defaultBaseMaps, ...customBaseMaps], [customBaseMaps]);
+  const allOverlayLayers = useMemo(() => [...overlayLayers, ...dynamicOverlays], [dynamicOverlays]);
 
   useEffect(() => {
     let cancelled = false;
@@ -109,7 +109,6 @@ export function useMapConfig() {
       });
     });
     return () => { cancelled = true; };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {

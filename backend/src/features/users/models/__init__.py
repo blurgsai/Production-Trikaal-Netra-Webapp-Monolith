@@ -11,13 +11,13 @@ class LoginResponse(BaseModel):
 class UserCreateRequest(BaseModel):
     username: str = Field(..., min_length=3, max_length=50)
     password: str = Field(..., min_length=6)
-    role: str = Field(default="operator", pattern="^(admin|supervisor|operator)$")
+    role: str = Field(default="user", pattern="^(admin|supervisor|operator|user)$")
 
 
 class UserUpdateRequest(BaseModel):
     username: str | None = Field(default=None, min_length=3, max_length=50)
     password: str | None = Field(default=None, min_length=6)
-    role: str | None = Field(default=None, pattern="^(admin|supervisor|operator)$")
+    role: str | None = Field(default=None, pattern="^(admin|supervisor|operator|user)$")
 
 
 class UserResponse(BaseModel):

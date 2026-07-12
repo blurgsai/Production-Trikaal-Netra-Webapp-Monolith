@@ -108,8 +108,9 @@ function MvtOverlay({ layer }: { layer: OverlayLayerConfig }) {
       ? Object.fromEntries(layerNames.map((ln) => [ln, baseStyle]))
       : baseStyle;
 
-    const vectorGrid = (L as any).vectorGrid.protobuf(layer.url, {
-      rendererFactory: (L as any).canvas.tile,
+    const LExt = L as unknown as { vectorGrid: { protobuf: (...args: unknown[]) => L.Layer }; canvas: { tile: unknown } };
+    const vectorGrid = LExt.vectorGrid.protobuf(layer.url, {
+      rendererFactory: LExt.canvas.tile as unknown,
       vectorTileLayerStyles,
       interactive: true,
       zIndex: layer.zIndex ?? 1,

@@ -114,7 +114,7 @@ def _convert_and_publish_to_geoserver(
     converter = _VECTOR_CONVERTERS[source_type]
     gpkg_path = os.path.join(DATA_DIR, f"{overlay_id}.gpkg")
 
-    meta = converter(source_path, gpkg_path)
+    converter(source_path, gpkg_path)
 
     # Remove the original uploaded file (we keep only the .gpkg)
     if os.path.isfile(source_path) and source_path != gpkg_path:

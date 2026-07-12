@@ -1,4 +1,3 @@
-import os
 import re
 import logging
 
@@ -184,9 +183,6 @@ class GeoServerClient:
 
     def _get_layer_geometry_type(self, layer_name: str) -> str:
         """Get the geometry type of a published layer from GeoServer REST API."""
-        url = self._rest(
-            f"workspaces/{self.workspace}/datastores"
-        )
         try:
             # Query the feature type resource for this layer
             ft_url = self._rest(
@@ -194,8 +190,6 @@ class GeoServerClient:
             )
             resp = requests.get(ft_url, auth=self.auth, timeout=10)
             if resp.status_code == 200:
-                data = resp.json()
-                ft = data.get("featureType", {})
                 # GeoServer doesn't always expose geometry type in REST,
                 # so fall back to checking the layer's type attribute
                 layer_url = self._rest(f"layers/{self.workspace}:{layer_name}.json")
