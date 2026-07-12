@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import httpx
 from shapely.geometry import Point, shape
@@ -10,8 +10,8 @@ from src.features.vessels.models import (
     VesselPlaybackResponse,
     VesselTrajectoriesResponse,
     VesselTrajectoryResponse,
-    map_trajectory_from_raw,
     map_trajectories_from_raw,
+    map_trajectory_from_raw,
     parse_playback_raw_rows,
 )
 from src.shared.errors import ExternalServiceError, NotFoundError, ValidationError
@@ -54,11 +54,11 @@ async def get_vessel_playback(
         start_dt = datetime.fromisoformat(start.replace("Z", "+00:00"))
         end_dt = datetime.fromisoformat(end.replace("Z", "+00:00"))
         if start_dt.tzinfo is None:
-            start_dt = start_dt.replace(tzinfo=timezone.utc)
+            start_dt = start_dt.replace(tzinfo=UTC)
         if end_dt.tzinfo is None:
-            end_dt = end_dt.replace(tzinfo=timezone.utc)
-        start_str = start_dt.astimezone(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
-        end_str = end_dt.astimezone(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
+            end_dt = end_dt.replace(tzinfo=UTC)
+        start_str = start_dt.astimezone(UTC).strftime("%Y-%m-%d %H:%M:%S")
+        end_str = end_dt.astimezone(UTC).strftime("%Y-%m-%d %H:%M:%S")
     except (ValueError, TypeError):
         raise ValidationError("Invalid date format: use ISO 8601 UTC (e.g. 2024-12-04T16:00:00Z)") from None
 
@@ -139,11 +139,11 @@ async def get_vessel_trajectories(
             start_dt = datetime.fromisoformat(start_time.replace("Z", "+00:00"))
             end_dt = datetime.fromisoformat(end_time.replace("Z", "+00:00"))
             if start_dt.tzinfo is None:
-                start_dt = start_dt.replace(tzinfo=timezone.utc)
+                start_dt = start_dt.replace(tzinfo=UTC)
             if end_dt.tzinfo is None:
-                end_dt = end_dt.replace(tzinfo=timezone.utc)
-            start_str = start_dt.astimezone(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
-            end_str = end_dt.astimezone(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
+                end_dt = end_dt.replace(tzinfo=UTC)
+            start_str = start_dt.astimezone(UTC).strftime("%Y-%m-%d %H:%M:%S")
+            end_str = end_dt.astimezone(UTC).strftime("%Y-%m-%d %H:%M:%S")
         except (ValueError, TypeError):
             raise ValidationError(
                 "Invalid date format: use ISO 8601 UTC (e.g. 2024-12-04T16:00:00Z)"

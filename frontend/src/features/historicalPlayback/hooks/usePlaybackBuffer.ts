@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 
 import { fetchVesselTrajectories } from "../api/historicalPlaybackApi";
+import { mapTrajectoryRequestToApi, mapTrajectoryResponse } from "../model/mappers";
 import { TrajectoryBufferManager } from "../model/dataBufferManager";
 
-import type { PlaybackChunk, PlaybackFilter, TimeGranularity } from "../model/types";
+import type { PlaybackChunk, PlaybackFilter, TimeGranularity, TrajectoryRequest } from "../model/types";
 
 interface SliderChangeResult {
   chunkOffset: number;
@@ -60,7 +61,10 @@ export function usePlaybackBuffer(): UsePlaybackBufferResult {
         geometry,
         granularity,
         filters,
-        fetchVesselTrajectories,
+        (payload: TrajectoryRequest) =>
+          fetchVesselTrajectories(mapTrajectoryRequestToApi(payload)).then(
+            mapTrajectoryResponse,
+          ),
       );
       setBufferManager(manager);
       bufferManagerRef.current = manager;

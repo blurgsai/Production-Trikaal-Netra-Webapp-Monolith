@@ -1,19 +1,17 @@
-import { mapFiltersToApi, mapTrajectoryResponse } from "./mappers";
 import type {
   PlaybackChunk,
   PlaybackFilter,
   TimeGranularity,
+  TrajectoryRequest,
 } from "./types";
 import {
   GRANULARITY_SECONDS,
   GRANULARITY_BUFFER_SIZE,
 } from "./types";
 
-import type { TrajectoryRequestApi, TrajectoryResponseApi } from "../api/types";
-
 export type FetchTrajectoriesFn = (
-  payload: TrajectoryRequestApi,
-) => Promise<TrajectoryResponseApi>;
+  payload: TrajectoryRequest,
+) => Promise<PlaybackChunk>;
 
 export class TrajectoryBufferManager {
   private baseTime: string;
@@ -97,14 +95,13 @@ export class TrajectoryBufferManager {
 
   private async loadChunkData(chunkOffset: number): Promise<PlaybackChunk> {
     const { startTime, endTime } = this.getChunkTimeWindow(chunkOffset);
-    const payload: TrajectoryRequestApi = {
+    const payload: TrajectoryRequest = {
       polygon: this.geometry,
-      start_time: startTime,
-      end_time: endTime,
-      filters: this.filters.length > 0 ? mapFiltersToApi(this.filters) : undefined,
+      startTime,
+      endTime,
+      filters: this.filters.length > 0 ? this.filters : undefined,
     };
-    const response = await this.fetchFn(payload);
-    const chunk = mapTrajectoryResponse(response);
+    const chunk = await this.fetchFn(payload);
     return { ...chunk, chunkOffset };
   }
 

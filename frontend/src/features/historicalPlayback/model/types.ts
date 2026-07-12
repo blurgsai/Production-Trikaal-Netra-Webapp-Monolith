@@ -3,6 +3,15 @@ export interface PlaybackRange {
   end: string;
 }
 
+export interface TrajectoryRequest {
+  vesselIds?: string[];
+  polygon?: GeoJSON.Geometry;
+  startTime?: string;
+  endTime?: string;
+  timeSeconds?: number;
+  filters?: PlaybackFilter[];
+}
+
 export interface PlaybackPoint {
   timestamp: string;
   latitude: number;

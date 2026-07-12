@@ -2,8 +2,7 @@ import { describe, it, expect, vi } from "vitest";
 
 import { TrajectoryBufferManager } from "../dataBufferManager";
 import type { FetchTrajectoriesFn } from "../dataBufferManager";
-import type { TimeGranularity, PlaybackFilter } from "../types";
-import type { TrajectoryRequestApi } from "../../api/types";
+import type { TimeGranularity, PlaybackFilter, TrajectoryRequest, PlaybackChunk } from "../types";
 
 const mockGeometry: GeoJSON.Geometry = {
   type: "Polygon",
@@ -21,19 +20,23 @@ const mockGeometry: GeoJSON.Geometry = {
 const baseTime = "2024-12-04T16:00:00Z";
 const endTime = "2024-12-04T17:00:00Z";
 
-function createMockFetch(): FetchTrajectoriesFn & { calls: TrajectoryRequestApi[] } {
-  const calls: TrajectoryRequestApi[] = [];
-  const fn = vi.fn(async (payload: TrajectoryRequestApi) => {
+function createMockFetch(): FetchTrajectoriesFn & { calls: TrajectoryRequest[] } {
+  const calls: TrajectoryRequest[] = [];
+  const fn = vi.fn(async (payload: TrajectoryRequest) => {
     calls.push(payload);
-    return {
-      trajectories: {
+    const chunk: PlaybackChunk = {
+      chunkOffset: 0,
+      chunkStart: payload.startTime ?? "",
+      chunkEnd: payload.endTime ?? "",
+      timestamps: [payload.startTime ?? ""],
+      vessels: {
         V0001: [
-          { ts: payload.start_time ?? "", lat: 15.9, lon: 65.2, heading: 45, speed: 10 },
+          { timestamp: payload.startTime ?? "", latitude: 15.9, longitude: 65.2, heading: 45 },
         ],
       },
-      timestamps: [payload.start_time ?? ""],
     };
-  }) as unknown as FetchTrajectoriesFn & { calls: TrajectoryRequestApi[] };
+    return chunk;
+  }) as unknown as FetchTrajectoriesFn & { calls: TrajectoryRequest[] };
   fn.calls = calls;
   return fn;
 }
@@ -83,7 +86,7 @@ describe("TrajectoryBufferManager", () => {
 
     expect(data0.chunkOffset).toBe(0);
     expect(data1.chunkOffset).toBe(1);
-    expect(fetchFn.calls[0].start_time).not.toBe(fetchFn.calls[1].start_time);
+    expect(fetchFn.calls[0].startTime).not.toBe(fetchFn.calls[1].startTime);
   });
 
   it("getChunkOffset converts seconds to chunk index (minute)", () => {
@@ -166,14 +169,14 @@ describe("TrajectoryBufferManager", () => {
     const manager = createManager("hour", fetchFn);
 
     await manager.getChunkData(0);
-    const chunkEnd = new Date(fetchFn.calls[0].end_time!).getTime();
+    const chunkEnd = new Date(fetchFn.calls[0].endTime!).getTime();
     const overallEnd = new Date(endTime).getTime();
     expect(chunkEnd).toBeLessThanOrEqual(overallEnd);
   });
 
   // ── Filter integration tests ──
 
-  it("passes mapped filters in API payload when filters are provided", async () => {
+  it("passes filters in domain payload when filters are provided", async () => {
     const fetchFn = createMockFetch();
     const manager = new TrajectoryBufferManager(
       baseTime,
@@ -187,7 +190,7 @@ describe("TrajectoryBufferManager", () => {
     await manager.getChunkData(0);
     expect(fetchFn.calls[0].filters).toBeDefined();
     expect(fetchFn.calls[0].filters).toHaveLength(1);
-    expect(fetchFn.calls[0].filters![0].column).toBe("speed");
+    expect(fetchFn.calls[0].filters![0].field).toBe("speed");
     expect(fetchFn.calls[0].filters![0].operator).toBe("gt");
     expect(fetchFn.calls[0].filters![0].value).toBe("10");
   });
@@ -215,7 +218,7 @@ describe("TrajectoryBufferManager", () => {
     expect(fetchFn.calls[0].filters).toBeUndefined();
   });
 
-  it("maps domain field names to DB column names correctly", async () => {
+  it("preserves domain field names in payload filters", async () => {
     const fetchFn = createMockFetch();
     const manager = new TrajectoryBufferManager(
       baseTime,
@@ -232,9 +235,9 @@ describe("TrajectoryBufferManager", () => {
 
     await manager.getChunkData(0);
     const filters = fetchFn.calls[0].filters!;
-    expect(filters[0].column).toBe("vessel_id");
-    expect(filters[1].column).toBe("shipname");
-    expect(filters[2].column).toBe("destination");
+    expect(filters[0].field).toBe("vesselId");
+    expect(filters[1].field).toBe("shipName");
+    expect(filters[2].field).toBe("destination");
   });
 
   it("preserves combinator values in mapped filters", async () => {
@@ -272,8 +275,8 @@ describe("TrajectoryBufferManager", () => {
     await manager.getChunkData(1);
     expect(fetchFn.calls[0].filters).toBeDefined();
     expect(fetchFn.calls[1].filters).toBeDefined();
-    expect(fetchFn.calls[0].filters![0].column).toBe("speed");
-    expect(fetchFn.calls[1].filters![0].column).toBe("speed");
+    expect(fetchFn.calls[0].filters![0].field).toBe("speed");
+    expect(fetchFn.calls[1].filters![0].field).toBe("speed");
   });
 
   it("passes filters through handleSliderChange", async () => {
@@ -293,7 +296,7 @@ describe("TrajectoryBufferManager", () => {
     expect(fetchFn.calls[0].filters![0].value).toBe("20");
   });
 
-  it("maps all supported filter fields to correct columns", async () => {
+  it("passes all supported filter fields in domain payload", async () => {
     const fetchFn = createMockFetch();
     const allFields: PlaybackFilter[] = [
       { field: "vesselId", operator: "eq", value: "1" },
@@ -319,17 +322,17 @@ describe("TrajectoryBufferManager", () => {
 
     await manager.getChunkData(0);
     const filters = fetchFn.calls[0].filters!;
-    const columns = filters.map((f) => f.column);
-    expect(columns).toEqual([
-      "vessel_id",
+    const fields = filters.map((f) => f.field);
+    expect(fields).toEqual([
+      "vesselId",
       "mmsi",
       "speed",
       "heading",
       "course",
-      "status",
-      "lat",
-      "lon",
-      "shipname",
+      "navigationStatus",
+      "latitude",
+      "longitude",
+      "shipName",
       "destination",
       "callsign",
     ]);

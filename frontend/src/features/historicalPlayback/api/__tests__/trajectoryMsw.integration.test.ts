@@ -4,7 +4,13 @@ import { mockApi } from "@/test/server";
 
 import { fetchVesselTrajectories } from "../historicalPlaybackApi";
 import { TrajectoryBufferManager } from "../../model/dataBufferManager";
-import type { PlaybackFilter } from "../../model/types";
+import { mapTrajectoryRequestToApi, mapTrajectoryResponse } from "../../model/mappers";
+import type { PlaybackFilter, TrajectoryRequest } from "../../model/types";
+
+const domainFetchFn = (payload: TrajectoryRequest) =>
+  fetchVesselTrajectories(mapTrajectoryRequestToApi(payload)).then(
+    mapTrajectoryResponse,
+  );
 
 const VITE_BASE_URL = import.meta.env.VITE_BASE_URL || "http://localhost:5000";
 
@@ -185,7 +191,7 @@ describe("Trajectory pipeline integration (MSW: dataBufferManager → API → ne
       mockGeometry,
       "minute",
       filters,
-      fetchVesselTrajectories,
+      domainFetchFn,
     );
 
     const data = await manager.getChunkData(0);
@@ -215,7 +221,7 @@ describe("Trajectory pipeline integration (MSW: dataBufferManager → API → ne
       mockGeometry,
       "minute",
       [],
-      fetchVesselTrajectories,
+      domainFetchFn,
     );
 
     await manager.getChunkData(0);
@@ -241,7 +247,7 @@ describe("Trajectory pipeline integration (MSW: dataBufferManager → API → ne
         { field: "speed", operator: "gt", value: "5" },
         { field: "heading", operator: "eq", value: "0", combinator: "OR" },
       ],
-      fetchVesselTrajectories,
+      domainFetchFn,
     );
 
     await manager.getChunkData(0);
@@ -264,7 +270,7 @@ describe("Trajectory pipeline integration (MSW: dataBufferManager → API → ne
       mockGeometry,
       "minute",
       [{ field: "speed", operator: "gt", value: "5" }],
-      fetchVesselTrajectories,
+      domainFetchFn,
     );
 
     await manager.getChunkData(0);
@@ -288,7 +294,7 @@ describe("Trajectory pipeline integration (MSW: dataBufferManager → API → ne
       mockGeometry,
       "minute",
       [{ field: "speed", operator: "lte", value: "20" }],
-      fetchVesselTrajectories,
+      domainFetchFn,
     );
 
     const result = await manager.handleSliderChange(65);
@@ -327,7 +333,7 @@ describe("Trajectory pipeline integration (MSW: dataBufferManager → API → ne
       mockGeometry,
       "minute",
       allFilters,
-      fetchVesselTrajectories,
+      domainFetchFn,
     );
 
     await manager.getChunkData(0);

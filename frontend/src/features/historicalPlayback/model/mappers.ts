@@ -1,6 +1,7 @@
 import type {
   TrajectoryFilterApi,
   TrajectoryPointApi,
+  TrajectoryRequestApi,
   TrajectoryResponseApi,
 } from "../api/types";
 
@@ -8,6 +9,7 @@ import type {
   PlaybackChunk,
   PlaybackFilter,
   PlaybackPoint,
+  TrajectoryRequest,
 } from "./types";
 
 const FIELD_TO_COLUMN: Record<PlaybackFilter["field"], string> = {
@@ -34,6 +36,19 @@ export function mapFiltersToApi(
     value: f.value,
     combinator: f.combinator,
   }));
+}
+
+export function mapTrajectoryRequestToApi(
+  request: TrajectoryRequest,
+): TrajectoryRequestApi {
+  return {
+    vessel_ids: request.vesselIds,
+    polygon: request.polygon,
+    start_time: request.startTime,
+    end_time: request.endTime,
+    time_seconds: request.timeSeconds,
+    filters: request.filters ? mapFiltersToApi(request.filters) : undefined,
+  };
 }
 
 export function mapTrajectoryPoint(point: TrajectoryPointApi): PlaybackPoint {
