@@ -354,7 +354,7 @@ export function MapManagement() {
             ) : (
               items.map((item) => {
                 if (isOverlaysTab) {
-                  const ov = item as Overlay;
+                  const ov = item as unknown as Overlay;
                   return (
                     <TableRow key={ov.id} hover>
                       <TableCell sx={{ fontWeight: 500 }}>{ov.name}</TableCell>
@@ -368,7 +368,7 @@ export function MapManagement() {
                         />
                       </TableCell>
                       <TableCell>
-                        <Chip label={ov.source_type} size="small" variant="outlined" sx={{ fontSize: "0.7rem" }} />
+                        <Chip label={ov.sourceType} size="small" variant="outlined" sx={{ fontSize: "0.7rem" }} />
                       </TableCell>
                       <TableCell
                         sx={{
@@ -379,9 +379,9 @@ export function MapManagement() {
                           fontFamily: "monospace",
                           fontSize: "0.8rem",
                         }}
-                        title={ov.tile_url}
+                        title={ov.tileUrl}
                       >
-                        {ov.tile_url}
+                        {ov.tileUrl}
                       </TableCell>
                       <TableCell>
                         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
@@ -415,13 +415,13 @@ export function MapManagement() {
                     </TableRow>
                   );
                 }
-                const bm = item as BaseMap;
+                const bm = item as unknown as BaseMap;
                 return (
                   <TableRow key={bm.id} hover>
                     <TableCell sx={{ fontWeight: 500 }}>{bm.name}</TableCell>
                     <TableCell>
                       <Chip
-                        label={bm.source_type}
+                        label={bm.sourceType}
                         size="small"
                         color={bm.type === "file" ? "info" : "default"}
                         variant="outlined"
@@ -437,9 +437,9 @@ export function MapManagement() {
                         fontFamily: "monospace",
                         fontSize: "0.8rem",
                       }}
-                      title={bm.tile_url}
+                      title={bm.tileUrl}
                     >
-                      {bm.tile_url}
+                      {bm.tileUrl}
                     </TableCell>
                     <TableCell sx={{ fontSize: "0.8rem", color: "text.secondary" }}>
                       {bm.attribution || "—"}

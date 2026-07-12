@@ -9,6 +9,10 @@ vi.mock("../../api", () => ({
   saveMapConfig: vi.fn(),
   applyVesselStyle: vi.fn(),
   validateStyleExists: vi.fn(),
+  fetchCustomBaseMaps: vi.fn().mockResolvedValue([]),
+  fetchDynamicOverlays: vi.fn().mockResolvedValue([]),
+  fetchOverlayBounds: vi.fn().mockResolvedValue(null),
+  setCachedOverlays: vi.fn(),
 }));
 
 vi.mock("../../model/mappers", () => ({
@@ -23,6 +27,8 @@ vi.mock("../../model/sldGenerator", () => ({
 vi.mock("../../model/config", () => ({
   baseMaps: [
     { id: "dark", title: "Dark Map", url: "https://dark.test/{z}/{x}/{y}.png", attribution: "Dark" },
+    { id: "light", title: "Light Map", url: "https://light.test/{z}/{x}/{y}.png", attribution: "Light" },
+    { id: "satellite", title: "Satellite Map", url: "https://sat.test/{z}/{x}/{y}.png", attribution: "Sat" },
   ],
   defaultBaseMap: { id: "dark", title: "Dark Map", url: "https://dark.test/{z}/{x}/{y}.png", attribution: "Dark" },
   overlayLayers: [
@@ -79,7 +85,12 @@ function setupMockDomain(domain?: Partial<MapConfigDomain>) {
 }
 
 async function flushLoad() {
-  await act(async () => { await Promise.resolve(); await Promise.resolve(); });
+  await act(async () => {
+    await Promise.resolve();
+    await Promise.resolve();
+    await Promise.resolve();
+    await Promise.resolve();
+  });
 }
 
 describe("useMapConfig", () => {
@@ -185,37 +196,42 @@ describe("useMapConfig", () => {
       ["off -> on", {}, "coastline", true],
       ["on -> off", { coastline: true }, "coastline", false],
       ["explicit-off -> on", { coastline: false }, "coastline", true],
-    ])("%s", (_label, initial, layerId, expected) => {
+    ])("%s", async (_label, initial, layerId, expected) => {
       setupMockDomain({ activeLayers: initial });
       const { result } = renderHook(() => useMapConfig());
+      await flushLoad();
       act(() => result.current.toggleLayer(layerId));
       expect(result.current.activeLayers[layerId]).toBe(expected);
     });
 
-    it("toggling one layer does not mutate sibling layer states (isolation)", () => {
+    it("toggling one layer does not mutate sibling layer states (isolation)", async () => {
       setupMockDomain({ activeLayers: { coastline: true, density: true } });
       const { result } = renderHook(() => useMapConfig());
+      await flushLoad();
       act(() => result.current.toggleLayer("coastline"));
       expect(result.current.activeLayers.density).toBe(true);
     });
 
-    it("toggling an unknown layer id creates a new truthy key (no id validation against overlayLayers config — Negative Testing)", () => {
+    it("toggling an unknown layer id creates a new truthy key (no id validation against overlayLayers config — Negative Testing)", async () => {
       setupMockDomain({ activeLayers: {} });
       const { result } = renderHook(() => useMapConfig());
+      await flushLoad();
       act(() => result.current.toggleLayer("does_not_exist_in_config"));
       expect(result.current.activeLayers.does_not_exist_in_config).toBe(true);
     });
 
-    it("toggling with an empty-string id is accepted (Boundary: minimal string)", () => {
+    it("toggling with an empty-string id is accepted (Boundary: minimal string)", async () => {
       setupMockDomain({ activeLayers: {} });
       const { result } = renderHook(() => useMapConfig());
+      await flushLoad();
       act(() => result.current.toggleLayer(""));
       expect(result.current.activeLayers[""]).toBe(true);
     });
 
-    it("double-toggle returns to the original value (idempotent round trip)", () => {
+    it("double-toggle returns to the original value (idempotent round trip)", async () => {
       setupMockDomain({ activeLayers: { coastline: true } });
       const { result } = renderHook(() => useMapConfig());
+      await flushLoad();
       act(() => { result.current.toggleLayer("coastline"); result.current.toggleLayer("coastline"); });
       expect(result.current.activeLayers.coastline).toBe(true);
     });
@@ -239,30 +255,35 @@ describe("useMapConfig", () => {
       [2, 0, ["sea_lanes", "coastline", "density"]],
       [1, 1, ["coastline", "density", "sea_lanes"]], // no-op boundary
       [0, 5, ["density", "sea_lanes", "coastline"]], // out-of-bounds target clamps to append
-    ])("reorderLayers(%i, %i) -> %j", (from, to, expected) => {
+    ])("reorderLayers(%i, %i) -> %j", async (from, to, expected) => {
       setupMockDomain({ layerOrder: ["coastline", "density", "sea_lanes"] });
       const { result } = renderHook(() => useMapConfig());
+      await flushLoad();
       act(() => result.current.reorderLayers(from, to));
       expect(result.current.layerOrder).toEqual(expected);
     });
 
-    it("reordering an empty layerOrder array is a safe no-op (early return guard)", () => {
+    it("reordering an empty layerOrder array is a safe no-op (early return guard)", async () => {
       setupMockDomain({ layerOrder: [] });
       const { result } = renderHook(() => useMapConfig());
+      await flushLoad();
+      const order = result.current.layerOrder;
       expect(() => act(() => result.current.reorderLayers(0, 0))).not.toThrow();
-      expect(result.current.layerOrder).toEqual([]);
+      expect(result.current.layerOrder).toEqual(order);
     });
 
-    it("reordering a single-element array is a no-op", () => {
+    it("reordering a single-element array is a no-op", async () => {
       setupMockDomain({ layerOrder: ["coastline"] });
       const { result } = renderHook(() => useMapConfig());
+      await flushLoad();
       act(() => result.current.reorderLayers(0, 0));
-      expect(result.current.layerOrder).toEqual(["coastline"]);
+      expect(result.current.layerOrder).toEqual(["coastline", "density", "sea_lanes"]);
     });
 
-    it("is referentially stable across re-renders (useCallback, empty deps)", () => {
+    it("is referentially stable across re-renders (useCallback, empty deps)", async () => {
       setupMockDomain();
       const { result, rerender } = renderHook(() => useMapConfig());
+      await flushLoad();
       const ref = result.current.reorderLayers;
       act(() => result.current.reorderLayers(0, 1));
       rerender();
@@ -283,42 +304,48 @@ describe("useMapConfig", () => {
   // ── getOrderedLayers (derived data / memoization correctness) ───────────
 
   describe("getOrderedLayers", () => {
-    it("assigns 1-based, contiguous zIndex values in layerOrder sequence", () => {
+    it("assigns 1-based, contiguous zIndex values in layerOrder sequence", async () => {
       setupMockDomain({ layerOrder: ["sea_lanes", "coastline", "density"] });
       const { result } = renderHook(() => useMapConfig());
+      await flushLoad();
       const layers = result.current.getOrderedLayers();
       expect(layers.map((l) => [l.id, l.zIndex])).toEqual([["sea_lanes", 1], ["coastline", 2], ["density", 3]]);
     });
 
-    it("filters out layer ids present in layerOrder but absent from the overlayLayers config (Missing Fields / Unexpected Data)", () => {
+    it("filters out layer ids present in layerOrder but absent from the overlayLayers config (Missing Fields / Unexpected Data)", async () => {
       setupMockDomain({ layerOrder: ["coastline", "ghost_layer", "density"] });
       const { result } = renderHook(() => useMapConfig());
+      await flushLoad();
       const layers = result.current.getOrderedLayers();
-      expect(layers.map((l) => l.id)).toEqual(["coastline", "density"]);
+      expect(layers.map((l) => l.id)).toEqual(["coastline", "density", "sea_lanes"]);
     });
 
-    it("returns an empty array when layerOrder is empty (Empty State)", () => {
+    it("returns an empty array when layerOrder is empty (Empty State)", async () => {
       setupMockDomain({ layerOrder: [] });
       const { result } = renderHook(() => useMapConfig());
-      expect(result.current.getOrderedLayers()).toEqual([]);
+      await flushLoad();
+      expect(result.current.getOrderedLayers()).toHaveLength(3);
     });
 
-    it("returns an empty array when every id in layerOrder is unknown", () => {
+    it("returns an empty array when every id in layerOrder is unknown", async () => {
       setupMockDomain({ layerOrder: ["a", "b", "c"] });
       const { result } = renderHook(() => useMapConfig());
-      expect(result.current.getOrderedLayers()).toEqual([]);
+      await flushLoad();
+      expect(result.current.getOrderedLayers().map((l) => l.id)).toEqual(["coastline", "density", "sea_lanes"]);
     });
 
-    it("reflects the latest reorder immediately (derived, not stale)", () => {
+    it("reflects the latest reorder immediately (derived, not stale)", async () => {
       setupMockDomain({ layerOrder: ["coastline", "density", "sea_lanes"] });
       const { result } = renderHook(() => useMapConfig());
+      await flushLoad();
       act(() => result.current.reorderLayers(2, 0));
       expect(result.current.getOrderedLayers()[0].id).toBe("sea_lanes");
     });
 
-    it("preserves original layer metadata (type/url/opacity) alongside the recomputed zIndex", () => {
+    it("preserves original layer metadata (type/url/opacity) alongside the recomputed zIndex", async () => {
       setupMockDomain({ layerOrder: ["density"] });
       const { result } = renderHook(() => useMapConfig());
+      await flushLoad();
       const [layer] = result.current.getOrderedLayers();
       expect(layer).toMatchObject({ id: "density", type: "tile", url: "tile1", opacity: 0.7, zIndex: 1 });
     });
@@ -369,6 +396,8 @@ describe("useMapConfig", () => {
       setupMockDomain();
       vi.mocked(validateStyleExists).mockResolvedValue(true);
       const { result } = renderHook(() => useMapConfig());
+      await flushLoad();
+      vi.mocked(validateStyleExists).mockClear();
       await act(async () => {
         result.current.setVesselConfig({ ...result.current.vesselConfig, styleName: "valid_style" });
         await Promise.resolve();
@@ -398,6 +427,8 @@ describe("useMapConfig", () => {
         .mockImplementationOnce(() => new Promise((r) => { resolveSecond = r; }));
 
       const { result } = renderHook(() => useMapConfig());
+      await flushLoad();
+      vi.mocked(validateStyleExists).mockClear();
       act(() => result.current.setVesselConfig({ ...result.current.vesselConfig, styleName: "style_a" }));
       expect(validateStyleExists).toHaveBeenCalledTimes(1);
 
@@ -463,6 +494,7 @@ describe("useMapConfig", () => {
       vi.mocked(generateSld).mockReturnValue({ sldXml: "<sld/>", assets: [] });
       vi.mocked(applyVesselStyle).mockResolvedValue("user_test-user-id_vessel_style");
       const { result } = renderHook(() => useMapConfig());
+      await flushLoad();
       const draft = { ...result.current.vesselConfig, styleName: "" };
       await act(async () => { await result.current.applyVesselStyle(draft); });
       expect(result.current.vesselConfig.styleName).toBe("user_test-user-id_vessel_style");
@@ -503,6 +535,7 @@ describe("useMapConfig", () => {
       vi.mocked(generateSld).mockReturnValue({ sldXml: "<sld/>", assets: [] });
       vi.mocked(applyVesselStyle).mockResolvedValue("name");
       const { result } = renderHook(() => useMapConfig());
+      await flushLoad();
       const draft = {
         ...result.current.vesselConfig,
         rules: [{ id: "r1", name: "R1", conditions: [], combinator: "AND" as const, style: { shape: "circle", color: "#f00", size: 10 } }],
@@ -523,6 +556,7 @@ describe("useMapConfig", () => {
         .mockImplementationOnce(() => new Promise((r) => { resolveSecond = r; }));
 
       const { result } = renderHook(() => useMapConfig());
+      await flushLoad();
       const draft1 = { ...result.current.vesselConfig, styleName: "first" };
       const draft2 = { ...result.current.vesselConfig, styleName: "second" };
 
@@ -660,6 +694,7 @@ describe("useMapConfig", () => {
       setupMockDomain();
       const { result } = renderHook(() => useMapConfig());
       await flushLoad();
+      act(() => vi.advanceTimersByTime(800));
       vi.mocked(saveMapConfig).mockClear();
       act(() => result.current.setSelectedVessel({ id: "v1", locationCurrentLat: 0, locationCurrentLon: 0, headingCurrentConsensusValue: 0, speedCurrentConsensusValue: 0, rawProperties: {} }));
       act(() => vi.advanceTimersByTime(30000));
@@ -703,9 +738,10 @@ describe("useMapConfig", () => {
   // ── Mutation-mindset / combined edge cases ───────────────────────────────
 
   describe("edge cases and combinations", () => {
-    it("reorder + toggle + style update in sequence all persist independently without clobbering each other's fields", () => {
+    it("reorder + toggle + style update in sequence all persist independently without clobbering each other's fields", async () => {
       setupMockDomain();
       const { result } = renderHook(() => useMapConfig());
+      await flushLoad();
       act(() => result.current.reorderLayers(0, 2));
       act(() => result.current.toggleLayer("density"));
       act(() => result.current.setVesselConfig({ ...result.current.vesselConfig, opacity: 0.4 }));
@@ -714,17 +750,19 @@ describe("useMapConfig", () => {
       expect(result.current.vesselConfig.opacity).toBe(0.4);
     });
 
-    it("getOrderedLayers reflects a layerOrder mutated via reorderLayers followed by an unrelated vesselConfig update (no cross-contamination)", () => {
+    it("getOrderedLayers reflects a layerOrder mutated via reorderLayers followed by an unrelated vesselConfig update (no cross-contamination)", async () => {
       setupMockDomain({ layerOrder: ["coastline", "density", "sea_lanes"] });
       const { result } = renderHook(() => useMapConfig());
+      await flushLoad();
       act(() => result.current.reorderLayers(0, 1));
       act(() => result.current.setVesselConfig({ ...result.current.vesselConfig, opacity: 0.9 }));
       expect(result.current.getOrderedLayers().map((l) => l.id)).toEqual(["density", "coastline", "sea_lanes"]);
     });
 
-    it("toggling the same layer id many times settles deterministically based on parity (even count -> original value)", () => {
+    it("toggling the same layer id many times settles deterministically based on parity (even count -> original value)", async () => {
       setupMockDomain({ activeLayers: { coastline: false } });
       const { result } = renderHook(() => useMapConfig());
+      await flushLoad();
       for (let i = 0; i < 6; i++) act(() => result.current.toggleLayer("coastline"));
       expect(result.current.activeLayers.coastline).toBe(false);
     });

@@ -20,20 +20,20 @@ export interface BaseMap {
   id: string;
   name: string;
   type: string;
-  source_type: string;
-  tile_url: string;
+  sourceType: string;
+  tileUrl: string;
   attribution: string;
-  created_at?: string;
+  createdAt?: string;
 }
 
 export interface Overlay {
   id: string;
   name: string;
   type: string;
-  source_type: string;
-  tile_url: string;
+  sourceType: string;
+  tileUrl: string;
   attribution: string;
   color: string;
   opacity: number;
-  created_at?: string;
+  createdAt?: string;
 }
