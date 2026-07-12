@@ -6,6 +6,7 @@ import { fetchVesselTrajectories } from "../historicalPlaybackApi";
 import { TrajectoryBufferManager } from "../../model/dataBufferManager";
 import { mapTrajectoryRequestToApi, mapTrajectoryResponse } from "../../model/mappers";
 import type { PlaybackFilter, TrajectoryRequest } from "../../model/types";
+import type { TrajectoryRequestApi } from "../types";
 
 const domainFetchFn = (payload: TrajectoryRequest) =>
   fetchVesselTrajectories(mapTrajectoryRequestToApi(payload)).then(
@@ -48,10 +49,10 @@ describe("Trajectory pipeline integration (MSW: dataBufferManager → API → ne
   // ── API function → MSW ──
 
   it("fetchVesselTrajectories sends POST with filters to /vessels/trajectory", async () => {
-    let capturedBody: any;
+    let capturedBody: TrajectoryRequestApi;
     mockApi.use(
       http.post(`${VITE_BASE_URL}/vessels/trajectory`, async ({ request }) => {
-        capturedBody = await request.json();
+        capturedBody = (await request.json()) as TrajectoryRequestApi;
         return HttpResponse.json(SAMPLE_RESPONSE);
       }),
     );
@@ -66,17 +67,17 @@ describe("Trajectory pipeline integration (MSW: dataBufferManager → API → ne
       ],
     });
 
-    expect(capturedBody.filters).toHaveLength(2);
-    expect(capturedBody.filters[0].column).toBe("speed");
-    expect(capturedBody.filters[1].column).toBe("shipname");
-    expect(capturedBody.filters[1].combinator).toBe("AND");
+    expect(capturedBody!.filters).toHaveLength(2);
+    expect(capturedBody!.filters![0].column).toBe("speed");
+    expect(capturedBody!.filters![1].column).toBe("shipname");
+    expect(capturedBody!.filters![1].combinator).toBe("AND");
   });
 
   it("fetchVesselTrajectories sends POST without filters when undefined", async () => {
-    let capturedBody: any;
+    let capturedBody: TrajectoryRequestApi;
     mockApi.use(
       http.post(`${VITE_BASE_URL}/vessels/trajectory`, async ({ request }) => {
-        capturedBody = await request.json();
+        capturedBody = (await request.json()) as TrajectoryRequestApi;
         return HttpResponse.json(SAMPLE_RESPONSE);
       }),
     );
@@ -87,7 +88,7 @@ describe("Trajectory pipeline integration (MSW: dataBufferManager → API → ne
       end_time: "2024-12-04T17:00:00Z",
     });
 
-    expect(capturedBody.filters).toBeUndefined();
+    expect(capturedBody!.filters).toBeUndefined();
   });
 
   it("fetchVesselTrajectories sends Authorization header with token", async () => {
@@ -172,10 +173,10 @@ describe("Trajectory pipeline integration (MSW: dataBufferManager → API → ne
   // ── dataBufferManager → fetchVesselTrajectories → MSW ──
 
   it("TrajectoryBufferManager sends mapped filters through real API function to MSW", async () => {
-    let capturedBody: any;
+    let capturedBody: TrajectoryRequestApi;
     mockApi.use(
       http.post(`${VITE_BASE_URL}/vessels/trajectory`, async ({ request }) => {
-        capturedBody = await request.json();
+        capturedBody = (await request.json()) as TrajectoryRequestApi;
         return HttpResponse.json(SAMPLE_RESPONSE);
       }),
     );
@@ -196,21 +197,21 @@ describe("Trajectory pipeline integration (MSW: dataBufferManager → API → ne
 
     const data = await manager.getChunkData(0);
 
-    expect(capturedBody.filters).toHaveLength(2);
+    expect(capturedBody!.filters).toHaveLength(2);
     // Domain fields mapped to DB columns
-    expect(capturedBody.filters[0].column).toBe("speed");
-    expect(capturedBody.filters[1].column).toBe("shipname");
-    expect(capturedBody.polygon).toEqual(mockGeometry);
+    expect(capturedBody!.filters![0].column).toBe("speed");
+    expect(capturedBody!.filters![1].column).toBe("shipname");
+    expect(capturedBody!.polygon).toEqual(mockGeometry);
     // Response mapped back to domain model
     expect(data.vessels["366500659123456789"]).toHaveLength(2);
     expect(data.vessels["366500659123456789"][0].latitude).toBe(15.9);
   });
 
   it("TrajectoryBufferManager without filters sends undefined filters to MSW", async () => {
-    let capturedBody: any;
+    let capturedBody: TrajectoryRequestApi;
     mockApi.use(
       http.post(`${VITE_BASE_URL}/vessels/trajectory`, async ({ request }) => {
-        capturedBody = await request.json();
+        capturedBody = (await request.json()) as TrajectoryRequestApi;
         return HttpResponse.json(SAMPLE_RESPONSE);
       }),
     );
@@ -226,14 +227,14 @@ describe("Trajectory pipeline integration (MSW: dataBufferManager → API → ne
 
     await manager.getChunkData(0);
 
-    expect(capturedBody.filters).toBeUndefined();
+    expect(capturedBody!.filters).toBeUndefined();
   });
 
   it("TrajectoryBufferManager with OR combinator sends correct combinator to MSW", async () => {
-    let capturedBody: any;
+    let capturedBody: TrajectoryRequestApi;
     mockApi.use(
       http.post(`${VITE_BASE_URL}/vessels/trajectory`, async ({ request }) => {
-        capturedBody = await request.json();
+        capturedBody = (await request.json()) as TrajectoryRequestApi;
         return HttpResponse.json(SAMPLE_RESPONSE);
       }),
     );
@@ -252,7 +253,7 @@ describe("Trajectory pipeline integration (MSW: dataBufferManager → API → ne
 
     await manager.getChunkData(0);
 
-    expect(capturedBody.filters[1].combinator).toBe("OR");
+    expect(capturedBody!.filters![1].combinator).toBe("OR");
   });
 
   it("TrajectoryBufferManager caches chunk — second call does not hit MSW", async () => {
@@ -280,10 +281,10 @@ describe("Trajectory pipeline integration (MSW: dataBufferManager → API → ne
   });
 
   it("TrajectoryBufferManager handleSliderChange fetches correct chunk via MSW", async () => {
-    let capturedBody: any;
+    let capturedBody: TrajectoryRequestApi;
     mockApi.use(
       http.post(`${VITE_BASE_URL}/vessels/trajectory`, async ({ request }) => {
-        capturedBody = await request.json();
+        capturedBody = (await request.json()) as TrajectoryRequestApi;
         return HttpResponse.json(SAMPLE_RESPONSE);
       }),
     );
@@ -300,15 +301,15 @@ describe("Trajectory pipeline integration (MSW: dataBufferManager → API → ne
     const result = await manager.handleSliderChange(65);
 
     expect(result.chunkOffset).toBe(1);
-    expect(capturedBody.filters[0].operator).toBe("lte");
-    expect(capturedBody.filters[0].value).toBe("20");
+    expect(capturedBody!.filters![0].operator).toBe("lte");
+    expect(capturedBody!.filters![0].value).toBe("20");
   });
 
   it("TrajectoryBufferManager maps all filter fields to correct DB columns in MSW request", async () => {
-    let capturedBody: any;
+    let capturedBody: TrajectoryRequestApi;
     mockApi.use(
       http.post(`${VITE_BASE_URL}/vessels/trajectory`, async ({ request }) => {
-        capturedBody = await request.json();
+        capturedBody = (await request.json()) as TrajectoryRequestApi;
         return HttpResponse.json(SAMPLE_RESPONSE);
       }),
     );
@@ -338,7 +339,7 @@ describe("Trajectory pipeline integration (MSW: dataBufferManager → API → ne
 
     await manager.getChunkData(0);
 
-    const columns = capturedBody.filters.map((f: any) => f.column);
+    const columns = capturedBody!.filters!.map((f) => f.column);
     expect(columns).toEqual([
       "vessel_id",
       "mmsi",
