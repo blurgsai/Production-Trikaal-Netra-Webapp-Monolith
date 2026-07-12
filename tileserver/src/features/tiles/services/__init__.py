@@ -1,3 +1,4 @@
+from src.features.overlays import get_overlay_info
 from src.features.tiles.repository import read_tile
 from src.shared.errors import NotFoundError
 
@@ -12,8 +13,7 @@ def get_tile_data(item_id: str, z: int, x: int, y: int) -> bytes:
 
 
 def read_overlay_tile(overlay_id: str, z: int, x: int, y: int) -> bytes | None:
-    from src.features.overlays.repository import get_overlay
-    overlay = get_overlay(overlay_id)
+    overlay = get_overlay_info(overlay_id)
     if not overlay or overlay["type"] != "file":
         return None
     source_type = overlay["source_type"]

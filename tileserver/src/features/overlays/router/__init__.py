@@ -9,6 +9,8 @@ from src.features.overlays.schemas import OverlayResponse, UrlOverlayRequest
 from src.features.overlays.services import (
     create_url_overlay,
     get_all_overlays,
+    get_overlay_bounds as get_overlay_bounds_service,
+    get_overlay_info,
     remove_overlay,
     upload_overlay,
 )
@@ -69,8 +71,7 @@ def add_url_overlay(
 
 @router.get("/{overlay_id}/data")
 def get_overlay_data(overlay_id: str):
-    from src.features.overlays.repository import get_overlay
-    overlay = get_overlay(overlay_id)
+    overlay = get_overlay_info(overlay_id)
     if not overlay:
         raise NotFoundError("Overlay", overlay_id)
     file_path = overlay.get("file_path")
@@ -176,28 +177,7 @@ def get_overlay_bounds(overlay_id: str):
     Returns cached bounds from the DB when available, otherwise queries GeoServer
     once. Used by the frontend to fly-to the ENC chart area.
     """
-    import json
-
-    from src.features.overlays.repository import get_overlay
-    overlay = get_overlay(overlay_id)
-    if not overlay:
-        raise NotFoundError("Overlay", overlay_id)
-
-    if overlay.get("source_type") not in ("wms", "mvt") or overlay.get("type") != "file":
-        return {"bounds": None}
-
-    bounds_raw = overlay.get("bounds")
-    if bounds_raw:
-        try:
-            return {"bounds": json.loads(bounds_raw)}
-        except (json.JSONDecodeError, TypeError):
-            pass
-
-    # Legacy fallback: query GeoServer and cache the result.
-    from src.shared.geoserver_client import GeoServerClient
-    gs = GeoServerClient()
-    bounds = gs.get_overlay_bounds(overlay_id, overlay["name"])
-    return {"bounds": bounds}
+    return get_overlay_bounds_service(overlay_id)
 
 
 @router.delete("/{overlay_id}", status_code=status.HTTP_204_NO_CONTENT)

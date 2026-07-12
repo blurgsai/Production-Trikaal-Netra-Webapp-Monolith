@@ -564,6 +564,7 @@ export function UserManagement() {
                     <Select
                       label="Role"
                       value={editForm.role ?? "operator"}
+                      data-testid="edit-role"
                       onChange={(e) =>
                         setEditForm({ ...editForm, role: e.target.value })
                       }
@@ -686,6 +687,7 @@ export function UserManagement() {
               }
               size="small"
               sx={{ width: 320 }}
+              inputProps={{ "data-testid": "create-password" }}
               error={Boolean(createError && createError.includes("Password"))}
               helperText={
                 createError && createError.includes("Password")
@@ -714,6 +716,7 @@ export function UserManagement() {
               <Select
                 label="Role"
                 value={createForm.role}
+                data-testid="create-role"
                 onChange={(e) =>
                   setCreateForm({ ...createForm, role: e.target.value })
                 }

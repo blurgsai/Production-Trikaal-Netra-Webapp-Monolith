@@ -47,8 +47,7 @@ import {
   useAddUrlOverlay,
   useDeleteOverlay,
 } from "../hooks/useOverlays";
-import type { BaseMapAdminApiResponse } from "../api/basemapsApi";
-import type { OverlayAdminApiResponse } from "../api/overlaysApi";
+import type { BaseMap, Overlay } from "../model/types";
 
 export function MapManagement() {
   const theme = useTheme();
@@ -79,7 +78,7 @@ export function MapManagement() {
 
   const [uploadOpen, setUploadOpen] = useState(false);
   const [urlOpen, setUrlOpen] = useState(false);
-  const [deleteTarget, setDeleteTarget] = useState<BaseMapAdminApiResponse | OverlayAdminApiResponse | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<BaseMap | Overlay | null>(null);
   const [deleteMode, setDeleteMode] = useState<"basemap" | "overlay">("basemap");
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
@@ -355,7 +354,7 @@ export function MapManagement() {
             ) : (
               items.map((item) => {
                 if (isOverlaysTab) {
-                  const ov = item as OverlayAdminApiResponse;
+                  const ov = item as Overlay;
                   return (
                     <TableRow key={ov.id} hover>
                       <TableCell sx={{ fontWeight: 500 }}>{ov.name}</TableCell>
@@ -416,7 +415,7 @@ export function MapManagement() {
                     </TableRow>
                   );
                 }
-                const bm = item as BaseMapAdminApiResponse;
+                const bm = item as BaseMap;
                 return (
                   <TableRow key={bm.id} hover>
                     <TableCell sx={{ fontWeight: 500 }}>{bm.name}</TableCell>

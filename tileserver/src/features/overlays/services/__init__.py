@@ -1,3 +1,4 @@
+import json
 import os
 import shutil
 import sqlite3
@@ -42,6 +43,30 @@ _VECTOR_CONVERTERS = {
 
 def get_all_overlays() -> list[dict]:
     return list_overlays()
+
+
+def get_overlay_info(overlay_id: str) -> dict | None:
+    return get_overlay(overlay_id)
+
+
+def get_overlay_bounds(overlay_id: str) -> dict:
+    overlay = get_overlay_info(overlay_id)
+    if not overlay:
+        raise NotFoundError("Overlay", overlay_id)
+
+    if overlay.get("source_type") not in ("wms", "mvt") or overlay.get("type") != "file":
+        return {"bounds": None}
+
+    bounds_raw = overlay.get("bounds")
+    if bounds_raw:
+        try:
+            return {"bounds": json.loads(bounds_raw)}
+        except (json.JSONDecodeError, TypeError):
+            pass
+
+    geoserver = GeoServerClient()
+    bounds = geoserver.get_overlay_bounds(overlay_id, overlay["name"])
+    return {"bounds": bounds}
 
 
 def _detect_source_type(filename: str) -> str:

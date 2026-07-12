@@ -1,5 +1,5 @@
 import tileserverInstance from "@/shared/api/tileserverClient";
-import type { OverlayLayerConfig } from "../model/types";
+import type { OverlayLayerConfig } from "./types";
 
 interface OverlayApiResponse {
   id: string;

@@ -1,5 +1,5 @@
 import tileserverInstance from "@/shared/api/tileserverClient";
-import type { BaseMap } from "../model/types";
+import type { BaseMap } from "./types";
 
 export interface BaseMapApiResponse {
   id: string;
