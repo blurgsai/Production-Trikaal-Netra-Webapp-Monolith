@@ -1,34 +1,57 @@
 import type {
-  PlaybackAttributeApi,
-  PlaybackAttributesResponse,
-  PlaybackChunkResponse,
-  PlaybackPointApi,
-  PlaybackQueryPayload,
+  TrajectoryFilterApi,
+  TrajectoryPointApi,
+  TrajectoryRequestApi,
+  TrajectoryResponseApi,
 } from "../api/types";
 
 import type {
-  PlaybackAttribute,
   PlaybackChunk,
+  PlaybackFilter,
   PlaybackPoint,
-  PlaybackQuery,
+  TrajectoryRequest,
 } from "./types";
 
-export function mapPlaybackAttribute(
-  attribute: PlaybackAttributeApi,
-): PlaybackAttribute {
+const FIELD_TO_COLUMN: Record<PlaybackFilter["field"], string> = {
+  vesselId: "vessel_id",
+  mmsi: "mmsi",
+  speed: "speed",
+  heading: "heading",
+  course: "course",
+  navigationStatus: "status",
+  latitude: "lat",
+  longitude: "lon",
+  kinematicsSpeed: "processing_kinematics_speed_mps",
+  shipName: "shipname",
+  destination: "destination",
+  callsign: "callsign",
+};
+
+export function mapFiltersToApi(
+  filters: PlaybackFilter[],
+): TrajectoryFilterApi[] {
+  return filters.map((f) => ({
+    column: FIELD_TO_COLUMN[f.field],
+    operator: f.operator,
+    value: f.value,
+    combinator: f.combinator,
+  }));
+}
+
+export function mapTrajectoryRequestToApi(
+  request: TrajectoryRequest,
+): TrajectoryRequestApi {
   return {
-    key: attribute.key,
-    path: attribute.path,
+    vessel_ids: request.vesselIds,
+    polygon: request.polygon,
+    start_time: request.startTime,
+    end_time: request.endTime,
+    time_seconds: request.timeSeconds,
+    filters: request.filters ? mapFiltersToApi(request.filters) : undefined,
   };
 }
 
-export function mapPlaybackAttributes(
-  response: PlaybackAttributesResponse,
-): PlaybackAttribute[] {
-  return response.attributes.map(mapPlaybackAttribute);
-}
-
-export function mapPlaybackPoint(point: PlaybackPointApi): PlaybackPoint {
+export function mapTrajectoryPoint(point: TrajectoryPointApi): PlaybackPoint {
   return {
     timestamp: point.ts,
     latitude: point.lat,
@@ -37,29 +60,19 @@ export function mapPlaybackPoint(point: PlaybackPointApi): PlaybackPoint {
   };
 }
 
-export function mapPlaybackChunk(
-  response: PlaybackChunkResponse,
+export function mapTrajectoryResponse(
+  response: TrajectoryResponseApi,
 ): PlaybackChunk {
   return {
-    chunkOffset: response.chunk_offset,
-    chunkStart: response.chunk_start,
-    chunkEnd: response.chunk_end,
+    chunkOffset: 0,
+    chunkStart: response.timestamps[0] ?? "",
+    chunkEnd: response.timestamps[response.timestamps.length - 1] ?? "",
     timestamps: response.timestamps,
     vessels: Object.fromEntries(
-      Object.entries(response.vessels).map(([vesselId, points]) => [
+      Object.entries(response.trajectories).map(([vesselId, points]) => [
         vesselId,
-        points.map(mapPlaybackPoint),
+        points.map(mapTrajectoryPoint),
       ]),
     ),
-  };
-}
-
-export function mapPlaybackQuery(query: PlaybackQuery): PlaybackQueryPayload {
-  return {
-    base_time: query.baseTime,
-    chunk_offset: query.chunkOffset,
-    granularity: query.granularity,
-    geometry: query.geometry,
-    filters: query.filters,
   };
 }

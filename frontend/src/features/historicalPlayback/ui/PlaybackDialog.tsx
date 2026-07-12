@@ -9,21 +9,37 @@ import {
   ToggleButtonGroup,
   ToggleButton,
   Typography,
-  Chip,
   Tooltip,
   Alert,
   Stack,
+  Select,
+  MenuItem,
+  IconButton,
+  Divider,
 } from "@mui/material";
 import type { Dispatch, SetStateAction } from "react";
-import { useMemo } from "react";
+import { useMemo, useCallback } from "react";
 import { alpha } from "@mui/material/styles";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
-import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import TuneIcon from "@mui/icons-material/Tune";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import PlayArrowRoundedIcon from "@mui/icons-material/PlayArrowRounded";
+import AddIcon from "@mui/icons-material/Add";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import FilterListIcon from "@mui/icons-material/FilterList";
 
-import type { PlaybackRange, TimeGranularity } from "../model/types";
+import type {
+  PlaybackRange,
+  TimeGranularity,
+  PlaybackFilter,
+  FilterField,
+  FilterOperator,
+  FilterCombinator,
+} from "../model/types";
+import {
+  FILTER_FIELD_OPTIONS,
+  FILTER_OPERATOR_OPTIONS,
+} from "../model/types";
 
 interface PlaybackDialogProps {
   open: boolean;
@@ -34,6 +50,9 @@ interface PlaybackDialogProps {
   onGranularityChange: (g: TimeGranularity) => void;
   onApply: () => void;
   polygon?: GeoJSON.Feature | GeoJSON.Geometry | null;
+  filters: PlaybackFilter[];
+  onFiltersChange: Dispatch<SetStateAction<PlaybackFilter[]>>;
+  isPlaying?: boolean;
 }
 
 const GRANULARITIES: { value: TimeGranularity; label: string; hint: string }[] = [
@@ -41,13 +60,6 @@ const GRANULARITIES: { value: TimeGranularity; label: string; hint: string }[] =
   { value: "hour", label: "Hour", hint: "1 frame per hour" },
   { value: "day", label: "Day", hint: "1 frame per day" },
   { value: "week", label: "Week", hint: "1 frame per week" },
-];
-
-const PRESETS = [
-  { label: "1 hour", minutes: 60 },
-  { label: "6 hours", minutes: 360 },
-  { label: "24 hours", minutes: 1440 },
-  { label: "7 days", minutes: 10080 },
 ];
 
 export default function PlaybackDialog({
@@ -59,18 +71,10 @@ export default function PlaybackDialog({
   onGranularityChange,
   onApply,
   polygon,
+  filters,
+  onFiltersChange,
+  isPlaying = false,
 }: PlaybackDialogProps) {
-  const toLocalDatetime = (date: Date) => {
-    const d = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
-    return d.toISOString().slice(0, 16);
-  };
-
-  const applyPreset = (minutes: number) => {
-    const end = new Date();
-    const start = new Date(end.getTime() - minutes * 60000);
-    setPlaybackRange({ start: toLocalDatetime(start), end: toLocalDatetime(end) });
-  };
-
   const validation = useMemo(() => {
     if (!playbackRange.start || !playbackRange.end) {
       return { valid: false, message: "Select both start and end times" };
@@ -129,6 +133,38 @@ export default function PlaybackDialog({
       heightKm: Math.round((maxLat - minLat) * 111.32),
     };
   }, [polygon]);
+
+  const handleAddFilter = useCallback(() => {
+    onFiltersChange((prev) => [
+      ...prev,
+      {
+        field: "vesselId" as FilterField,
+        operator: "eq" as FilterOperator,
+        value: "",
+        combinator: prev.length > 0 ? ("AND" as FilterCombinator) : undefined,
+      },
+    ]);
+  }, [onFiltersChange]);
+
+  const handleRemoveFilter = useCallback(
+    (index: number) => {
+      onFiltersChange((prev) => {
+        const next = prev.filter((_, i) => i !== index);
+        if (next.length > 0) next[0].combinator = undefined;
+        return next;
+      });
+    },
+    [onFiltersChange],
+  );
+
+  const handleUpdateFilter = useCallback(
+    (index: number, patch: Partial<PlaybackFilter>) => {
+      onFiltersChange((prev) =>
+        prev.map((f, i) => (i === index ? { ...f, ...patch } : f)),
+      );
+    },
+    [onFiltersChange],
+  );
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
@@ -203,27 +239,6 @@ export default function PlaybackDialog({
 
           <Box>
             <Stack direction="row" alignItems="center" gap={1} sx={{ mb: 1.25 }}>
-              <AccessTimeIcon fontSize="small" sx={{ color: "text.secondary" }} />
-              <Typography variant="body2" fontWeight={600}>
-                Quick presets
-              </Typography>
-            </Stack>
-            <Stack direction="row" flexWrap="wrap" gap={1.25}>
-              {PRESETS.map((preset) => (
-                <Chip
-                  key={preset.label}
-                  label={preset.label}
-                  size="medium"
-                  variant="outlined"
-                  onClick={() => applyPreset(preset.minutes)}
-                  sx={{ cursor: "pointer" }}
-                />
-              ))}
-            </Stack>
-          </Box>
-
-          <Box>
-            <Stack direction="row" alignItems="center" gap={1} sx={{ mb: 1.25 }}>
               <CalendarTodayIcon fontSize="small" sx={{ color: "text.secondary" }} />
               <Typography variant="body2" fontWeight={600}>
                 Date range
@@ -273,6 +288,134 @@ export default function PlaybackDialog({
                 }}
               />
             </Box>
+          </Box>
+
+          <Divider sx={{ my: 0.5 }} />
+
+          <Box>
+            <Stack direction="row" alignItems="center" gap={1} sx={{ mb: 1.25 }}>
+              <FilterListIcon fontSize="small" sx={{ color: "text.secondary" }} />
+              <Typography variant="body2" fontWeight={600}>
+                Filters
+              </Typography>
+              <Tooltip title="Add a filter condition to narrow down vessel data" arrow>
+                <InfoOutlinedIcon fontSize="small" sx={{ color: "text.secondary", cursor: "help" }} />
+              </Tooltip>
+            </Stack>
+
+            {filters.length === 0 && (
+              <Typography variant="caption" sx={{ color: "text.secondary", display: "block", mb: 1 }}>
+                No filters applied. All vessels in the selected area will be shown.
+              </Typography>
+            )}
+
+            {isPlaying && filters.length > 0 && (
+              <Alert severity="info" sx={{ py: 0.5, borderRadius: 2, mb: 1 }}>
+                Filters are locked during playback. Stop playback to modify.
+              </Alert>
+            )}
+
+            <Stack direction="column" gap={1.5}>
+              {filters.map((filter, index) => {
+                const fieldOption = FILTER_FIELD_OPTIONS.find(
+                  (o) => o.field === filter.field,
+                );
+                const isNumeric = fieldOption?.isNumeric ?? true;
+                return (
+                  <Box key={index}>
+                    {index > 0 && (
+                      <Select
+                        size="small"
+                        value={filter.combinator ?? "AND"}
+                        disabled={isPlaying}
+                        onChange={(e) =>
+                          handleUpdateFilter(index, {
+                            combinator: e.target.value as FilterCombinator,
+                          })
+                        }
+                        sx={{
+                          mb: 1,
+                          minWidth: 90,
+                          height: 28,
+                          "& .MuiSelect-select": { py: 0.25, fontSize: "0.8rem" },
+                        }}
+                      >
+                        <MenuItem value="AND">AND</MenuItem>
+                        <MenuItem value="OR">OR</MenuItem>
+                      </Select>
+                    )}
+                    <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+                      <Select
+                        size="small"
+                        value={filter.field}
+                        disabled={isPlaying}
+                        onChange={(e) =>
+                          handleUpdateFilter(index, {
+                            field: e.target.value as FilterField,
+                          })
+                        }
+                        sx={{ minWidth: 150, flex: "0 0 auto" }}
+                      >
+                        {FILTER_FIELD_OPTIONS.map((opt) => (
+                          <MenuItem key={opt.field} value={opt.field}>
+                            {opt.label}
+                          </MenuItem>
+                        ))}
+                      </Select>
+
+                      <Select
+                        size="small"
+                        value={filter.operator}
+                        disabled={isPlaying}
+                        onChange={(e) =>
+                          handleUpdateFilter(index, {
+                            operator: e.target.value as FilterOperator,
+                          })
+                        }
+                        sx={{ minWidth: 70, flex: "0 0 auto" }}
+                      >
+                        {FILTER_OPERATOR_OPTIONS.map((opt) => (
+                          <MenuItem key={opt.value} value={opt.value}>
+                            {opt.label}
+                          </MenuItem>
+                        ))}
+                      </Select>
+
+                      <TextField
+                        size="small"
+                        value={filter.value}
+                        disabled={isPlaying}
+                        onChange={(e) =>
+                          handleUpdateFilter(index, { value: e.target.value })
+                        }
+                        placeholder={isNumeric ? "Number" : "Text"}
+                        type={isNumeric ? "number" : "text"}
+                        sx={{ flex: 1 }}
+                      />
+
+                      <IconButton
+                        size="small"
+                        disabled={isPlaying}
+                        onClick={() => handleRemoveFilter(index)}
+                        sx={{ color: "text.secondary" }}
+                      >
+                        <DeleteOutlineIcon fontSize="small" />
+                      </IconButton>
+                    </Box>
+                  </Box>
+                );
+              })}
+            </Stack>
+
+            <Button
+              size="small"
+              startIcon={<AddIcon />}
+              disabled={isPlaying}
+              onClick={handleAddFilter}
+              sx={{ mt: 1.5, textTransform: "none" }}
+            >
+              Add filter
+            </Button>
           </Box>
 
           {!validation.valid && (

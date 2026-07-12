@@ -122,7 +122,7 @@ class TestGetTrajectoryEndpoint:
 
 class TestGetPlaybackEndpoint:
     def test_valid_request(self, client, override_http_client, sample_playback_raw, sample_polygon_geojson):
-        override_http_client.get.return_value = _mock_response(200, sample_playback_raw)
+        override_http_client.post.return_value = _mock_response(200, sample_playback_raw)
         resp = client.post("/vessels/playback", json={
             "polygon": sample_polygon_geojson,
             "start": "2024-12-04 17:00:00",
@@ -181,7 +181,7 @@ class TestGetPlaybackEndpoint:
         assert "Invalid date format" in resp.json()["detail"]
 
     def test_empty_playback_returns_404(self, client, override_http_client, sample_polygon_geojson):
-        override_http_client.get.return_value = _mock_response(200, "")
+        override_http_client.post.return_value = _mock_response(200, "")
         resp = client.post("/vessels/playback", json={
             "polygon": sample_polygon_geojson,
             "start": "2024-12-04 17:00:00",
@@ -191,7 +191,7 @@ class TestGetPlaybackEndpoint:
         assert "no data in window" in resp.json()["detail"]
 
     def test_clickhouse_error_returns_502(self, client, override_http_client, sample_polygon_geojson):
-        override_http_client.get.return_value = _mock_response(500, "Internal Error")
+        override_http_client.post.return_value = _mock_response(500, "Internal Error")
         resp = client.post("/vessels/playback", json={
             "polygon": sample_polygon_geojson,
             "start": "2024-12-04 17:00:00",
@@ -211,7 +211,7 @@ class TestGetPlaybackEndpoint:
         app.dependency_overrides[get_current_user] = _mock_current_user
 
     def test_response_schema(self, client, override_http_client, sample_playback_raw, sample_polygon_geojson):
-        override_http_client.get.return_value = _mock_response(200, sample_playback_raw)
+        override_http_client.post.return_value = _mock_response(200, sample_playback_raw)
         resp = client.post("/vessels/playback", json={
             "polygon": sample_polygon_geojson,
             "start": "2024-12-04 17:00:00",
@@ -236,7 +236,7 @@ class TestGetPlaybackEndpoint:
             "366500659123456789\t2024-12-04 17:50:30\t15.903896666666666\t65.26356333333334\t0\n"
             "366168522123456789\t2024-12-04 17:50:30\t18.98\t72.78\t0\n"
         )
-        override_http_client.get.return_value = _mock_response(200, raw)
+        override_http_client.post.return_value = _mock_response(200, raw)
         resp = client.post("/vessels/playback", json={
             "polygon": sample_polygon_geojson,
             "start": "2024-12-04 17:00:00",

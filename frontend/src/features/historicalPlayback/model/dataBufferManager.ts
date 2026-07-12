@@ -1,26 +1,28 @@
-import { mapPlaybackChunk, mapPlaybackQuery } from "./mappers";
 import type {
   PlaybackChunk,
-  PlaybackQuery,
+  PlaybackFilter,
   TimeGranularity,
+  TrajectoryRequest,
 } from "./types";
 import {
   GRANULARITY_SECONDS,
   GRANULARITY_BUFFER_SIZE,
 } from "./types";
 
-export type FetchPlaybackVesselsFn = (
-  payload: ReturnType<typeof mapPlaybackQuery>,
-) => Promise<Parameters<typeof mapPlaybackChunk>[0]>;
+export type FetchTrajectoriesFn = (
+  payload: TrajectoryRequest,
+) => Promise<PlaybackChunk>;
 
-export class DataBufferManager {
+export class TrajectoryBufferManager {
   private baseTime: string;
+
+  private endTime: string;
 
   private geometry: GeoJSON.Geometry;
 
-  private filters: Record<string, unknown>;
-
   private granularity: TimeGranularity;
+
+  private filters: PlaybackFilter[];
 
   private buffer = new Map<number, PlaybackChunk>();
 
@@ -28,19 +30,21 @@ export class DataBufferManager {
 
   private maxBufferSize: number;
 
-  private fetchFn: FetchPlaybackVesselsFn;
+  private fetchFn: FetchTrajectoriesFn;
 
   constructor(
     baseTime: string,
+    endTime: string,
     geometry: GeoJSON.Geometry,
-    filters: Record<string, unknown>,
     granularity: TimeGranularity,
-    fetchFn: FetchPlaybackVesselsFn,
+    filters: PlaybackFilter[],
+    fetchFn: FetchTrajectoriesFn,
   ) {
     this.baseTime = baseTime;
+    this.endTime = endTime;
     this.geometry = geometry;
-    this.filters = filters;
     this.granularity = granularity;
+    this.filters = filters;
     this.maxBufferSize = GRANULARITY_BUFFER_SIZE[granularity];
     this.fetchFn = fetchFn;
   }
@@ -48,6 +52,22 @@ export class DataBufferManager {
   getChunkOffset(timeSeconds: number): number {
     const chunkSeconds = GRANULARITY_SECONDS[this.granularity];
     return Math.floor(timeSeconds / chunkSeconds);
+  }
+
+  private getChunkTimeWindow(chunkOffset: number): {
+    startTime: string;
+    endTime: string;
+  } {
+    const chunkSeconds = GRANULARITY_SECONDS[this.granularity];
+    const baseMs = new Date(this.baseTime).getTime();
+    const chunkStartMs = baseMs + chunkOffset * chunkSeconds * 1000;
+    const chunkEndMs = chunkStartMs + chunkSeconds * 1000;
+    const overallEndMs = new Date(this.endTime).getTime();
+    const clampedEndMs = Math.min(chunkEndMs, overallEndMs);
+    return {
+      startTime: new Date(chunkStartMs).toISOString(),
+      endTime: new Date(clampedEndMs).toISOString(),
+    };
   }
 
   async getChunkData(chunkOffset: number): Promise<PlaybackChunk> {
@@ -73,20 +93,19 @@ export class DataBufferManager {
     }
   }
 
-  async loadChunkData(chunkOffset: number): Promise<PlaybackChunk> {
-    const query: PlaybackQuery = {
-      baseTime: this.baseTime,
-      chunkOffset,
-      granularity: this.granularity,
-      geometry: this.geometry,
-      filters: this.filters,
+  private async loadChunkData(chunkOffset: number): Promise<PlaybackChunk> {
+    const { startTime, endTime } = this.getChunkTimeWindow(chunkOffset);
+    const payload: TrajectoryRequest = {
+      polygon: this.geometry,
+      startTime,
+      endTime,
+      filters: this.filters.length > 0 ? this.filters : undefined,
     };
-
-    const response = await this.fetchFn(mapPlaybackQuery(query));
-    return mapPlaybackChunk(response);
+    const chunk = await this.fetchFn(payload);
+    return { ...chunk, chunkOffset };
   }
 
-  cleanupBuffer(currentChunkOffset: number): void {
+  private cleanupBuffer(currentChunkOffset: number): void {
     const keysToRemove: number[] = [];
 
     for (const [chunkOffset] of this.buffer) {
@@ -114,12 +133,8 @@ export class DataBufferManager {
     };
   }
 
-  updateConfig(
-    geometry: GeoJSON.Geometry,
-    filters: Record<string, unknown>,
-  ): void {
+  updateConfig(geometry: GeoJSON.Geometry): void {
     this.geometry = geometry;
-    this.filters = filters;
     this.buffer.clear();
     this.loadingPromises.clear();
   }

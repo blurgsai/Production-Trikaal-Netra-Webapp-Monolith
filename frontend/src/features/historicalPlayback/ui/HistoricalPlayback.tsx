@@ -4,7 +4,7 @@ import { Box, Fade, Paper, Typography } from "@mui/material";
 import MapIcon from "@mui/icons-material/Map";
 import PlayArrowRoundedIcon from "@mui/icons-material/PlayArrowRounded";
 
-import type { PlaybackRange, TimeGranularity } from "../model/types";
+import type { PlaybackRange, TimeGranularity, PlaybackFilter } from "../model/types";
 
 import PlaybackMap from "./PlaybackMap";
 import PlaybackDialog from "./PlaybackDialog";
@@ -12,8 +12,8 @@ import BufferedCanvasLayer from "./BufferedCanvasLayer";
 
 import "leaflet/dist/leaflet.css";
 
-const DATA_START_UTC = "2024-12-04T16:00:00Z";
-const DATA_END_UTC = "2024-12-11T16:00:00Z";
+const DATA_START_UTC = "2024-12-04T10:35:00Z";
+const DATA_END_UTC = "2024-12-04T17:50:00Z";
 
 function toLocalDatetime(utcIso: string): string {
   const d = new Date(utcIso);
@@ -40,9 +40,9 @@ export default function HistoricalPlayback() {
     end: toLocalDatetime(DATA_END_UTC),
   });
 
-  const [filters] = useState<Record<string, unknown>>({});
+  const [filters, setFilters] = useState<PlaybackFilter[]>([]);
 
-  const [granularity, setGranularity] = useState<TimeGranularity>("day");
+  const [granularity, setGranularity] = useState<TimeGranularity>("hour");
 
   const [vesselsData, setVesselsData] = useState<PlaybackSession | null>(null);
   const [drawingActive, setDrawingActive] = useState(false);
@@ -231,6 +231,9 @@ export default function HistoricalPlayback() {
         onGranularityChange={setGranularity}
         onApply={handlePlay}
         polygon={polygon}
+        filters={filters}
+        onFiltersChange={setFilters}
+        isPlaying={!!vesselsData}
       />
 
       {vesselsData?.useBuffering && vesselsData.playbackRange && polygon && (

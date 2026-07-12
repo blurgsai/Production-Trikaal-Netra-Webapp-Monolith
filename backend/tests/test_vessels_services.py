@@ -109,8 +109,8 @@ class TestGetVesselTrajectory:
 class TestGetVesselPlayback:
     @pytest.mark.asyncio
     async def test_valid_request(self, mock_http_client, sample_playback_raw, sample_polygon_geojson):
-        req = httpx.Request("GET", "http://test")
-        mock_http_client.get.return_value = httpx.Response(200, text=sample_playback_raw, request=req)
+        req = httpx.Request("POST", "http://test")
+        mock_http_client.post.return_value = httpx.Response(200, text=sample_playback_raw, request=req)
         result = await get_vessel_playback(
             mock_http_client,
             polygon=sample_polygon_geojson,
@@ -158,8 +158,8 @@ class TestGetVesselPlayback:
 
     @pytest.mark.asyncio
     async def test_empty_playback_raises_not_found(self, mock_http_client, sample_polygon_geojson):
-        req = httpx.Request("GET", "http://test")
-        mock_http_client.get.return_value = httpx.Response(200, text="", request=req)
+        req = httpx.Request("POST", "http://test")
+        mock_http_client.post.return_value = httpx.Response(200, text="", request=req)
         with pytest.raises(NotFoundError) as exc_info:
             await get_vessel_playback(
                 mock_http_client,
@@ -171,8 +171,8 @@ class TestGetVesselPlayback:
 
     @pytest.mark.asyncio
     async def test_whitespace_only_playback_raises_not_found(self, mock_http_client, sample_polygon_geojson):
-        req = httpx.Request("GET", "http://test")
-        mock_http_client.get.return_value = httpx.Response(200, text="   \n  \n", request=req)
+        req = httpx.Request("POST", "http://test")
+        mock_http_client.post.return_value = httpx.Response(200, text="   \n  \n", request=req)
         with pytest.raises(NotFoundError):
             await get_vessel_playback(
                 mock_http_client,
@@ -183,8 +183,8 @@ class TestGetVesselPlayback:
 
     @pytest.mark.asyncio
     async def test_clickhouse_http_error_raises_external_service_error(self, mock_http_client, sample_polygon_geojson):
-        req = httpx.Request("GET", "http://test")
-        mock_http_client.get.return_value = httpx.Response(500, text="Internal Error", request=req)
+        req = httpx.Request("POST", "http://test")
+        mock_http_client.post.return_value = httpx.Response(500, text="Internal Error", request=req)
         with pytest.raises(ExternalServiceError) as exc_info:
             await get_vessel_playback(
                 mock_http_client,
@@ -196,7 +196,7 @@ class TestGetVesselPlayback:
 
     @pytest.mark.asyncio
     async def test_clickhouse_connection_error_raises_external_service_error(self, mock_http_client, sample_polygon_geojson):
-        mock_http_client.get.side_effect = httpx.ConnectError("Connection refused")
+        mock_http_client.post.side_effect = httpx.ConnectError("Connection refused")
         with pytest.raises(ExternalServiceError):
             await get_vessel_playback(
                 mock_http_client,
@@ -213,8 +213,8 @@ class TestGetVesselPlayback:
             "366500659123456789\t2024-12-04 17:49:29\t15.89908\t65.26729833333333\t0\n"
             "366168522123456789\t2024-12-04 17:50:30\t18.98\t72.78\t0\n"
         )
-        req = httpx.Request("GET", "http://test")
-        mock_http_client.get.return_value = httpx.Response(200, text=raw, request=req)
+        req = httpx.Request("POST", "http://test")
+        mock_http_client.post.return_value = httpx.Response(200, text=raw, request=req)
         result = await get_vessel_playback(
             mock_http_client,
             polygon=sample_polygon_geojson,
@@ -228,8 +228,8 @@ class TestGetVesselPlayback:
     @pytest.mark.asyncio
     async def test_all_points_outside_polygon_raises_not_found(self, mock_http_client, sample_polygon_geojson):
         raw = "366500659123456789\t2024-12-04 17:50:30\t18.98\t72.78\t0\n"
-        req = httpx.Request("GET", "http://test")
-        mock_http_client.get.return_value = httpx.Response(200, text=raw, request=req)
+        req = httpx.Request("POST", "http://test")
+        mock_http_client.post.return_value = httpx.Response(200, text=raw, request=req)
         with pytest.raises(NotFoundError) as exc_info:
             await get_vessel_playback(
                 mock_http_client,
@@ -241,8 +241,8 @@ class TestGetVesselPlayback:
 
     @pytest.mark.asyncio
     async def test_timestamps_sorted(self, mock_http_client, sample_playback_raw, sample_polygon_geojson):
-        req = httpx.Request("GET", "http://test")
-        mock_http_client.get.return_value = httpx.Response(200, text=sample_playback_raw, request=req)
+        req = httpx.Request("POST", "http://test")
+        mock_http_client.post.return_value = httpx.Response(200, text=sample_playback_raw, request=req)
         result = await get_vessel_playback(
             mock_http_client,
             polygon=sample_polygon_geojson,
@@ -253,8 +253,8 @@ class TestGetVesselPlayback:
 
     @pytest.mark.asyncio
     async def test_playback_points_have_correct_fields(self, mock_http_client, sample_playback_raw, sample_polygon_geojson):
-        req = httpx.Request("GET", "http://test")
-        mock_http_client.get.return_value = httpx.Response(200, text=sample_playback_raw, request=req)
+        req = httpx.Request("POST", "http://test")
+        mock_http_client.post.return_value = httpx.Response(200, text=sample_playback_raw, request=req)
         result = await get_vessel_playback(
             mock_http_client,
             polygon=sample_polygon_geojson,
@@ -273,32 +273,32 @@ class TestGetVesselPlayback:
     @pytest.mark.asyncio
     async def test_date_reformatting(self, mock_http_client, sample_playback_raw, sample_polygon_geojson):
         """Dates should be parsed and reformatted to YYYY-MM-DD HH:MM:SS."""
-        req = httpx.Request("GET", "http://test")
-        mock_http_client.get.return_value = httpx.Response(200, text=sample_playback_raw, request=req)
+        req = httpx.Request("POST", "http://test")
+        mock_http_client.post.return_value = httpx.Response(200, text=sample_playback_raw, request=req)
         await get_vessel_playback(
             mock_http_client,
             polygon=sample_polygon_geojson,
             start="2024-12-04 17:00:00",
             end="2024-12-04 18:00:00",
         )
-        call_args = mock_http_client.get.call_args
-        params = call_args.kwargs["params"]
-        assert params["start_str"] == "2024-12-04 17:00:00"
-        assert params["end_str"] == "2024-12-04 18:00:00"
+        call_args = mock_http_client.post.call_args
+        content = call_args.kwargs["content"]
+        assert "2024-12-04 17:00:00" in content
+        assert "2024-12-04 18:00:00" in content
 
     @pytest.mark.asyncio
     async def test_polygon_bounds_passed_to_client(self, mock_http_client, sample_playback_raw, sample_polygon_geojson):
-        req = httpx.Request("GET", "http://test")
-        mock_http_client.get.return_value = httpx.Response(200, text=sample_playback_raw, request=req)
+        req = httpx.Request("POST", "http://test")
+        mock_http_client.post.return_value = httpx.Response(200, text=sample_playback_raw, request=req)
         await get_vessel_playback(
             mock_http_client,
             polygon=sample_polygon_geojson,
             start="2024-12-04 17:00:00",
             end="2024-12-04 18:00:00",
         )
-        call_args = mock_http_client.get.call_args
-        params = call_args.kwargs["params"]
-        assert params["minx"] == "65.0"
-        assert params["maxx"] == "66.0"
-        assert params["miny"] == "15.0"
-        assert params["maxy"] == "16.0"
+        call_args = mock_http_client.post.call_args
+        content = call_args.kwargs["content"]
+        assert "65.0" in content
+        assert "66.0" in content
+        assert "15.0" in content
+        assert "16.0" in content

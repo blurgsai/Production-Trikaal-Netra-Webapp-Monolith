@@ -1,15 +1,15 @@
 export type {
-  PlaybackAttribute,
   PlaybackRange,
   PlaybackPoint,
   CurrentPosition,
   PlaybackVessel,
-  PlaybackQuery,
+  PlaybackChunk,
+  TimeGranularity,
+  TrajectoryRequest,
 } from "./types";
 export {
-  mapPlaybackAttribute,
-  mapPlaybackAttributes,
-  mapPlaybackPoint,
-  mapPlaybackQuery,
+  mapTrajectoryPoint,
+  mapTrajectoryResponse,
+  mapTrajectoryRequestToApi,
 } from "./mappers";
-export { DataBufferManager, type FetchPlaybackVesselsFn } from "./dataBufferManager";
+export { TrajectoryBufferManager, type FetchTrajectoriesFn } from "./dataBufferManager";
