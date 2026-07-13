@@ -7,11 +7,13 @@ import SettingsIcon from "@mui/icons-material/Settings";
 import LayerPanel from "./LayerPanel";
 import VesselConfigPanel from "./VesselConfigPanel";
 import MeasureTool from "./MeasureTool";
-import type { BaseMap, VesselConfig } from "../model/types";
+import type { BaseMap, OverlayLayerConfig, VesselConfig } from "../model/types";
 
 interface MapToolbarProps {
   selectedBaseMap: BaseMap;
   onSelectBaseMap: (map: BaseMap) => void;
+  baseMaps: BaseMap[];
+  overlayLayers: OverlayLayerConfig[];
   activeLayers: Record<string, boolean>;
   onToggleLayer: (layerId: string) => void;
   layerOrder: string[];
@@ -25,6 +27,8 @@ interface MapToolbarProps {
 function MapToolbar({
   selectedBaseMap,
   onSelectBaseMap,
+  baseMaps,
+  overlayLayers,
   activeLayers,
   onToggleLayer,
   layerOrder,
@@ -100,6 +104,8 @@ function MapToolbar({
         <LayerPanel
           selectedBaseMap={selectedBaseMap}
           onSelectBaseMap={onSelectBaseMap}
+          baseMaps={baseMaps}
+          overlayLayers={overlayLayers}
           activeLayers={activeLayers}
           onToggle={onToggleLayer}
           layerOrder={layerOrder}

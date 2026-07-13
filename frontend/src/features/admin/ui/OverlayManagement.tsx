@@ -39,7 +39,7 @@ import {
   useAddUrlOverlay,
   useDeleteOverlay,
 } from "../hooks/useOverlays";
-import type { Overlay } from "../model/types";
+import type { OverlayAdminApiResponse } from "../api/overlaysApi";
 
 export function OverlayManagement() {
   const theme = useTheme();
@@ -50,7 +50,7 @@ export function OverlayManagement() {
 
   const [uploadOpen, setUploadOpen] = useState(false);
   const [urlOpen, setUrlOpen] = useState(false);
-  const [deleteTarget, setDeleteTarget] = useState<Overlay | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<OverlayAdminApiResponse | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const [uploadName, setUploadName] = useState("");
