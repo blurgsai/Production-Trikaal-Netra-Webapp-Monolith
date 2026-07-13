@@ -1,0 +1,62 @@
+{
+  "vesselId": "MOCK-ANY",
+  "overallScore": 72,
+  "riskLevel": "HIGH",
+  "sources": [
+    {
+      "id": "ais-anomaly",
+      "name": "AIS Anomaly",
+      "category": "Anomaly",
+      "score": 85,
+      "scoreExplanation": "Multiple AIS gap events and unexpected route deviations detected near restricted waters.",
+      "positionConfidence": 78,
+      "positionConfidenceExplanation": "AIS transponder reports are consistent with coastal receivers; satellite cross-check pending.",
+      "confidence": "High",
+      "lastUpdated": "2024-01-15T10:30:00Z"
+    },
+    {
+      "id": "coast-guard",
+      "name": "Coast Guard",
+      "category": "Security",
+      "score": 60,
+      "scoreExplanation": "Flagged by regional coast guard for irregular anchorage but no confirmed incident.",
+      "positionConfidence": 82,
+      "positionConfidenceExplanation": "Radar contact fused with AIS; position corroborated by nearby port authorities.",
+      "confidence": "Medium",
+      "lastUpdated": "2024-01-15T09:15:00Z"
+    },
+    {
+      "id": "lloyds-list",
+      "name": "Lloyd's List",
+      "category": "Sanctions",
+      "score": 45,
+      "scoreExplanation": "Listed as a vessel of interest; no active sanctions match but historical association recorded.",
+      "positionConfidence": 65,
+      "positionConfidenceExplanation": "Position derived from third-party registry records; live signal not directly observed.",
+      "confidence": "Medium",
+      "lastUpdated": "2024-01-14T16:45:00Z"
+    },
+    {
+      "id": "radar-fusion",
+      "name": "Radar Fusion",
+      "category": "Collision Risk",
+      "score": 92,
+      "scoreExplanation": "High CPA/TCPA violation probability with multiple converging traffic targets.",
+      "positionConfidence": 95,
+      "positionConfidenceExplanation": "Multi-source radar fusion with low bearing error and continuous track.",
+      "confidence": "High",
+      "lastUpdated": "2024-01-15T10:35:00Z"
+    },
+    {
+      "id": "satellite-imagery",
+      "name": "Satellite Imagery",
+      "category": "Spoofing",
+      "score": 78,
+      "scoreExplanation": "Satellite imagery shows vessel shape inconsistent with reported AIS metadata.",
+      "positionConfidence": 88,
+      "positionConfidenceExplanation": "High-resolution satellite capture matched to reported coordinates within 50 meters.",
+      "confidence": "High",
+      "lastUpdated": "2024-01-15T08:00:00Z"
+    }
+  ]
+}

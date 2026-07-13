@@ -1,7 +1,8 @@
 import { baseMaps, defaultBaseMap } from "../model/config";
 import type { MapConfigApiResponse, MapControlSettingsApi, CountryPrefixApi, VesselDetailsApi, VesselImageApiResponse, EezRegionApi, CustomShapeApi, StyleDefinitionApi, StyleRuleApi, StyleConditionApi, ClusterConfigApi, TrajectoryConfigApi, DeadReckoningConfigApi, PopupFieldConfigApi } from "../api/types";
 import type { VesselTableResponseApi, VesselTableFeatureApi } from "../api/vesselTableApi";
-import type { BaseMap, VesselConfig, VesselInfo, CountryPrefix, VesselDetails, VesselImage, EezRegion, CustomShape, StyleDefinition, StyleRule, VesselTableFilter, FilterCombinator, ClusterConfig, TrajectoryConfig, DeadReckoningConfig, PopupFieldConfig, MapControlSettings, VesselTableRow } from "./types";
+import type { VesselFlagApi, VesselFlagTypeApi } from "../api/types";
+import type { BaseMap, VesselConfig, VesselInfo, CountryPrefix, VesselDetails, VesselImage, EezRegion, CustomShape, StyleDefinition, StyleRule, VesselTableFilter, FilterCombinator, ClusterConfig, TrajectoryConfig, DeadReckoningConfig, PopupFieldConfig, MapControlSettings, VesselTableRow, VesselFlag, VesselFlagStatus } from "./types";
 
 export interface MapConfigDomain {
   selectedBaseMap: BaseMap;
@@ -379,4 +380,27 @@ function mapVesselTableFeature(feature: VesselTableFeatureApi): VesselTableRow {
     id: feature.id,
     properties: feature.properties,
   };
+}
+
+const VALID_FLAG_STATUSES: VesselFlagStatus[] = ["safe", "unsafe", "suspicious", "neutral", "unknown"];
+
+export function mapVesselFlagFromApi(raw: VesselFlagApi): VesselFlag {
+  const flagLower = (raw.flag ?? "unknown").toLowerCase() as VesselFlagStatus;
+  const flag: VesselFlagStatus = VALID_FLAG_STATUSES.includes(flagLower) ? flagLower : "unknown";
+  return {
+    id: raw.id,
+    vesselId: raw.vessel_id,
+    userId: raw.user_id,
+    flag,
+    comment: raw.comment ?? "",
+    createdAt: raw.created_at,
+  };
+}
+
+export function mapVesselFlagsFromApi(raw: VesselFlagApi[]): VesselFlag[] {
+  return raw.map(mapVesselFlagFromApi);
+}
+
+export function mapVesselFlagStatusToApi(status: VesselFlagStatus): VesselFlagTypeApi {
+  return status as VesselFlagTypeApi;
 }

@@ -150,3 +150,26 @@ export interface EezRegionApi {
   name: string;
   bounds: [number, number, number, number];
 }
+
+export type VesselFlagTypeApi = "safe" | "unsafe" | "suspicious" | "neutral" | "unknown";
+
+export interface VesselFlagApi {
+  id: string;
+  vessel_id: string;
+  user_id: string;
+  flag: string;
+  comment: string;
+  created_at: string;
+}
+
+export interface VesselFlagListResponseApi {
+  success: boolean;
+  data: VesselFlagApi[];
+  total: number;
+}
+
+export interface VesselFlagCreateRequestApi {
+  vessel_id: string;
+  flag: string;
+  comment: string;
+}

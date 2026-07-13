@@ -10,3 +10,5 @@ export { fetchVesselTable, fetchVesselCount, fetchVesselCategoryCounts, fetchUni
 export { fetchVesselDetails } from "./vesselDetailsApi";
 export { fetchVesselImage } from "./vesselImageApi";
 export type { VesselTableQueryApi, VesselTableResponseApi } from "./vesselTableApi";
+export { fetchVesselFlags, createVesselFlag, deleteVesselFlag } from "./vesselFlagsClient";
+export type { VesselFlagApi, VesselFlagListResponseApi, VesselFlagCreateRequestApi, VesselFlagTypeApi } from "./types";
