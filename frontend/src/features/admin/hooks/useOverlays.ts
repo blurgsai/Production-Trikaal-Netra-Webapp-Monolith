@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { fetchAdminOverlays } from "../api/overlaysApi";
-import type { OverlayAdminApiResponse } from "../api/overlaysApi";
+import { mapOverlaysFromApi } from "../model/mappers";
+import type { Overlay } from "../model/types";
 
 export { useUploadOverlay } from "./useUploadOverlay";
 export { useAddUrlOverlay } from "./useAddUrlOverlay";
@@ -9,8 +10,8 @@ export { useDeleteOverlay } from "./useDeleteOverlay";
 const OVERLAYS_QUERY_KEY = ["admin", "overlays"];
 
 export function useAdminOverlays() {
-  return useQuery<OverlayAdminApiResponse[]>({
+  return useQuery<Overlay[]>({
     queryKey: OVERLAYS_QUERY_KEY,
-    queryFn: fetchAdminOverlays,
+    queryFn: async () => mapOverlaysFromApi(await fetchAdminOverlays()),
   });
 }

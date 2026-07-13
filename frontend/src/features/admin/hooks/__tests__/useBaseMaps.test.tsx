@@ -126,7 +126,7 @@ describe("useAdminBaseMaps", () => {
     it("preserves source_type field", async () => {
       vi.mocked(fetchAdminBaseMaps).mockResolvedValue([makeBaseMap({ source_type: "url" })]);
       const { result } = renderHook(() => useAdminBaseMaps(), { wrapper: createWrapper() });
-      await waitFor(() => expect(result.current.data?.[0].source_type).toBe("url"));
+      await waitFor(() => expect(result.current.data?.[0].sourceType).toBe("url"));
     });
   });
 
@@ -274,8 +274,8 @@ describe("useAdminBaseMaps", () => {
         makeBaseMap({ id: "2", source_type: "url" }),
       ]);
       const { result } = renderHook(() => useAdminBaseMaps(), { wrapper: createWrapper() });
-      await waitFor(() => expect(result.current.data?.[0].source_type).toBe("upload"));
-      expect(result.current.data?.[1].source_type).toBe("url");
+      await waitFor(() => expect(result.current.data?.[0].sourceType).toBe("upload"));
+      expect(result.current.data?.[1].sourceType).toBe("url");
     });
     it("handles different type values", async () => {
       vi.mocked(fetchAdminBaseMaps).mockResolvedValue([
