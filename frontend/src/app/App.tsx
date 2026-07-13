@@ -12,8 +12,12 @@ import { EventsPage } from "./pages/EventsPage";
 import HistoricalPlaybackPage from "./pages/HistoricalPlaybackPage";
 import WorldMonitoringPage from "./pages/WorldMonitoringPage";
 import AppLayout from "./components/AppLayout";
+import AdminLayout from "./components/AdminLayout";
 import PublicRoute from "./routes/PublicRoute";
 import ProtectedRoute from "./routes/ProtectedRoute";
+import AdminRoute from "./routes/AdminRoute";
+import AdminPanelPage from "./pages/AdminPanelPage";
+import { UserManagement, MapManagement } from "@/features/admin";
 import { Dashboard, Threats, Articles } from "@/features/worldMonitoring";
 
 const queryClient = new QueryClient();
@@ -53,6 +57,18 @@ function App() {
                     <Route path="articles" element={<Articles />} />
                     <Route path="articles/:articleId" element={<Articles />} />
                   </Route>
+                </Route>
+                <Route
+                  element={
+                    <AdminRoute>
+                      <AdminLayout />
+                    </AdminRoute>
+                  }
+                >
+                  <Route path="/admin-panel" element={<UserManagement />} />
+                  <Route path="/admin-panel/map" element={<MapManagement />} />
+                  <Route path="/admin-panel/data" element={<AdminPanelPage />} />
+                  <Route path="/admin-panel/events" element={<AdminPanelPage />} />
                 </Route>
                 <Route path="*" element={<Navigate to="/login" replace />} />
               </Routes>

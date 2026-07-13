@@ -9,16 +9,16 @@ import {
 } from "@mui/material";
 import MapOutlinedIcon from "@mui/icons-material/MapOutlined";
 import CloseIcon from "@mui/icons-material/Close";
-import { baseMaps } from "../model/config";
 import type { BaseMap } from "../model/types";
 
 interface MapTypePanelProps {
   selectedBaseMap: BaseMap;
+  baseMaps: BaseMap[];
   onSelect: (map: BaseMap) => void;
   onClose: () => void;
 }
 
-function MapTypePanel({ selectedBaseMap, onSelect, onClose }: MapTypePanelProps) {
+function MapTypePanel({ selectedBaseMap, baseMaps, onSelect, onClose }: MapTypePanelProps) {
   return (
     <Box
       sx={{

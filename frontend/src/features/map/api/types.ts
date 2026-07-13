@@ -1,3 +1,26 @@
+export interface BaseMap {
+  id: string;
+  title: string;
+  url: string;
+  attribution: string;
+  preview?: string;
+}
+
+export interface OverlayLayerConfig {
+  id: string;
+  title: string;
+  type: "wms" | "tile" | "geojson" | "kml" | "mvt";
+  url?: string;
+  layers?: string;
+  styles?: string;
+  opacity?: number;
+  zIndex?: number;
+  attribution?: string;
+  color?: string;
+  isENC?: boolean;
+  bounds?: [number, number, number, number];
+}
+
 export interface CustomShapeApi {
   id: string;
   name: string;

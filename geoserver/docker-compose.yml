@@ -1,0 +1,101 @@
+# ──────────────────────────────────────────────────────────────────────────────
+# GeoServer + PostGIS + pgAdmin — Offline Service Replication
+#
+# Mirrors the GCP production setup (trikaalx-geoserver-dev) exactly:
+#   - kartoza/geoserver:2.23.0
+#   - postgis/postgis:15-3.3
+#   - dpage/pgadmin4:latest
+#
+# All env vars are sourced from .env (copy .env.example → .env).
+# ──────────────────────────────────────────────────────────────────────────────
+
+services:
+  postgis:
+    image: postgis/postgis:15-3.3
+    container_name: geoserver-postgis
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-vessel_tracking}
+    ports:
+      - "${POSTGIS_PORT:-5432}:5432"
+    volumes:
+      - postgis_data:/var/lib/postgresql/data
+      - ./config/postgis/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - geoserver-net
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: geoserver-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@example.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin}
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+    ports:
+      - "${PGADMIN_PORT:-5050}:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    restart: unless-stopped
+    depends_on:
+      postgis:
+        condition: service_healthy
+    networks:
+      - geoserver-net
+
+  geoserver:
+    image: kartoza/geoserver:2.23.0
+    container_name: geoserver
+    environment:
+      - GEOSERVER_ADMIN_USER=${GEOSERVER_ADMIN_USER:-admin}
+      - GEOSERVER_ADMIN_PASSWORD=${GEOSERVER_ADMIN_PASSWORD:-geoserver}
+      - GEOWEBCACHE_CACHE_DIR=/opt/geoserver/data_dir/gwc
+      - ENABLE_JSONP=true
+      - ENABLE_CORS=true
+      - CORS_ALLOWED_ORIGINS=*
+      - CORS_ALLOWED_METHODS=GET,POST,PUT,DELETE,HEAD,OPTIONS
+      - CORS_ALLOWED_HEADERS=*
+      - MAX_FILTER_RULES=20
+      - OPTIMIZE_LINE_WIDTH=false
+      - FOOTPRINTS_DATA_DIR=/opt/footprints_dir
+      - GEOSERVER_DATA_DIR=/opt/geoserver/data_dir
+      - GEOSERVER_FILEBROWSER_HIDEFS=false
+      - NETWORK_BACKEND=2
+      - GEOSERVER_LOG_LEVEL=DEFAULT:INFO
+      - GEOSERVER_LOG_LOCATION=/opt/geoserver/data_dir/logs/geoserver.log
+      - GEOSERVER_OPTS=-Djava.awt.headless=true -Dorg.geotools.referencing.forceXY=true -Djava.library.path=/usr/lib/jni -XX:+UseParallelGC -XX:ParallelGCThreads=4 -XX:SoftRefLRUPolicyMSPerMB=36000 -Xmx2g -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -XX:ParallelGCThreads=4 -XX:ConcGCThreads=2
+    volumes:
+      - geoserver_data:/opt/geoserver/data_dir
+      - ./logs:/opt/geoserver/data_dir/logs
+      - ./config/geoserver/global.xml:/opt/geoserver/data_dir/global.xml:ro
+      - ./config/geoserver/logging.xml:/opt/geoserver/data_dir/logging.xml:ro
+      - ./config/geoserver/gwc-gs.xml:/opt/geoserver/data_dir/gwc-gs.xml:ro
+    ports:
+      - "${GEOSERVER_PORT:-8080}:8080"
+    restart: always
+    networks:
+      - geoserver-net
+    depends_on:
+      postgis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "http://localhost:8080/geoserver"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+networks:
+  geoserver-net:
+    driver: bridge
+
+volumes:
+  postgis_data:
+  pgadmin_data:
+  geoserver_data:

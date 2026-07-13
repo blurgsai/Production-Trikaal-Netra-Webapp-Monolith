@@ -20,6 +20,7 @@ const DEFAULT_LAYOUT: MosaicNode<ViewTile> = {
 function MapPage() {
   const { fetchColumns, searchValues } = useVesselColumns();
   const {
+    baseMaps,
     selectedBaseMap,
     setSelectedBaseMap,
     activeLayers,
@@ -27,6 +28,7 @@ function MapPage() {
     getOrderedLayers,
     layerOrder,
     reorderLayers,
+    overlayLayers,
     vesselConfig,
     setVesselConfig,
     applyVesselStyle,
@@ -35,6 +37,9 @@ function MapPage() {
     setSelectedVessel,
     mapControlSettings,
     setMapControlSettings,
+    flyToBounds,
+    setFlyToBounds,
+    flyToLayer,
   } = useMapConfig();
 
   const [selectedVesselPosition, setSelectedVesselPosition] = useState<{ lat: number; lng: number } | null>(null);
@@ -268,14 +273,19 @@ function MapPage() {
             polygonFilters={polygonFilters}
             onPolygonFiltersChange={setPolygonFilters}
             mapControlSettings={mapControlSettings}
+            flyToBounds={flyToBounds}
+            onFlyDone={() => setFlyToBounds(null)}
           />
         )}
         {id === "layers" && (
           <LayerPanel
             selectedBaseMap={selectedBaseMap}
             onSelectBaseMap={setSelectedBaseMap}
+            baseMaps={baseMaps}
+            overlayLayers={overlayLayers}
             activeLayers={activeLayers}
             onToggle={toggleLayer}
+            onFlyTo={flyToLayer}
             layerOrder={layerOrder}
             onReorderLayers={reorderLayers}
           />

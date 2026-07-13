@@ -267,6 +267,7 @@ export const defenseTheme = createTheme({
       },
     },
     MuiDialog: {
+      defaultProps: { maxWidth: "sm" },
       styleOverrides: {
         paper: {
           backgroundColor: c.background.surfaceAlt,
@@ -327,9 +328,18 @@ export const defenseTheme = createTheme({
     MuiSwitch: {
       styleOverrides: {
         root: {
-          "& .MuiSwitch-track": { backgroundColor: c.border.strong },
+          "& .MuiSwitch-track": {
+            backgroundColor: c.border.strong,
+            opacity: 0.7,
+          },
+        },
+        thumb: {
+          backgroundColor: c.text.primary,
         },
         switchBase: {
+          "&.Mui-checked": {
+            "& .MuiSwitch-thumb": { backgroundColor: c.primary.main },
+          },
           "&.Mui-checked + .MuiSwitch-track": {
             backgroundColor: c.primary.main,
             opacity: 0.5,
@@ -361,7 +371,7 @@ export const defenseTheme = createTheme({
     },
     MuiDialogContent: {
       styleOverrides: {
-        root: { padding: 0 },
+        root: { padding: "8px 24px 16px" },
       },
     },
   },

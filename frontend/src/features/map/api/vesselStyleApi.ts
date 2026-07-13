@@ -38,22 +38,31 @@ async function uploadSvgResource(resourceName: string, svgContent: string): Prom
   return fallbackRes.status === 200 || fallbackRes.status === 201;
 }
 
-async function createGeoserverStyle(styleName: string, sldXml: string): Promise<void> {
-  await fetch(`${REST_BASE}/styles/${styleName}`, {
-    method: "DELETE",
+async function upsertGeoserverStyle(styleName: string, sldXml: string): Promise<void> {
+  const existsRes = await fetch(`${REST_BASE}/styles/${styleName}.json`, {
     headers: { Authorization: authHeader() },
-  }).catch(() => {});
-
-  const createUrl = `${REST_BASE}/styles?name=${styleName}`;
-  const res = await fetch(createUrl, {
-    method: "POST",
-    headers: { "Content-Type": "application/vnd.ogc.sld+xml", Authorization: authHeader() },
-    body: sldXml,
   });
 
-  if (res.status !== 200 && res.status !== 201) {
-    const text = await res.text().catch(() => "");
-    throw new Error(`Failed to create GeoServer style: ${res.status} ${text}`);
+  if (existsRes.ok) {
+    const updateRes = await fetch(`${REST_BASE}/styles/${styleName}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/vnd.ogc.sld+xml", Authorization: authHeader() },
+      body: sldXml,
+    });
+    if (updateRes.status !== 200 && updateRes.status !== 201) {
+      const text = await updateRes.text().catch(() => "");
+      throw new Error(`Failed to update GeoServer style: ${updateRes.status} ${text}`);
+    }
+  } else {
+    const createRes = await fetch(`${REST_BASE}/styles?name=${styleName}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/vnd.ogc.sld+xml", Authorization: authHeader() },
+      body: sldXml,
+    });
+    if (createRes.status !== 200 && createRes.status !== 201) {
+      const text = await createRes.text().catch(() => "");
+      throw new Error(`Failed to create GeoServer style: ${createRes.status} ${text}`);
+    }
   }
 }
 
@@ -76,14 +85,14 @@ export async function validateStyleExists(styleName: string): Promise<boolean> {
   }
 }
 
-export async function applyVesselStyle(styleName: string, sld: SldResult): Promise<string> {
-  const finalStyleName = styleName || `user_vessel_style_${Date.now()}`;
+export async function applyVesselStyle(userId: string, sld: SldResult): Promise<string> {
+  const finalStyleName = `user_${userId}_vessel_style`;
 
   for (const asset of sld.assets) {
     await uploadSvgResource(asset.resourceName, asset.svgContent);
   }
 
-  await createGeoserverStyle(finalStyleName, sld.sldXml);
+  await upsertGeoserverStyle(finalStyleName, sld.sldXml);
   await clearGeoserverCache();
 
   return finalStyleName;

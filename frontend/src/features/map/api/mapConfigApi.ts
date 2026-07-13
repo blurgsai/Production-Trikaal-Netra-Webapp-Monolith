@@ -1,42 +1,34 @@
+import { axiosInstance } from "@/shared/api";
 import type { MapConfigApiResponse } from "./types";
 
-const STORAGE_KEY = "trikaal_map_config";
+const EMPTY_CONFIG: MapConfigApiResponse = {
+  selected_base_map_id: null,
+  active_layer_ids: null,
+  layer_order: null,
+  vessel_config: null,
+  map_control_settings: null,
+};
 
-export function loadMapConfig(): MapConfigApiResponse {
+export async function loadMapConfig(): Promise<MapConfigApiResponse> {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) {
-      return {
-        selected_base_map_id: null,
-        active_layer_ids: null,
-        layer_order: null,
-        vessel_config: null,
-        map_control_settings: null,
-      };
-    }
-    const parsed = JSON.parse(raw) as MapConfigApiResponse;
+    const res = await axiosInstance.get<MapConfigApiResponse>("/users/me/map-config");
+    const data = res.data;
     return {
-      selected_base_map_id: parsed.selected_base_map_id ?? null,
-      active_layer_ids: parsed.active_layer_ids ?? null,
-      layer_order: parsed.layer_order ?? null,
-      vessel_config: parsed.vessel_config ?? null,
-      map_control_settings: parsed.map_control_settings ?? null,
+      selected_base_map_id: data.selected_base_map_id ?? null,
+      active_layer_ids: data.active_layer_ids ?? null,
+      layer_order: data.layer_order ?? null,
+      vessel_config: data.vessel_config ?? null,
+      map_control_settings: data.map_control_settings ?? null,
     };
   } catch {
-    return {
-      selected_base_map_id: null,
-      active_layer_ids: null,
-      layer_order: null,
-      vessel_config: null,
-      map_control_settings: null,
-    };
+    return { ...EMPTY_CONFIG };
   }
 }
 
-export function saveMapConfig(config: MapConfigApiResponse): void {
+export async function saveMapConfig(config: MapConfigApiResponse): Promise<void> {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
+    await axiosInstance.put("/users/me/map-config", config);
   } catch {
-    // storage quota exceeded or private mode — silently fail
+    // network error — silently fail, will retry on next change
   }
 }
