@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI
 
 from src.features.users.router import router as user_router
+from src.features.vessel_flags.router import router as vessel_flags_router
 from src.features.vessels.router import router as vessel_router
 from src.features.world_monitor.router import router as world_monitor_router
 from src.shared.config import setup_cors
@@ -28,6 +29,7 @@ setup_cors(app)
 
 app.include_router(user_router)
 app.include_router(vessel_router)
+app.include_router(vessel_flags_router)
 app.include_router(world_monitor_router)
 
 if __name__ == "__main__":

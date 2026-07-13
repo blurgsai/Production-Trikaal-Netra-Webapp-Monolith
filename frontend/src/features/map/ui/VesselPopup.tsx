@@ -20,6 +20,8 @@ import type { VesselInfo, PopupFieldConfig } from "../model/types";
 import { useVesselDetails } from "../hooks/useVesselDetails";
 import { useVesselImage } from "../hooks/useVesselImage";
 import VesselDetailsDialog from "./VesselDetailsDialog";
+import ThreatMatrix from "./ThreatMatrix";
+import VesselFlags from "./VesselFlags";
 
 interface VesselPopupProps {
   vessel: VesselInfo;
@@ -217,6 +219,18 @@ function VesselPopup({ vessel, latlng, popupFields, onClose, onPopupFieldsChange
               ))}
           </>
         )}
+      </CardContent>
+
+      <Divider />
+
+      <CardContent sx={{ py: 1.5 }}>
+        <ThreatMatrix vesselId={vessel.id} />
+      </CardContent>
+
+      <Divider />
+
+      <CardContent sx={{ py: 1.5 }}>
+        <VesselFlags vesselId={vessel.id} />
       </CardContent>
 
       <VesselDetailsDialog

@@ -186,3 +186,14 @@ export interface MapControlSettings {
   minimap: boolean;
   statusbar: boolean;
 }
+
+export type VesselFlagStatus = "safe" | "unsafe" | "suspicious" | "neutral" | "unknown";
+
+export interface VesselFlag {
+  id: string;
+  vesselId: string;
+  userId: string;
+  flag: VesselFlagStatus;
+  comment: string;
+  createdAt: string;
+}
