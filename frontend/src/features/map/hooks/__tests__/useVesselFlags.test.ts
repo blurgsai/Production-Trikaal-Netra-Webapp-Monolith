@@ -620,7 +620,7 @@ describe("useVesselFlags", () => {
     it("clears flags when vesselId changes to undefined", async () => {
       vi.mocked(fetchVesselFlags).mockResolvedValue(apiResponse([apiFlag()]));
       const { result, rerender } = renderHook(({ id }: { id: string | undefined }) => useVesselFlags(id), {
-        initialProps: { id: "v1" },
+        initialProps: { id: "v1" } as { id: string | undefined },
       });
       await waitFor(() => expect(result.current.flags).toHaveLength(1));
 
@@ -631,7 +631,7 @@ describe("useVesselFlags", () => {
     it("clears flags when vesselId changes to empty string", async () => {
       vi.mocked(fetchVesselFlags).mockResolvedValue(apiResponse([apiFlag()]));
       const { result, rerender } = renderHook(({ id }: { id: string | undefined }) => useVesselFlags(id), {
-        initialProps: { id: "v1" },
+        initialProps: { id: "v1" } as { id: string | undefined },
       });
       await waitFor(() => expect(result.current.flags).toHaveLength(1));
 
