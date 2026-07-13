@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 
@@ -11,7 +11,7 @@ async def insert_flag(db, vessel_id: str, user_id: str, flag: str, comment: str)
         "user_id": user_id,
         "flag": flag,
         "comment": comment,
-        "created_at": datetime.now(timezone.utc),
+        "created_at": datetime.now(UTC),
     }
     result = await collection.insert_one(doc)
     doc["_id"] = result.inserted_id

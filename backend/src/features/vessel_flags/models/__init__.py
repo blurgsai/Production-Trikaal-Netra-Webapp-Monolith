@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 from pydantic import BaseModel, Field
@@ -34,7 +34,7 @@ def map_flag_from_doc(doc: dict[str, Any]) -> dict[str, Any]:
     if isinstance(created, datetime):
         created_iso = created.isoformat()
     else:
-        created_iso = str(created) if created else datetime.now(timezone.utc).isoformat()
+        created_iso = str(created) if created else datetime.now(UTC).isoformat()
 
     return {
         "id": str(doc["_id"]),
