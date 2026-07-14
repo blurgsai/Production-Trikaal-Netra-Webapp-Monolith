@@ -17,7 +17,7 @@ import PublicRoute from "./routes/PublicRoute";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import AdminRoute from "./routes/AdminRoute";
 import AdminPanelPage from "./pages/AdminPanelPage";
-import { UserManagement, MapManagement } from "@/features/admin";
+import { UserManagement, MapManagement, DataManagement } from "@/features/admin";
 import { Dashboard, Threats, Articles } from "@/features/worldMonitoring";
 
 const queryClient = new QueryClient();
@@ -67,7 +67,7 @@ function App() {
                 >
                   <Route path="/admin-panel" element={<UserManagement />} />
                   <Route path="/admin-panel/map" element={<MapManagement />} />
-                  <Route path="/admin-panel/data" element={<AdminPanelPage />} />
+                  <Route path="/admin-panel/data" element={<DataManagement />} />
                   <Route path="/admin-panel/events" element={<AdminPanelPage />} />
                 </Route>
                 <Route path="*" element={<Navigate to="/login" replace />} />

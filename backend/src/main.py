@@ -8,6 +8,7 @@ from fastapi import FastAPI
 from src.features.users.router import router as user_router
 from src.features.vessels.router import router as vessel_router
 from src.features.world_monitor.router import router as world_monitor_router
+from src.features.data_management.router import router as data_management_router
 from src.shared.config import setup_cors
 
 load_dotenv()
@@ -29,6 +30,7 @@ setup_cors(app)
 app.include_router(user_router)
 app.include_router(vessel_router)
 app.include_router(world_monitor_router)
+app.include_router(data_management_router)
 
 if __name__ == "__main__":
     uvicorn.run("src.main:app", host="0.0.0.0", port=5000, reload=True)
