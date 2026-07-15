@@ -1,0 +1,12 @@
+name: Staging Branch CI
+
+on:
+  pull_request:
+    branches: [staging]
+  push:
+    branches: [staging]
+
+jobs:
+  staging-checks:
+    uses: blurgsai/ci-workflows-software-team/.github/workflows/staging-ci.yml@main
+    secrets: inherit
