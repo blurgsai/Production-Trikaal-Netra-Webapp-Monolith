@@ -1,0 +1,12 @@
+name: Block Main Branch
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  block:
+    uses: blurgsai/ci-workflows-software-team/.github/workflows/block-main.yml@main
+    secrets: inherit
