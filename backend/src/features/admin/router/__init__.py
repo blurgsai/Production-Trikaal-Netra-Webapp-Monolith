@@ -1,11 +1,11 @@
-import zipfile
 import io
+import zipfile
 from datetime import datetime
-from typing import Optional
-from fastapi import APIRouter, Depends, Form, HTTPException, Query, status, UploadFile, File
+
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile, status
 from fastapi.responses import Response
 
-from src.features.data_management.models import (
+from src.features.admin.models import (
     DatabaseUploadCreateRequest,
     DatabaseUploadResponse,
     DatabaseUploadUpdateRequest,
@@ -14,7 +14,7 @@ from src.features.data_management.models import (
     VesselImageResponse,
     VesselImageUpdateRequest,
 )
-from src.features.data_management.services import (
+from src.features.admin.services import (
     bulk_delete_database_uploads,
     bulk_delete_vessel_images,
     create_database_upload,
@@ -39,8 +39,8 @@ router = APIRouter(prefix="/admin/data-management", tags=["Data Management"])
 # Database Uploads Endpoints
 @router.get("/database-uploads", response_model=PaginatedDatabaseUploadResponse)
 async def admin_list_database_uploads(
-    database_name: Optional[str] = Query(None),
-    search: Optional[str] = Query(None),
+    database_name: str | None = Query(None),
+    search: str | None = Query(None),
     page: int = Query(0, ge=0),
     page_size: int = Query(25, ge=1, le=100),
     db=Depends(get_db),
@@ -165,8 +165,8 @@ async def admin_get_database_names(
 # Vessel Images Endpoints
 @router.get("/vessel-images", response_model=PaginatedVesselImageResponse)
 async def admin_list_vessel_images(
-    search: Optional[str] = Query(None),
-    mime_type: Optional[str] = Query(None),
+    search: str | None = Query(None),
+    mime_type: str | None = Query(None),
     page: int = Query(0, ge=0),
     page_size: int = Query(25, ge=1, le=100),
     gridfs=Depends(get_gridfs),
@@ -276,11 +276,11 @@ async def admin_create_vessel_image(
                             "uploaded_at": now_iso,
                             "updated_at": now_iso,
                         })
-            except zipfile.BadZipFile:
+            except zipfile.BadZipFile as exc:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail="Invalid zip file",
-                )
+                ) from exc
             continue
 
         # --- Image file handling ---

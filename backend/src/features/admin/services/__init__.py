@@ -1,6 +1,7 @@
-from bson import ObjectId
-from datetime import datetime
 import io
+from datetime import datetime
+
+from bson import ObjectId
 
 
 async def list_database_uploads(
@@ -42,11 +43,11 @@ async def list_database_uploads(
 async def get_database_upload(db, upload_id: str) -> dict | None:
     if not ObjectId.is_valid(upload_id):
         return None
-    
+
     upload = await db.vessel_data_uploads.find_one({"_id": ObjectId(upload_id)})
     if not upload:
         return None
-    
+
     return {
         "_id": str(upload["_id"]),
         "database_name": upload.get("database_name", ""),
@@ -80,7 +81,7 @@ async def create_database_upload(db, database_name: str, mmsi: str, data: dict) 
 async def update_database_upload(db, upload_id: str, updates: dict) -> dict | None:
     if not ObjectId.is_valid(upload_id):
         return None
-    
+
     set_values: dict = {"updated_at": datetime.utcnow()}
     if "database_name" in updates and updates["database_name"] is not None:
         set_values["database_name"] = updates["database_name"]
@@ -88,13 +89,13 @@ async def update_database_upload(db, upload_id: str, updates: dict) -> dict | No
         set_values["mmsi"] = updates["mmsi"]
     if "data" in updates and updates["data"] is not None:
         set_values["data"] = updates["data"]
-    
+
     result = await db.vessel_data_uploads.update_one(
         {"_id": ObjectId(upload_id)}, {"$set": set_values}
     )
     if result.matched_count == 0:
         return None
-    
+
     return await get_database_upload(db, upload_id)
 
 
