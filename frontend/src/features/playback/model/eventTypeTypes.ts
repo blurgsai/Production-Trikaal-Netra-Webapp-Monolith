@@ -74,3 +74,20 @@ export interface DarkAfterDepartureEvent {
   // [lat, lon] rings — ready for react-leaflet; outer array = rings.
   portPolygonPositions: [number, number][][] | null;
 }
+
+// ── port_intrusion ────────────────────────────────────────────────────────
+
+export interface PortIntrusionEvent {
+  vesselIds: string[];
+  portId: string | null;
+  portName: string | null;
+  restrictionType: string | null;
+  intrusionDurationSec: number;
+  violationCount: number;
+  severity: string;
+  // Restricted-zone boundary attached by the backend as a `port_polygon` extra
+  // (same mechanism as geofence_intrusion's `geofence_polygon`). null when the
+  // response carries no zone geometry.
+  // [lat, lon] rings — ready for react-leaflet; outer array = rings (first = outer, rest = holes).
+  polygonPositions: [number, number][][] | null;
+}

@@ -31,12 +31,14 @@ import GeofenceIntrusionPlugin from './plugins/geofenceIntrusion';
 import DarkShipPlugin from './plugins/darkShip';
 import SignalLostPlugin from './plugins/signalLost';
 import DarkAfterDeparturePlugin from './plugins/darkAfterDeparture';
+import PortIntrusionPlugin from './plugins/portIntrusion';
 
 export const EVENT_TYPE_REGISTRY: Record<string, EventPlugin> = {
   geofence_intrusion: GeofenceIntrusionPlugin,
   dark_ship: DarkShipPlugin,
   signal_lost: SignalLostPlugin,
   dark_after_departure: DarkAfterDeparturePlugin,
+  port_intrusion: PortIntrusionPlugin,
 };
 
 // ── Accessors ─────────────────────────────────────────────────────────────────

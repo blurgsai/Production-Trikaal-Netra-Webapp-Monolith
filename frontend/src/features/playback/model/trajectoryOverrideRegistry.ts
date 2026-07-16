@@ -3,6 +3,7 @@ import {
   getDarkShipTrajectoryOverrides,
   getSignalLostTrajectoryOverrides,
   getDarkAfterDepartureTrajectoryOverrides,
+  getPortIntrusionTrajectoryOverrides,
 } from './eventTypeMappers';
 import type { EventDetailsBase, TimeWindow, TrajectoryOverrideFn, TrajectoryOverrideRule } from './types';
 
@@ -16,6 +17,7 @@ const TRAJECTORY_OVERRIDE_REGISTRY: Record<string, TrajectoryOverrideFn> = {
   dark_ship: getDarkShipTrajectoryOverrides,
   signal_lost: getSignalLostTrajectoryOverrides,
   dark_after_departure: getDarkAfterDepartureTrajectoryOverrides,
+  port_intrusion: getPortIntrusionTrajectoryOverrides,
 };
 
 export function getTrajectoryOverridesForType(

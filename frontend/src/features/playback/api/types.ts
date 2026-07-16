@@ -143,3 +143,28 @@ export interface DarkAfterDepartureInformationRaw {
 export interface DarkAfterDepartureEventDetailsRaw extends EventDetailsBaseRaw {
   information: DarkAfterDepartureInformationRaw;
 }
+
+// ── port_intrusion ─────────────────────────────────────────────────────────
+
+// Polygon fetched by backend (keyed off information.port_id) from a separate
+// collection and attached as the top-level `port_polygon` extra — same
+// mechanism as geofence_intrusion's geofence_polygon. Reuses the shared
+// GeofencePolygonCoordinatesRaw geometry above rather than a separate file.
+export interface PortPolygonRaw {
+  port_id?: string;
+  port_name?: string;
+  polygon: GeofencePolygonCoordinatesRaw;
+}
+
+// Per data-team schema — port_intrusion.information has exactly 4 fields
+export interface PortIntrusionInformationRaw {
+  [key: string]: unknown;
+  port_id?: string;
+  restriction_type?: string;
+  intrusion_duration_seconds?: number;
+  violation_count?: number;
+}
+
+export interface PortIntrusionEventDetailsRaw extends EventDetailsBaseRaw {
+  information: PortIntrusionInformationRaw;
+}

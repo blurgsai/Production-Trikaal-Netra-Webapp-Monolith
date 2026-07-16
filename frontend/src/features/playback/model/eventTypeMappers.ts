@@ -5,6 +5,7 @@ import type {
   DarkShipEvent,
   SignalLostEvent,
   DarkAfterDepartureEvent,
+  PortIntrusionEvent,
 } from './eventTypeTypes';
 import type { EventDetailsBase, TimeWindow, TrajectoryOverrideRule } from './types';
 
@@ -156,6 +157,59 @@ export function getSignalLostTrajectoryOverrides(
   timeWindow: TimeWindow,
 ): Record<string, TrajectoryOverrideRule[]> | null {
   const color = SIGNAL_LOST_SEVERITY_COLOR[eventDetails.severity] ?? '#ff4444';
+
+  const start = parseEventDate(eventDetails.startTime) ?? timeWindow.eventStartMs;
+  const end   = parseEventDate(eventDetails.endTime)   ?? timeWindow.eventEndMs ?? timeWindow.queryEndMs;
+
+  if (!eventDetails.vessels.length) return null;
+
+  return Object.fromEntries(
+    eventDetails.vessels.map(vesselId => [
+      vesselId,
+      [{ start, end, style: { color, weight: 3, opacity: 0.9 } }],
+    ]),
+  );
+}
+
+// ── port_intrusion ─────────────────────────────────────────────────────────
+
+// Reuses the inline parseGeoJsonToPositions / GeofencePolygonExtras from the
+// geofence_intrusion section above — the port zone geometry arrives on the same
+// `{ polygon }` wrapper, just under a different extras key and with port_id /
+// port_name instead of geofence_id / asset_name.
+export function mapPortIntrusionEventFromDetails(
+  base: EventDetailsBase,
+  extras: Record<string, unknown> = {},
+): PortIntrusionEvent {
+  const info     = base.information as Record<string, unknown>;
+  const portPoly = extras['port_polygon'] as (GeofencePolygonExtras & { port_id?: string; port_name?: string }) | undefined;
+
+  return {
+    vesselIds:            base.vessels,
+    portId:               (info['port_id'] as string | undefined) ?? portPoly?.port_id ?? null,
+    portName:             (portPoly?.port_name as string | undefined) ?? null,
+    restrictionType:      (info['restriction_type'] as string | undefined)      ?? null,
+    intrusionDurationSec: (info['intrusion_duration_seconds'] as number | undefined) ?? 0,
+    violationCount:       (info['violation_count'] as number | undefined)        ?? 1,
+    severity:             base.severity,
+    polygonPositions:     parseGeoJsonToPositions(portPoly),
+  };
+}
+
+// Same convention as the rest — backend model already decides severity, reuse
+// it rather than re-deriving our own threshold from violation_count.
+const PORT_INTRUSION_SEVERITY_COLOR: Record<string, string> = {
+  high:     '#ff4444',
+  medium:   '#ff8c00',
+  low:      '#42a5f5',
+  resolved: '#4caf50',
+};
+
+export function getPortIntrusionTrajectoryOverrides(
+  eventDetails: EventDetailsBase,
+  timeWindow: TimeWindow,
+): Record<string, TrajectoryOverrideRule[]> | null {
+  const color = PORT_INTRUSION_SEVERITY_COLOR[eventDetails.severity] ?? '#ff4444';
 
   const start = parseEventDate(eventDetails.startTime) ?? timeWindow.eventStartMs;
   const end   = parseEventDate(eventDetails.endTime)   ?? timeWindow.eventEndMs ?? timeWindow.queryEndMs;

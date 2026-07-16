@@ -1,0 +1,72 @@
+{
+  "event_details": {
+    "type": "port_intrusion",
+    "location": {
+      "type": "Point",
+      "coordinates": [66.8, 24.2]
+    },
+    "timestamp": "2024-06-15T12:20:00Z",
+    "start_time": "2024-06-15T11:35:00Z",
+    "end_time": "2024-06-15T12:20:00Z",
+    "duration": {
+      "value": 2700,
+      "unit": "seconds"
+    },
+    "vessels_involved": ["366168522"],
+    "severity": "high",
+    "model": "heuristic",
+    "status": "detected",
+    "temporality": "bounded",
+    "event_source": "spark",
+    "information": {
+      "port_id": "pak_eez_001",
+      "restriction_type": "military_zone",
+      "intrusion_duration_seconds": 2700,
+      "violation_count": 1
+    }
+  },
+  "port_polygon": {
+    "port_id": "pak_eez_001",
+    "port_name": "Gwadar Restricted Military Zone",
+    "polygon": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [66.1, 23.9],
+          [67.5, 23.9],
+          [67.6, 24.2],
+          [67.3, 24.6],
+          [66.4, 24.6],
+          [66.0, 24.2],
+          [66.1, 23.9]
+        ]
+      ]
+    }
+  },
+  "trajectories": {
+    "1718444100000": { "366168522": { "latitude": 24.05, "longitude": 64.50, "speed_mps": 6.0, "heading": 78, "course": 78 } },
+    "1718445000000": { "366168522": { "latitude": 24.06, "longitude": 64.85, "speed_mps": 6.0, "heading": 78, "course": 78 } },
+    "1718445900000": { "366168522": { "latitude": 24.07, "longitude": 65.20, "speed_mps": 6.0, "heading": 78, "course": 78 } },
+    "1718446800000": { "366168522": { "latitude": 24.08, "longitude": 65.55, "speed_mps": 6.0, "heading": 78, "course": 78 } },
+    "1718447700000": { "366168522": { "latitude": 24.09, "longitude": 65.85, "speed_mps": 6.0, "heading": 78, "course": 78 } },
+    "1718448600000": { "366168522": { "latitude": 24.10, "longitude": 66.10, "speed_mps": 6.0, "heading": 78, "course": 78 } },
+    "1718449500000": { "366168522": { "latitude": 24.12, "longitude": 66.30, "speed_mps": 6.0, "heading": 78, "course": 78 } },
+    "1718450400000": { "366168522": { "latitude": 24.15, "longitude": 66.55, "speed_mps": 6.0, "heading": 78, "course": 78 } },
+    "1718451300000": { "366168522": { "latitude": 24.18, "longitude": 66.75, "speed_mps": 6.0, "heading": 78, "course": 78 } },
+    "1718452200000": { "366168522": { "latitude": 24.20, "longitude": 66.95, "speed_mps": 6.0, "heading": 78, "course": 78 } },
+    "1718453100000": { "366168522": { "latitude": 24.19, "longitude": 67.15, "speed_mps": 6.0, "heading": 78, "course": 78 } },
+    "1718454000000": { "366168522": { "latitude": 24.15, "longitude": 67.30, "speed_mps": 6.0, "heading": 78, "course": 78 } },
+    "1718454900000": { "366168522": { "latitude": 24.10, "longitude": 67.50, "speed_mps": 6.0, "heading": 78, "course": 78 } },
+    "1718455800000": { "366168522": { "latitude": 24.05, "longitude": 67.75, "speed_mps": 6.0, "heading": 78, "course": 78 } },
+    "1718456700000": { "366168522": { "latitude": 24.00, "longitude": 68.00, "speed_mps": 6.0, "heading": 78, "course": 78 } },
+    "1718457600000": { "366168522": { "latitude": 23.95, "longitude": 68.25, "speed_mps": 6.0, "heading": 78, "course": 78 } },
+    "1718461200000": { "366168522": { "latitude": 23.85, "longitude": 68.75, "speed_mps": 6.0, "heading": 78, "course": 78 } }
+  },
+  "time_window": {
+    "query_start": 1718444100000,
+    "query_end": 1718461200000,
+    "event_start": 1718451300000,
+    "event_end": 1718454000000,
+    "buffer_hours": 2
+  }
+}
