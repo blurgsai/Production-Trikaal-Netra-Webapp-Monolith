@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { deleteVesselImage } from "../api/dataManagementApi";
+import { deleteVesselImage } from "../api/vesselImagesApi";
 import { VESSEL_IMAGES_QUERY_KEY } from "./useVesselImages";
 
 export function useDeleteVesselImage() {

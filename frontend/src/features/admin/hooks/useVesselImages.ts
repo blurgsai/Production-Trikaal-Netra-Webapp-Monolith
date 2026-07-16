@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
-import { fetchVesselImages } from "../api/dataManagementApi";
-import { mapVesselImagesFromApi } from "../model/dataManagementMappers";
-import type { PaginatedVesselImages } from "../model/dataManagementTypes";
+import { fetchVesselImages, getVesselImageUrl } from "../api/vesselImagesApi";
+import { mapVesselImagesFromApi } from "../model/mappers";
+import type { PaginatedVesselImages } from "../model/vesselImageTypes";
 
 export const VESSEL_IMAGES_QUERY_KEY = ["admin", "data-management", "vessel-images"];
 
@@ -15,7 +15,7 @@ export interface VesselImagesParams {
 export function useVesselImages(params: VesselImagesParams = {}) {
   const { search, mimeType, page = 0, pageSize = 25 } = params;
 
-  return useQuery<PaginatedVesselImages>({
+  const query = useQuery<PaginatedVesselImages>({
     queryKey: [...VESSEL_IMAGES_QUERY_KEY, search, mimeType, page, pageSize],
     queryFn: async () => {
       const raw = await fetchVesselImages({
@@ -30,4 +30,6 @@ export function useVesselImages(params: VesselImagesParams = {}) {
       };
     },
   });
+
+  return { ...query, getVesselImageUrl };
 }

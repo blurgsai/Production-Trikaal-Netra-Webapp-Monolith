@@ -43,7 +43,7 @@ import { useCreateDatabaseUpload } from "../hooks/useCreateDatabaseUpload";
 import { useUpdateDatabaseUpload } from "../hooks/useUpdateDatabaseUpload";
 import { useDeleteDatabaseUpload } from "../hooks/useDeleteDatabaseUpload";
 import { useBulkDeleteDatabaseUploads } from "../hooks/useBulkDeleteDatabaseUploads";
-import type { DatabaseUpload, DatabaseUploadCreateRequest, DatabaseUploadUpdateRequest } from "../model/dataManagementTypes";
+import type { DatabaseUpload, DatabaseUploadCreateRequest, DatabaseUploadUpdateRequest } from "../model/databaseUploadTypes";
 
 const emptyCreate: DatabaseUploadCreateRequest = { databaseName: "", mmsiField: "", file: new File([], "") };
 
@@ -82,15 +82,13 @@ export function DatabaseUploadsTab() {
 
   const { data: databaseNames = [] } = useDatabaseNames();
 
-
-
   const { data, isLoading, isFetching, isError, refetch } = useDatabaseUploads({
     databaseName: selectedDatabaseName || undefined,
     search: debouncedSearch || undefined,
     page,
     pageSize: rowsPerPage,
   });
-  const uploads = data?.items ?? [];
+  const uploads = useMemo(() => data?.items ?? [], [data?.items]);
   const totalCount = data?.total ?? 0;
 
   const [createOpen, setCreateOpen] = useState(false);
@@ -740,7 +738,7 @@ export function DatabaseUploadsTab() {
 
               {selectedUpload.data &&
                 (Array.isArray(selectedUpload.data)
-                  ? selectedUpload.data.flatMap((record: Record<string, any>, idx: number) =>
+                  ? selectedUpload.data.flatMap((record: Record<string, unknown>, idx: number) =>
                       Object.entries(record).map(([key, value]) => (
                         <Box key={`${idx}-${key}`}>
                           <Typography variant="overline" color="text.secondary">

@@ -47,10 +47,22 @@ import { useCreateVesselImage } from "../hooks/useCreateVesselImage";
 import { useUpdateVesselImage } from "../hooks/useUpdateVesselImage";
 import { useDeleteVesselImage } from "../hooks/useDeleteVesselImage";
 import { useBulkDeleteVesselImages } from "../hooks/useBulkDeleteVesselImages";
-import { getVesselImageUrl } from "../api/dataManagementApi";
-import type { VesselImage, VesselImageUpdateRequest } from "../model/dataManagementTypes";
+import type { VesselImage, VesselImageUpdateRequest } from "../model/vesselImageTypes";
 
 const emptyUpdate: VesselImageUpdateRequest = { imo: "" };
+
+function getRequestErrorMessage(error: unknown, fallback: string): string {
+  if (error instanceof Error) return error.message;
+  if (typeof error !== "object" || error === null) return fallback;
+
+  const requestError = error as {
+    message?: unknown;
+    response?: { data?: { detail?: unknown } };
+  };
+  const detail = requestError.response?.data?.detail;
+  if (typeof detail === "string") return detail;
+  return typeof requestError.message === "string" ? requestError.message : fallback;
+}
 
 export function VesselImagesTab() {
   const theme = useTheme();
@@ -78,13 +90,13 @@ export function VesselImagesTab() {
     return () => clearTimeout(timer);
   }, [search]);
 
-  const { data, isLoading, isFetching, isError, refetch } = useVesselImages({
+  const { data, isLoading, isFetching, isError, refetch, getVesselImageUrl } = useVesselImages({
     search: debouncedSearch || undefined,
     mimeType: mimeTypeFilter !== "all" ? mimeTypeFilter : undefined,
     page,
     pageSize: rowsPerPage,
   });
-  const images = data?.items ?? [];
+  const images = useMemo(() => data?.items ?? [], [data?.items]);
   const totalCount = data?.total ?? 0;
 
   const [createOpen, setCreateOpen] = useState(false);
@@ -166,7 +178,7 @@ export function VesselImagesTab() {
     return () => {
       if (revoke) URL.revokeObjectURL(revoke);
     };
-  }, [selectedImage]);
+  }, [selectedImage, getVesselImageUrl]);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value);
@@ -279,8 +291,8 @@ export function VesselImagesTab() {
           message: `Successfully uploaded ${results.length} image${results.length !== 1 ? "s" : ""} from ZIP`,
           severity: "success",
         });
-      } catch (err: any) {
-        setCreateError(err?.response?.data?.detail || err?.message || "Failed to upload ZIP");
+      } catch (err: unknown) {
+        setCreateError(getRequestErrorMessage(err, "Failed to upload ZIP"));
       }
       return;
     }
@@ -309,8 +321,8 @@ export function VesselImagesTab() {
         message: `Successfully uploaded ${results.length} image${results.length !== 1 ? "s" : ""}`,
         severity: "success",
       });
-    } catch (err: any) {
-      setCreateError(err?.response?.data?.detail || err?.message || "Failed to upload images");
+    } catch (err: unknown) {
+      setCreateError(getRequestErrorMessage(err, "Failed to upload images"));
     }
   };
 

@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { bulkDeleteVesselImages } from "../api/dataManagementApi";
+import { bulkDeleteVesselImages } from "../api/vesselImagesApi";
 import { VESSEL_IMAGES_QUERY_KEY } from "./useVesselImages";
 import { VESSEL_IMAGE_TYPES_QUERY_KEY } from "./useVesselImageTypes";
 

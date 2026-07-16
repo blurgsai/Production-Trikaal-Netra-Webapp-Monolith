@@ -1,8 +1,8 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createDatabaseUpload } from "../api/dataManagementApi";
+import { createDatabaseUpload } from "../api/databaseUploadsApi";
 import { DATABASE_UPLOADS_QUERY_KEY } from "./useDatabaseUploads";
 import { DATABASE_NAMES_QUERY_KEY } from "./useDatabaseNames";
-import type { DatabaseUploadCreateRequest } from "../model/dataManagementTypes";
+import type { DatabaseUploadCreateRequest } from "../model/databaseUploadTypes";
 
 export function useCreateDatabaseUpload() {
   const queryClient = useQueryClient();

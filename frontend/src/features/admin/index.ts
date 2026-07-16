@@ -4,4 +4,13 @@ export { UserManagement } from "./ui/UserManagement";
 export { MapManagement } from "./ui/MapManagement";
 export { default as AdminSidebar } from "./ui/AdminSidebar";
 export { default as DataManagement } from "./ui/DataManagement";
-export type { DatabaseUpload, DatabaseUploadCreateRequest, DatabaseUploadUpdateRequest, VesselImage, VesselImageCreateRequest, VesselImageUpdateRequest } from "./model/dataManagementTypes";
+export type {
+  DatabaseUpload,
+  DatabaseUploadCreateRequest,
+  DatabaseUploadUpdateRequest,
+} from "./model/databaseUploadTypes";
+export type {
+  VesselImage,
+  VesselImageCreateRequest,
+  VesselImageUpdateRequest,
+} from "./model/vesselImageTypes";

@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { fetchVesselImageTypes } from "../api/dataManagementApi";
+import { fetchVesselImageTypes } from "../api/vesselImagesApi";
 
 export const VESSEL_IMAGE_TYPES_QUERY_KEY = ["admin", "data-management", "vessel-image-types"];
 

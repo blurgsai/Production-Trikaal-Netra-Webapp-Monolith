@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { updateVesselImage } from "../api/dataManagementApi";
+import { updateVesselImage } from "../api/vesselImagesApi";
 import { VESSEL_IMAGES_QUERY_KEY } from "./useVesselImages";
-import type { VesselImageUpdateRequest } from "../model/dataManagementTypes";
+import type { VesselImageUpdateRequest } from "../model/vesselImageTypes";
 
 export function useUpdateVesselImage() {
   const queryClient = useQueryClient();

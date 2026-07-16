@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { bulkDeleteDatabaseUploads } from "../api/dataManagementApi";
+import { bulkDeleteDatabaseUploads } from "../api/databaseUploadsApi";
 import { DATABASE_UPLOADS_QUERY_KEY } from "./useDatabaseUploads";
 import { DATABASE_NAMES_QUERY_KEY } from "./useDatabaseNames";
 
