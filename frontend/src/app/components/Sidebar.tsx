@@ -1,6 +1,7 @@
 import MapIcon from "@mui/icons-material/Map";
 import EventIcon from "@mui/icons-material/Event";
 import HistoryIcon from "@mui/icons-material/History";
+import CenterFocusStrongIcon from "@mui/icons-material/CenterFocusStrong";
 import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import WorldMonitoringIcon from "./icons/WorldMonitoringIcon";
 import { NavRail, type NavItem } from "@/shared";
@@ -10,6 +11,7 @@ function Sidebar() {
     { icon: <MapIcon />, label: "Map", path: "/map" },
     { icon: <EventIcon />, label: "Events", path: "/events" },
     { icon: <HistoryIcon />, label: "Historical Playback", path: "/historical-playback" },
+    { icon: <CenterFocusStrongIcon />, label: "Focus Mode", path: "/focus-mode" },
     { icon: <WorldMonitoringIcon />, label: "World Monitoring", path: "/world-monitoring" },
   ];
 
