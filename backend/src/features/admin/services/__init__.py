@@ -4,6 +4,10 @@ from datetime import datetime
 from bson import ObjectId
 
 
+def _normalize_imo(value) -> str:
+    return "" if value is None else str(value)
+
+
 async def list_database_uploads(
     db,
     database_name: str | None = None,
@@ -166,7 +170,7 @@ async def list_vessel_images(
         metadata = gridfs_file.metadata or {}
         images.append({
             "_id": str(gridfs_file._id),
-            "imo": metadata.get("imo", ""),
+            "imo": _normalize_imo(metadata.get("imo")),
             "file_name": gridfs_file.filename,
             "file_size": gridfs_file.length,
             "mime_type": metadata.get("content_type", "application/octet-stream"),
@@ -192,7 +196,7 @@ async def get_vessel_image(gridfs, image_id: str) -> dict | None:
         metadata = gridfs_file.metadata or {}
         return {
             "_id": str(gridfs_file._id),
-            "imo": metadata.get("imo", ""),
+            "imo": _normalize_imo(metadata.get("imo")),
             "file_name": gridfs_file.filename,
             "file_size": gridfs_file.length,
             "mime_type": metadata.get("content_type", "application/octet-stream"),

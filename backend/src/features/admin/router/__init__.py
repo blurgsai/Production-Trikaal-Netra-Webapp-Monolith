@@ -2,6 +2,7 @@ import io
 import zipfile
 from datetime import datetime
 
+from bson import ObjectId
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile, status
 from fastapi.responses import Response
 
@@ -375,8 +376,6 @@ async def admin_get_vessel_image_file(
     gridfs=Depends(get_gridfs),
     _=Depends(check_admin_role),
 ):
-    from bson import ObjectId
-
     if not ObjectId.is_valid(image_id):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -384,11 +383,10 @@ async def admin_get_vessel_image_file(
         )
 
     try:
-        # Get the file directly from GridFS using the image_id as the GridFS ID
-        file_data = await gridfs.get(ObjectId(image_id))
-        content = await file_data.read()
-        mime_type = file_data.metadata.get("content_type", "image/jpeg")
-        filename = file_data.filename or "image.jpg"
+        stream = await gridfs.open_download_stream(ObjectId(image_id))
+        content = await stream.read()
+        mime_type = (stream.metadata or {}).get("content_type", "image/jpeg")
+        filename = stream.filename or "image.jpg"
 
         return Response(
             content=content,

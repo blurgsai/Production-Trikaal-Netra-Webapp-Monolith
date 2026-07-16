@@ -155,7 +155,7 @@ export function VesselImagesTab() {
       });
       setPreviewLoading(true);
 
-      getVesselImageUrl(selectedImage.imo)
+      getVesselImageUrl(selectedImage.id)
         .then((blobUrl) => {
           revoke = blobUrl;
           setPreviewImageUrl(blobUrl);

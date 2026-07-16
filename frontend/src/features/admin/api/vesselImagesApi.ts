@@ -77,9 +77,9 @@ export async function bulkDeleteVesselImages(ids: string[]): Promise<{ deleted: 
   return res.data;
 }
 
-export async function getVesselImageUrl(imo: string): Promise<string> {
+export async function getVesselImageUrl(imageId: string): Promise<string> {
   const res = await axiosInstance.get(
-    `/admin/data-management/vessel-images/imo/${imo}/file`,
+    `/admin/data-management/vessel-images/${imageId}/file`,
     { responseType: "blob" },
   );
   return URL.createObjectURL(res.data);
