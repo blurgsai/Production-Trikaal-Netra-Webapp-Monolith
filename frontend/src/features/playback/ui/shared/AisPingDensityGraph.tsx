@@ -33,6 +33,8 @@ export interface AisPingDensityGraphProps {
   title?: string;
 }
 
+
+
 // One trajectory frame = one real AIS position report, so a tick mark here
 // means the vessel actually pinged — gaps between ticks are genuine silence.
 // This is shared by every event type that's fundamentally about AIS reporting
