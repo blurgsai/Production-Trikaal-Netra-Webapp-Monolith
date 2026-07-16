@@ -28,9 +28,11 @@ export interface EventPlugin {
 // in plugins/<eventType>/index.tsx, import it here, add one line below.
 
 import GeofenceIntrusionPlugin from './plugins/geofenceIntrusion';
+import DarkShipPlugin from './plugins/darkShip';
 
 export const EVENT_TYPE_REGISTRY: Record<string, EventPlugin> = {
   geofence_intrusion: GeofenceIntrusionPlugin,
+  dark_ship: DarkShipPlugin,
 };
 
 // ── Accessors ─────────────────────────────────────────────────────────────────

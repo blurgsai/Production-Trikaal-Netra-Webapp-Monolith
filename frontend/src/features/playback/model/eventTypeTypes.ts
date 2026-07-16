@@ -6,6 +6,8 @@
 // accessed via Record<string, unknown> bracket notation in the mapper — never
 // typed as interfaces in the model layer.
 
+import type { EventLocation } from './types';
+
 // ── geofence_intrusion ───────────────────────────────────────────────────────
 
 export interface GeofenceEvent {
@@ -22,4 +24,17 @@ export interface GeofenceEvent {
 export interface GeofencePolygonCoordinates {
   type: 'Polygon' | 'MultiPolygon';
   coordinates: number[][][] | number[][][][];
+}
+
+// ── dark_ship ────────────────────────────────────────────────────────────────
+
+export interface DarkShipEvent {
+  vesselIds: string[];
+  location: EventLocation | null;
+  updateRatePerHour: number;
+  areaAverageRatePerHour: number;
+  timeSinceLastUpdateSec: number;
+  severity: string;
+  eventStartMs: number | null;
+  eventEndMs: number | null;
 }

@@ -87,3 +87,17 @@ export interface GeofenceIntrusionInformationRaw {
 export interface GeofenceIntrusionEventDetailsRaw extends EventDetailsBaseRaw {
   information: GeofenceIntrusionInformationRaw;
 }
+
+// ── dark_ship ────────────────────────────────────────────────────────────────
+
+// Per data-team schema — dark_ship.information has exactly 3 fields
+export interface DarkShipInformationRaw {
+  [key: string]: unknown;
+  vessel_update_rate_per_hour?: number;
+  area_average_update_rate_per_hour?: number;
+  time_since_last_update_seconds?: number;
+}
+
+export interface DarkShipEventDetailsRaw extends EventDetailsBaseRaw {
+  information: DarkShipInformationRaw;
+}
