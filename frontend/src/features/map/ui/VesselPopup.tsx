@@ -11,17 +11,28 @@ import {
   Checkbox,
   FormControlLabel,
   Button,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  Chip,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
-import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
+import DirectionsBoatIcon from "@mui/icons-material/DirectionsBoat";
 import SettingsIcon from "@mui/icons-material/Settings";
 import BrokenImageIcon from "@mui/icons-material/BrokenImage";
-import type { VesselInfo, PopupFieldConfig } from "../model/types";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import type { VesselInfo, PopupFieldConfig, VesselDataUpload } from "../model/types";
 import { useVesselDetails } from "../hooks/useVesselDetails";
 import { useVesselImage } from "../hooks/useVesselImage";
+import { useVesselData } from "../hooks/useVesselData";
+import { useLloydsData } from "../hooks/useLloydsData";
 import VesselDetailsDialog from "./VesselDetailsDialog";
+import DatabaseRecordsDialog from "./DatabaseRecordsDialog";
+import DatabaseTimeline from "./DatabaseTimeline";
+import LloydsDataDialog from "./LloydsDataDialog";
+import VesselFlagsDialog from "./VesselFlagsDialog";
 import ThreatMatrix from "./ThreatMatrix";
-import VesselFlags from "./VesselFlags";
+import FlagIcon from "@mui/icons-material/Flag";
 
 interface VesselPopupProps {
   vessel: VesselInfo;
@@ -89,12 +100,27 @@ function getFieldValue(field: string, vessel: VesselInfo, latlng: { lat: number;
   }
 }
 
+const DATE_KEYS = ["timestamp_utc", "created_at"];
+
+function getDateFromUpload(upload: VesselDataUpload): string {
+  for (const key of DATE_KEYS) {
+    const val = upload.data[key];
+    if (val) return String(val);
+  }
+  return upload.createdAt ?? "N/A";
+}
+
 function VesselPopup({ vessel, latlng, popupFields, onClose, onPopupFieldsChange }: VesselPopupProps) {
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [timelineDialog, setTimelineDialog] = useState<{ dbName: string; uploads: VesselDataUpload[] } | null>(null);
+  const [lloydsOpen, setLloydsOpen] = useState(false);
+  const [flagsOpen, setFlagsOpen] = useState(false);
 
   const { details, loading } = useVesselDetails(vessel.id);
   const { image, loading: imageLoading } = useVesselImage(vessel.imo);
+  const { uploads, loading: dataLoading } = useVesselData(vessel.mmsi);
+  const { data: lloydsData, loading: lloydsLoading, error: lloydsError } = useLloydsData(vessel.imo);
 
   const availableFields = useMemo(() => {
     const rawKeys = Object.keys(vessel.rawProperties).filter(
@@ -124,6 +150,8 @@ function VesselPopup({ vessel, latlng, popupFields, onClose, onPopupFieldsChange
         borderRadius: 2,
         bgcolor: "background.paper",
         width: 380,
+        maxHeight: "calc(70vh - 92px)",
+        overflowY: "auto",
       }}
     >
       <CardHeader
@@ -149,25 +177,25 @@ function VesselPopup({ vessel, latlng, popupFields, onClose, onPopupFieldsChange
             </IconButton>
           </Box>
         }
-        sx={{ py: 1, "& .MuiCardHeader-action": { alignSelf: "center" } }}
+        sx={{ py: 1, px: 1.5, "& .MuiCardHeader-action": { alignSelf: "center" } }}
       />
       <Divider />
 
-      <CardContent sx={{ display: "flex", flexDirection: "column", gap: 1.2 }}>
+      <CardContent sx={{ display: "flex", flexDirection: "column", gap: 1.2, py: 1.5, px: 1.5 }}>
         {imageLoading ? (
-          <Box sx={{ width: "100%", height: 150, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 1, bgcolor: "action.hover" }}>
+          <Box sx={{ width: "100%", height: 120, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 1, bgcolor: "action.hover" }}>
             <CircularProgress size={32} />
           </Box>
         ) : image?.imageUrl ? (
           <Box
             component="img"
             src={image.imageUrl}
-            sx={{ width: "100%", height: 150, borderRadius: 1, objectFit: "cover" }}
+            sx={{ width: "100%", height: 120, borderRadius: 1, objectFit: "cover" }}
             alt="Vessel"
           />
         ) : (
-          <Box sx={{ width: "100%", height: 150, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", borderRadius: 1, bgcolor: "action.hover", gap: 1 }}>
-            <BrokenImageIcon sx={{ fontSize: 40, color: "text.secondary" }} />
+          <Box sx={{ width: "100%", height: 120, display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "center", borderRadius: 1, bgcolor: "action.hover", gap: 1 }}>
+            <BrokenImageIcon sx={{ fontSize: 28, color: "text.secondary" }} />
             <Typography variant="body2" color="text.secondary">Image not found</Typography>
           </Box>
         )}
@@ -195,16 +223,28 @@ function VesselPopup({ vessel, latlng, popupFields, onClose, onPopupFieldsChange
             </Button>
           </Box>
         ) : (
-          <>
-            <Typography variant="body2" display="flex" justifyContent="space-between" alignItems="end">
-              <span>
-                <b>MMSI:</b> {vessel.mmsi || "N/A"}
-              </span>
-              <IconButton aria-label="vessel-info" onClick={() => setDetailsOpen(true)}>
-                <InfoOutlinedIcon sx={{ fontSize: 28 }} />
+          <Typography variant="body2" display="flex" justifyContent="space-between" alignItems="center">
+            <span>
+              <b>MMSI:</b> {vessel.mmsi || "N/A"}
+            </span>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+              <IconButton aria-label="lloyds-data" onClick={() => setLloydsOpen(true)} size="small" title="Lloyds Register Data">
+                <DirectionsBoatIcon sx={{ fontSize: 18 }} />
               </IconButton>
-            </Typography>
+              <IconButton aria-label="flag-vessel" onClick={() => setFlagsOpen(true)} size="small" title="Flag Vessel">
+                <FlagIcon sx={{ fontSize: 18 }} />
+              </IconButton>
+            </Box>
+          </Typography>
+        )}
+      </CardContent>
 
+      {!settingsOpen && (
+        <Accordion disableGutters square elevation={0} defaultExpanded={false} sx={{ "&:before": { display: "none" } }}>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={{ px: 1.5, minHeight: 40, "&.Mui-expanded": { minHeight: 40 } }}>
+            <Typography variant="subtitle2" fontWeight={600}>Details</Typography>
+          </AccordionSummary>
+          <AccordionDetails sx={{ px: 1.5, py: 1, display: "flex", flexDirection: "column", gap: 0.75 }}>
             {popupFields.enabledFields
               .filter((f) => f !== "mmsi")
               .map((field) => (
@@ -217,21 +257,49 @@ function VesselPopup({ vessel, latlng, popupFields, onClose, onPopupFieldsChange
                   )}
                 </Typography>
               ))}
-          </>
-        )}
-      </CardContent>
+          </AccordionDetails>
+        </Accordion>
+      )}
 
-      <Divider />
+      {!settingsOpen && !dataLoading && uploads.length > 0 && (
+        <>
+          {Array.from(new Set(uploads.map((u) => u.databaseName))).map((dbName) => {
+            const dbUploads = uploads
+              .filter((u) => u.databaseName === dbName)
+              .sort((a, b) => getDateFromUpload(b).localeCompare(getDateFromUpload(a)));
+            return (
+              <Accordion key={dbName} disableGutters square elevation={0} defaultExpanded={false} sx={{ "&:before": { display: "none" } }}>
+                <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={{ px: 1.5, minHeight: 40, "&.Mui-expanded": { minHeight: 40 } }}>
+                  <Typography variant="subtitle2" fontWeight={600}>{dbName}</Typography>
+                  {dbUploads.length > 1 && (
+                    <Chip label={dbUploads.length} size="small" sx={{ ml: 1, height: 18, fontSize: "0.65rem" }} />
+                  )}
+                </AccordionSummary>
+                <AccordionDetails sx={{ px: 1.5, py: 1 }}>
+                  <Box sx={{ maxHeight: 280, overflowY: "auto" }}>
+                    <DatabaseTimeline
+                      databaseName={dbName}
+                      uploads={dbUploads}
+                      maxItems={5}
+                      onShowMore={() => setTimelineDialog({ dbName, uploads: dbUploads })}
+                    />
+                  </Box>
+                </AccordionDetails>
+              </Accordion>
+            );
+          })}
+          <Divider />
+        </>
+      )}
 
-      <CardContent sx={{ py: 1.5 }}>
-        <ThreatMatrix vesselId={vessel.id} />
-      </CardContent>
+      <ThreatMatrix vesselId={vessel.id} />
 
-      <Divider />
-
-      <CardContent sx={{ py: 1.5 }}>
-        <VesselFlags vesselId={vessel.id} />
-      </CardContent>
+      <DatabaseRecordsDialog
+        open={!!timelineDialog}
+        onClose={() => setTimelineDialog(null)}
+        databaseName={timelineDialog?.dbName ?? ""}
+        uploads={timelineDialog?.uploads ?? []}
+      />
 
       <VesselDetailsDialog
         open={detailsOpen}
@@ -239,6 +307,21 @@ function VesselPopup({ vessel, latlng, popupFields, onClose, onPopupFieldsChange
         vessel={vessel}
         details={details}
         loading={loading}
+      />
+
+      <LloydsDataDialog
+        open={lloydsOpen}
+        onClose={() => setLloydsOpen(false)}
+        imo={vessel.imo ?? ""}
+        data={lloydsData}
+        loading={lloydsLoading}
+        error={lloydsError}
+      />
+
+      <VesselFlagsDialog
+        open={flagsOpen}
+        onClose={() => setFlagsOpen(false)}
+        vesselId={vessel.id}
       />
 
     </Card>
