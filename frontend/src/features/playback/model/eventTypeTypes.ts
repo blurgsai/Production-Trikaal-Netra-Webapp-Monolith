@@ -136,3 +136,50 @@ export interface AnomalousJerkEvent {
   eventStartMs: number | null;
   eventEndMs: number | null;
 }
+
+// ── speed family (high_speed / prolonged_low_speed / prolonged_stationary / uneconomical_transit) ──
+// All expose `thresholdMps` + event window — the structural contract the shared
+// SpeedBadge / SpeedTimelineEnhancement consume.
+
+export interface HighSpeedEvent {
+  minSpeedMps: number;
+  maxSpeedMps: number;
+  meanSpeedMps: number;
+  stdDeviationMps: number;
+  q1SpeedMps: number;
+  q3SpeedMps: number;
+  thresholdMps: number;
+  triggerSpeedMps: number;
+  vesselIds: string[];
+  eventStartMs: number | null;
+  eventEndMs: number | null;
+}
+
+export interface ProlongedLowSpeedEvent {
+  minSpeedMps: number;
+  maxSpeedMps: number;
+  meanSpeedMps: number;
+  stdDeviationMps: number;
+  q1SpeedMps: number;
+  q3SpeedMps: number;
+  thresholdMps: number;
+  triggerSpeedMps: number;
+  vesselIds: string[];
+  eventStartMs: number | null;
+  eventEndMs: number | null;
+}
+
+export interface ProlongedStationaryEvent extends ProlongedLowSpeedEvent {
+  thresholdDuration: number;
+}
+
+export interface UneconomicalTransitEvent {
+  averageSogMps: number;
+  currentSogMps: number;
+  thresholdMps: number;          // speed threshold, converted from knots → m/s
+  voyageDurationHours: number;
+  durationThresholdHours: number;
+  vesselIds: string[];
+  eventStartMs: number | null;
+  eventEndMs: number | null;
+}

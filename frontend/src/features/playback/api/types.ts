@@ -227,3 +227,70 @@ export interface AnomalousJerkInformationRaw {
 export interface AnomalousJerkEventDetailsRaw extends EventDetailsBaseRaw {
   information: AnomalousJerkInformationRaw;
 }
+
+// ── speed family (high_speed / prolonged_low_speed / prolonged_stationary / uneconomical_transit) ──
+// high_speed, prolonged_low_speed and prolonged_stationary share the same 8 speed-statistic
+// fields (m/s); prolonged_stationary adds threshold_duration. uneconomical_transit reports in
+// knots/hours and is converted to m/s in its mapper.
+
+export interface HighSpeedInformationRaw {
+  [key: string]: unknown;
+  min_speed_mps?: number;
+  max_speed_mps?: number;
+  mean_speed_mps?: number;
+  std_deviation_speed_mps?: number;
+  q1_speed_mps?: number;
+  q3_speed_mps?: number;
+  threshold_mps?: number;
+  trigger_speed_mps?: number;
+}
+
+export interface HighSpeedEventDetailsRaw extends EventDetailsBaseRaw {
+  information: HighSpeedInformationRaw;
+}
+
+export interface ProlongedLowSpeedInformationRaw {
+  [key: string]: unknown;
+  min_speed_mps?: number;
+  max_speed_mps?: number;
+  mean_speed_mps?: number;
+  std_deviation_speed_mps?: number;
+  q1_speed_mps?: number;
+  q3_speed_mps?: number;
+  threshold_mps?: number;
+  trigger_speed_mps?: number;
+}
+
+export interface ProlongedLowSpeedEventDetailsRaw extends EventDetailsBaseRaw {
+  information: ProlongedLowSpeedInformationRaw;
+}
+
+export interface ProlongedStationaryInformationRaw {
+  [key: string]: unknown;
+  min_speed_mps?: number;
+  max_speed_mps?: number;
+  mean_speed_mps?: number;
+  std_deviation_speed_mps?: number;
+  q1_speed_mps?: number;
+  q3_speed_mps?: number;
+  threshold_mps?: number;
+  threshold_duration?: number;
+  trigger_speed_mps?: number;
+}
+
+export interface ProlongedStationaryEventDetailsRaw extends EventDetailsBaseRaw {
+  information: ProlongedStationaryInformationRaw;
+}
+
+export interface UneconomicalTransitInformationRaw {
+  [key: string]: unknown;
+  average_sog_knots?: number;
+  current_sog_knots?: number;
+  voyage_duration_hours?: number;
+  speed_threshold_knots?: number;
+  duration_threshold_hours?: number;
+}
+
+export interface UneconomicalTransitEventDetailsRaw extends EventDetailsBaseRaw {
+  information: UneconomicalTransitInformationRaw;
+}

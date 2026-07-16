@@ -1,0 +1,74 @@
+{
+  "event_details": {
+    "type": "uneconomical_transit",
+    "location": {
+      "type": "Point",
+      "coordinates": [
+        66.5,
+        16.0
+      ]
+    },
+    "timestamp": "2024-06-15T18:00:00Z",
+    "start_time": "2024-06-14T18:00:00Z",
+    "end_time": "2024-06-15T18:00:00Z",
+    "duration": {
+      "value": 86400,
+      "unit": "seconds"
+    },
+    "vessels_involved": [
+      366168522
+    ],
+    "severity": "medium",
+    "model": "heuristic",
+    "status": "detected",
+    "temporality": "bounded",
+    "event_source": "spark",
+    "information": {
+      "average_sog_knots": 1.4,
+      "current_sog_knots": 1.2,
+      "voyage_duration_hours": 24.3,
+      "speed_threshold_knots": 2.0,
+      "duration_threshold_hours": 24
+    }
+  },
+  "trajectories": {
+    "1718377200000": { "366168522": { "latitude": 15.70, "longitude": 66.10, "speed_mps": 5.2, "heading": 40, "course": 40 } },
+    "1718380800000": { "366168522": { "latitude": 15.75, "longitude": 66.16, "speed_mps": 5.0, "heading": 40, "course": 41 } },
+    "1718384400000": { "366168522": { "latitude": 15.80, "longitude": 66.22, "speed_mps": 4.8, "heading": 41, "course": 40 } },
+    "1718388000000": { "366168522": { "latitude": 15.84, "longitude": 66.27, "speed_mps": 0.90, "heading": 40, "course": 39 } },
+    "1718391600000": { "366168522": { "latitude": 15.86, "longitude": 66.29, "speed_mps": 0.80, "heading": 40, "course": 40 } },
+    "1718395200000": { "366168522": { "latitude": 15.88, "longitude": 66.31, "speed_mps": 0.70, "heading": 41, "course": 40 } },
+    "1718398800000": { "366168522": { "latitude": 15.90, "longitude": 66.33, "speed_mps": 0.60, "heading": 40, "course": 41 } },
+    "1718402400000": { "366168522": { "latitude": 15.91, "longitude": 66.35, "speed_mps": 0.65, "heading": 40, "course": 40 } },
+    "1718406000000": { "366168522": { "latitude": 15.93, "longitude": 66.37, "speed_mps": 0.70, "heading": 39, "course": 40 } },
+    "1718409600000": { "366168522": { "latitude": 15.95, "longitude": 66.39, "speed_mps": 0.75, "heading": 40, "course": 40 } },
+    "1718413200000": { "366168522": { "latitude": 15.96, "longitude": 66.41, "speed_mps": 0.80, "heading": 41, "course": 41 } },
+    "1718416800000": { "366168522": { "latitude": 15.98, "longitude": 66.43, "speed_mps": 0.70, "heading": 40, "course": 40 } },
+    "1718420400000": { "366168522": { "latitude": 16.00, "longitude": 66.45, "speed_mps": 0.60, "heading": 40, "course": 39 } },
+    "1718424000000": { "366168522": { "latitude": 16.01, "longitude": 66.47, "speed_mps": 0.65, "heading": 40, "course": 40 } },
+    "1718427600000": { "366168522": { "latitude": 16.03, "longitude": 66.49, "speed_mps": 0.70, "heading": 41, "course": 40 } },
+    "1718431200000": { "366168522": { "latitude": 16.04, "longitude": 66.51, "speed_mps": 0.75, "heading": 40, "course": 41 } },
+    "1718434800000": { "366168522": { "latitude": 16.06, "longitude": 66.53, "speed_mps": 0.80, "heading": 40, "course": 40 } },
+    "1718438400000": { "366168522": { "latitude": 16.07, "longitude": 66.55, "speed_mps": 0.70, "heading": 39, "course": 40 } },
+    "1718442000000": { "366168522": { "latitude": 16.09, "longitude": 66.57, "speed_mps": 0.60, "heading": 40, "course": 40 } },
+    "1718445600000": { "366168522": { "latitude": 16.10, "longitude": 66.59, "speed_mps": 0.65, "heading": 41, "course": 41 } },
+    "1718449200000": { "366168522": { "latitude": 16.12, "longitude": 66.61, "speed_mps": 0.70, "heading": 40, "course": 40 } },
+    "1718452800000": { "366168522": { "latitude": 16.13, "longitude": 66.63, "speed_mps": 0.75, "heading": 40, "course": 39 } },
+    "1718456400000": { "366168522": { "latitude": 16.15, "longitude": 66.65, "speed_mps": 0.80, "heading": 40, "course": 40 } },
+    "1718460000000": { "366168522": { "latitude": 16.16, "longitude": 66.67, "speed_mps": 0.70, "heading": 41, "course": 40 } },
+    "1718463600000": { "366168522": { "latitude": 16.18, "longitude": 66.69, "speed_mps": 0.65, "heading": 40, "course": 41 } },
+    "1718467200000": { "366168522": { "latitude": 16.19, "longitude": 66.71, "speed_mps": 0.60, "heading": 40, "course": 40 } },
+    "1718470800000": { "366168522": { "latitude": 16.21, "longitude": 66.73, "speed_mps": 0.62, "heading": 39, "course": 40 } },
+    "1718474400000": { "366168522": { "latitude": 16.22, "longitude": 66.75, "speed_mps": 0.617, "heading": 40, "course": 40 } },
+    "1718478000000": { "366168522": { "latitude": 16.26, "longitude": 66.80, "speed_mps": 4.5, "heading": 41, "course": 41 } },
+    "1718481600000": { "366168522": { "latitude": 16.31, "longitude": 66.86, "speed_mps": 5.0, "heading": 40, "course": 40 } },
+    "1718485200000": { "366168522": { "latitude": 16.36, "longitude": 66.92, "speed_mps": 5.2, "heading": 40, "course": 41 } }
+  },
+  "time_window": {
+    "query_start": 1718377200000,
+    "query_end": 1718485200000,
+    "event_start": 1718388000000,
+    "event_end": 1718474400000,
+    "buffer_hours": 3
+  }
+}

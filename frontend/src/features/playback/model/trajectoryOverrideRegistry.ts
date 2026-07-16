@@ -4,6 +4,7 @@ import {
   getSignalLostTrajectoryOverrides,
   getDarkAfterDepartureTrajectoryOverrides,
   getPortIntrusionTrajectoryOverrides,
+  getHighSpeedTrajectoryOverrides,
 } from './eventTypeMappers';
 import { getKinematicsTrajectoryOverrides } from './kinematicsTrajectory';
 import type { EventDetailsBase, TimeWindow, TrajectoryOverrideFn, TrajectoryOverrideRule } from './types';
@@ -23,6 +24,9 @@ const TRAJECTORY_OVERRIDE_REGISTRY: Record<string, TrajectoryOverrideFn> = {
   sudden_stop: getKinematicsTrajectoryOverrides,
   anomalous_acceleration: getKinematicsTrajectoryOverrides,
   anomalous_jerk: getKinematicsTrajectoryOverrides,
+  // Speed family — only high_speed highlights its event window; the other three
+  // (prolonged_low_speed / prolonged_stationary / uneconomical_transit) have none.
+  high_speed: getHighSpeedTrajectoryOverrides,
 };
 
 export function getTrajectoryOverridesForType(

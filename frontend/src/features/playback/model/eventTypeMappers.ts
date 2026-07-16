@@ -1,4 +1,4 @@
-import { parseEventDate } from './playbackUtils';
+import { parseEventDate, knotsToMps } from './playbackUtils';
 import type {
   GeofenceEvent,
   GeofencePolygonCoordinates,
@@ -9,6 +9,10 @@ import type {
   SuddenStopEvent,
   AnomalousAccelerationEvent,
   AnomalousJerkEvent,
+  HighSpeedEvent,
+  ProlongedLowSpeedEvent,
+  ProlongedStationaryEvent,
+  UneconomicalTransitEvent,
 } from './eventTypeTypes';
 import type { EventDetailsBase, TimeWindow, TrajectoryOverrideRule } from './types';
 
@@ -333,6 +337,100 @@ export function mapAnomalousJerkEventFromDetails(base: EventDetailsBase): Anomal
     triggerJerk:            (info['trigger_jerk_mps3'] as number | undefined)            ?? 0,
     accelerationBeforeMps2: (info['acceleration_before_mps2'] as number | undefined)     ?? 0,
     accelerationAfterMps2:  (info['acceleration_after_mps2'] as number | undefined)      ?? 0,
+    vesselIds:              base.vessels,
+    eventStartMs:           parseEventDate(base.startTime),
+    eventEndMs:             parseEventDate(base.endTime),
+  };
+}
+
+// ── speed family (high_speed / prolonged_low_speed / prolonged_stationary / uneconomical_transit) ──
+// Snake_case raw fields read via Record<string,unknown> bracket access (model-only import).
+// Only high_speed contributes a trajectory override; the other three have none.
+
+export function mapHighSpeedEventFromDetails(base: EventDetailsBase): HighSpeedEvent {
+  const info = base.information as Record<string, unknown>;
+  return {
+    minSpeedMps:     (info['min_speed_mps'] as number | undefined)           ?? 0,
+    maxSpeedMps:     (info['max_speed_mps'] as number | undefined)           ?? 0,
+    meanSpeedMps:    (info['mean_speed_mps'] as number | undefined)          ?? 0,
+    stdDeviationMps: (info['std_deviation_speed_mps'] as number | undefined) ?? 0,
+    q1SpeedMps:      (info['q1_speed_mps'] as number | undefined)            ?? 0,
+    q3SpeedMps:      (info['q3_speed_mps'] as number | undefined)            ?? 0,
+    thresholdMps:    (info['threshold_mps'] as number | undefined)          ?? 0,
+    triggerSpeedMps: (info['trigger_speed_mps'] as number | undefined)       ?? 0,
+    vesselIds:       base.vessels,
+    eventStartMs:    parseEventDate(base.startTime),
+    eventEndMs:      parseEventDate(base.endTime),
+  };
+}
+
+// Highlights the bounded event window in red on the trajectory — the timeline
+// doesn't expose per-point speed to this function, so the whole start→end span
+// is marked rather than only the segments that exceeded the threshold.
+export function getHighSpeedTrajectoryOverrides(
+  eventDetails: EventDetailsBase,
+  timeWindow: TimeWindow,
+): Record<string, TrajectoryOverrideRule[]> | null {
+  const start = parseEventDate(eventDetails.startTime) ?? timeWindow.eventStartMs;
+  const end   = parseEventDate(eventDetails.endTime)   ?? timeWindow.eventEndMs ?? timeWindow.queryEndMs;
+
+  if (!eventDetails.vessels.length) return null;
+
+  return Object.fromEntries(
+    eventDetails.vessels.map(vesselId => [
+      vesselId,
+      [{ start, end, style: { color: '#ff4444', weight: 4, opacity: 0.9 } }],
+    ]),
+  );
+}
+
+export function mapProlongedLowSpeedEventFromDetails(base: EventDetailsBase): ProlongedLowSpeedEvent {
+  const info = base.information as Record<string, unknown>;
+  return {
+    minSpeedMps:     (info['min_speed_mps'] as number | undefined)           ?? 0,
+    maxSpeedMps:     (info['max_speed_mps'] as number | undefined)           ?? 0,
+    meanSpeedMps:    (info['mean_speed_mps'] as number | undefined)          ?? 0,
+    stdDeviationMps: (info['std_deviation_speed_mps'] as number | undefined) ?? 0,
+    q1SpeedMps:      (info['q1_speed_mps'] as number | undefined)            ?? 0,
+    q3SpeedMps:      (info['q3_speed_mps'] as number | undefined)            ?? 0,
+    thresholdMps:    (info['threshold_mps'] as number | undefined)          ?? 0,
+    triggerSpeedMps: (info['trigger_speed_mps'] as number | undefined)       ?? 0,
+    vesselIds:       base.vessels,
+    eventStartMs:    parseEventDate(base.startTime),
+    eventEndMs:      parseEventDate(base.endTime),
+  };
+}
+
+export function mapProlongedStationaryEventFromDetails(base: EventDetailsBase): ProlongedStationaryEvent {
+  const info = base.information as Record<string, unknown>;
+  return {
+    minSpeedMps:       (info['min_speed_mps'] as number | undefined)           ?? 0,
+    maxSpeedMps:       (info['max_speed_mps'] as number | undefined)           ?? 0,
+    meanSpeedMps:      (info['mean_speed_mps'] as number | undefined)          ?? 0,
+    stdDeviationMps:   (info['std_deviation_speed_mps'] as number | undefined) ?? 0,
+    q1SpeedMps:        (info['q1_speed_mps'] as number | undefined)            ?? 0,
+    q3SpeedMps:        (info['q3_speed_mps'] as number | undefined)            ?? 0,
+    thresholdMps:      (info['threshold_mps'] as number | undefined)          ?? 0,
+    thresholdDuration: (info['threshold_duration'] as number | undefined)      ?? 0,
+    triggerSpeedMps:   (info['trigger_speed_mps'] as number | undefined)       ?? 0,
+    vesselIds:         base.vessels,
+    eventStartMs:      parseEventDate(base.startTime),
+    eventEndMs:        parseEventDate(base.endTime),
+  };
+}
+
+// Round a converted m/s value to 2 decimals — keeps the threshold label the shared
+// speed components render (e.g. "1.03 m/s") clean instead of "1.028888…".
+const round2 = (n: number): number => Math.round(n * 100) / 100;
+
+export function mapUneconomicalTransitEventFromDetails(base: EventDetailsBase): UneconomicalTransitEvent {
+  const info = base.information as Record<string, unknown>;
+  return {
+    averageSogMps:          round2(knotsToMps((info['average_sog_knots'] as number | undefined) ?? 0)),
+    currentSogMps:          round2(knotsToMps((info['current_sog_knots'] as number | undefined) ?? 0)),
+    thresholdMps:           round2(knotsToMps((info['speed_threshold_knots'] as number | undefined) ?? 0)),
+    voyageDurationHours:    (info['voyage_duration_hours'] as number | undefined)    ?? 0,
+    durationThresholdHours: (info['duration_threshold_hours'] as number | undefined) ?? 0,
     vesselIds:              base.vessels,
     eventStartMs:           parseEventDate(base.startTime),
     eventEndMs:             parseEventDate(base.endTime),

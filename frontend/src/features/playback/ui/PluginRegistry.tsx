@@ -35,6 +35,10 @@ import PortIntrusionPlugin from './plugins/portIntrusion';
 import SuddenStopPlugin from './plugins/suddenStop';
 import AnomalousAccelerationPlugin from './plugins/anomalousAcceleration';
 import AnomalousJerkPlugin from './plugins/anomalousJerk';
+import HighSpeedPlugin from './plugins/highSpeed';
+import ProlongedLowSpeedPlugin from './plugins/prolongedLowSpeed';
+import ProlongedStationaryPlugin from './plugins/prolongedStationary';
+import UneconomicalTransitPlugin from './plugins/uneconomicalTransit';
 
 export const EVENT_TYPE_REGISTRY: Record<string, EventPlugin> = {
   geofence_intrusion: GeofenceIntrusionPlugin,
@@ -45,6 +49,10 @@ export const EVENT_TYPE_REGISTRY: Record<string, EventPlugin> = {
   sudden_stop: SuddenStopPlugin,
   anomalous_acceleration: AnomalousAccelerationPlugin,
   anomalous_jerk: AnomalousJerkPlugin,
+  high_speed: HighSpeedPlugin,
+  prolonged_low_speed: ProlongedLowSpeedPlugin,
+  prolonged_stationary: ProlongedStationaryPlugin,
+  uneconomical_transit: UneconomicalTransitPlugin,
 };
 
 // ── Accessors ─────────────────────────────────────────────────────────────────
