@@ -91,3 +91,48 @@ export interface PortIntrusionEvent {
   // [lat, lon] rings — ready for react-leaflet; outer array = rings (first = outer, rest = holes).
   polygonPositions: [number, number][][] | null;
 }
+
+// ── kinematics family (sudden_stop / anomalous_acceleration / anomalous_jerk) ──
+// `value` / `thresholdPositive` / `thresholdNegative` are the shared kinematics
+// contract consumed structurally by KinematicsBadge + KinematicsTimelineEnhancement;
+// the rest is per-event context.
+
+export interface SuddenStopEvent {
+  value: number;              // deceleration (signed, m/s²)
+  thresholdPositive: number;
+  thresholdNegative: number;
+  direction: string;
+  speedBeforeMps: number;
+  speedAfterMps: number;
+  speedDropMps: number;
+  vesselIds: string[];
+  eventStartMs: number | null;
+  eventEndMs: number | null;
+}
+
+export interface AnomalousAccelerationEvent {
+  value: number;              // observed acceleration (signed, m/s²)
+  thresholdPositive: number;
+  thresholdNegative: number;
+  direction: string;
+  speedBeforeMps: number;
+  speedAfterMps: number;
+  speedChangeMps: number;
+  vesselIds: string[];
+  eventStartMs: number | null;
+  eventEndMs: number | null;
+}
+
+export interface AnomalousJerkEvent {
+  value: number;              // observed jerk (signed, m/s³)
+  thresholdPositive: number;
+  thresholdNegative: number;
+  direction: string;
+  meanJerk: number;
+  triggerJerk: number;
+  accelerationBeforeMps2: number;
+  accelerationAfterMps2: number;
+  vesselIds: string[];
+  eventStartMs: number | null;
+  eventEndMs: number | null;
+}

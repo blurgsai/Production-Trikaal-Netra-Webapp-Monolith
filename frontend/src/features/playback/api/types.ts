@@ -168,3 +168,62 @@ export interface PortIntrusionInformationRaw {
 export interface PortIntrusionEventDetailsRaw extends EventDetailsBaseRaw {
   information: PortIntrusionInformationRaw;
 }
+
+// ── kinematics family (sudden_stop / anomalous_acceleration / anomalous_jerk) ──
+// All three carry a signed kinematic reading plus a bidirectional threshold band.
+// Values already in SI (m/s² / m/s³) — no unit conversion in the mapper.
+
+export interface SuddenStopInformationRaw {
+  [key: string]: unknown;
+  deceleration_mps2?: number;
+  threshold_positive_acceleration_mps2?: number;
+  threshold_negative_acceleration_mps2?: number;
+  acceleration_direction?: string;
+  threshold_type?: string;
+  speed_before_mps?: number;
+  speed_after_mps?: number;
+  speed_drop_mps?: number;
+}
+
+export interface SuddenStopEventDetailsRaw extends EventDetailsBaseRaw {
+  information: SuddenStopInformationRaw;
+}
+
+export interface AnomalousAccelerationInformationRaw {
+  [key: string]: unknown;
+  threshold_positive_acceleration_mps2?: number;
+  threshold_negative_acceleration_mps2?: number;
+  acceleration_direction?: string;
+  threshold_type?: string;
+  observed_acceleration_mps2?: number;
+  speed_before_mps?: number;
+  speed_after_mps?: number;
+  speed_change_mps?: number;
+}
+
+export interface AnomalousAccelerationEventDetailsRaw extends EventDetailsBaseRaw {
+  information: AnomalousAccelerationInformationRaw;
+}
+
+// Richest of the family — includes jerk distribution stats.
+export interface AnomalousJerkInformationRaw {
+  [key: string]: unknown;
+  threshold_positive_jerk_mps3?: number;
+  threshold_negative_jerk_mps3?: number;
+  std_deviation_jerk?: number;
+  mean_jerk_mps3?: number;
+  q1_jerk?: number;
+  q3_jerk?: number;
+  trigger_jerk_mps3?: number;
+  jerk_direction?: string;
+  threshold_type?: string;
+  calculation_method?: string;
+  observed_jerk_mps3?: number;
+  acceleration_before_mps2?: number;
+  acceleration_after_mps2?: number;
+  jerk_peak_mps3?: number;
+}
+
+export interface AnomalousJerkEventDetailsRaw extends EventDetailsBaseRaw {
+  information: AnomalousJerkInformationRaw;
+}

@@ -6,6 +6,9 @@ import type {
   SignalLostEvent,
   DarkAfterDepartureEvent,
   PortIntrusionEvent,
+  SuddenStopEvent,
+  AnomalousAccelerationEvent,
+  AnomalousJerkEvent,
 } from './eventTypeTypes';
 import type { EventDetailsBase, TimeWindow, TrajectoryOverrideRule } from './types';
 
@@ -279,4 +282,59 @@ export function getDarkAfterDepartureTrajectoryOverrides(
       [{ start, end, style: { color, weight: 3, opacity: 0.9 } }],
     ]),
   );
+}
+
+// ── kinematics family (sudden_stop / anomalous_acceleration / anomalous_jerk) ──
+// Snake_case raw fields are read via Record<string,unknown> bracket access off the
+// already-mapped domain `information` block — so this file imports only from model/.
+// Trajectory highlighting is the SHARED getKinematicsTrajectoryOverrides (model/
+// kinematicsTrajectory.ts), registered under all three type keys — not defined here.
+
+export function mapSuddenStopEventFromDetails(base: EventDetailsBase): SuddenStopEvent {
+  const info = base.information as Record<string, unknown>;
+  return {
+    value:             (info['deceleration_mps2'] as number | undefined)                    ?? 0,
+    thresholdPositive: (info['threshold_positive_acceleration_mps2'] as number | undefined)  ?? 0,
+    thresholdNegative: (info['threshold_negative_acceleration_mps2'] as number | undefined)  ?? 0,
+    direction:         (info['acceleration_direction'] as string | undefined)                ?? 'unknown',
+    speedBeforeMps:    (info['speed_before_mps'] as number | undefined)                      ?? 0,
+    speedAfterMps:     (info['speed_after_mps'] as number | undefined)                       ?? 0,
+    speedDropMps:      (info['speed_drop_mps'] as number | undefined)                        ?? 0,
+    vesselIds:         base.vessels,
+    eventStartMs:      parseEventDate(base.startTime),
+    eventEndMs:        parseEventDate(base.endTime),
+  };
+}
+
+export function mapAnomalousAccelerationEventFromDetails(base: EventDetailsBase): AnomalousAccelerationEvent {
+  const info = base.information as Record<string, unknown>;
+  return {
+    value:             (info['observed_acceleration_mps2'] as number | undefined)            ?? 0,
+    thresholdPositive: (info['threshold_positive_acceleration_mps2'] as number | undefined)  ?? 0,
+    thresholdNegative: (info['threshold_negative_acceleration_mps2'] as number | undefined)  ?? 0,
+    direction:         (info['acceleration_direction'] as string | undefined)                ?? 'unknown',
+    speedBeforeMps:    (info['speed_before_mps'] as number | undefined)                      ?? 0,
+    speedAfterMps:     (info['speed_after_mps'] as number | undefined)                       ?? 0,
+    speedChangeMps:    (info['speed_change_mps'] as number | undefined)                      ?? 0,
+    vesselIds:         base.vessels,
+    eventStartMs:      parseEventDate(base.startTime),
+    eventEndMs:        parseEventDate(base.endTime),
+  };
+}
+
+export function mapAnomalousJerkEventFromDetails(base: EventDetailsBase): AnomalousJerkEvent {
+  const info = base.information as Record<string, unknown>;
+  return {
+    value:                  (info['observed_jerk_mps3'] as number | undefined) ?? (info['jerk_peak_mps3'] as number | undefined) ?? 0,
+    thresholdPositive:      (info['threshold_positive_jerk_mps3'] as number | undefined) ?? 0,
+    thresholdNegative:      (info['threshold_negative_jerk_mps3'] as number | undefined) ?? 0,
+    direction:              (info['jerk_direction'] as string | undefined)               ?? 'unknown',
+    meanJerk:               (info['mean_jerk_mps3'] as number | undefined)               ?? 0,
+    triggerJerk:            (info['trigger_jerk_mps3'] as number | undefined)            ?? 0,
+    accelerationBeforeMps2: (info['acceleration_before_mps2'] as number | undefined)     ?? 0,
+    accelerationAfterMps2:  (info['acceleration_after_mps2'] as number | undefined)      ?? 0,
+    vesselIds:              base.vessels,
+    eventStartMs:           parseEventDate(base.startTime),
+    eventEndMs:             parseEventDate(base.endTime),
+  };
 }

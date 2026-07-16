@@ -32,6 +32,9 @@ import DarkShipPlugin from './plugins/darkShip';
 import SignalLostPlugin from './plugins/signalLost';
 import DarkAfterDeparturePlugin from './plugins/darkAfterDeparture';
 import PortIntrusionPlugin from './plugins/portIntrusion';
+import SuddenStopPlugin from './plugins/suddenStop';
+import AnomalousAccelerationPlugin from './plugins/anomalousAcceleration';
+import AnomalousJerkPlugin from './plugins/anomalousJerk';
 
 export const EVENT_TYPE_REGISTRY: Record<string, EventPlugin> = {
   geofence_intrusion: GeofenceIntrusionPlugin,
@@ -39,6 +42,9 @@ export const EVENT_TYPE_REGISTRY: Record<string, EventPlugin> = {
   signal_lost: SignalLostPlugin,
   dark_after_departure: DarkAfterDeparturePlugin,
   port_intrusion: PortIntrusionPlugin,
+  sudden_stop: SuddenStopPlugin,
+  anomalous_acceleration: AnomalousAccelerationPlugin,
+  anomalous_jerk: AnomalousJerkPlugin,
 };
 
 // ── Accessors ─────────────────────────────────────────────────────────────────

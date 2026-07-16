@@ -5,6 +5,7 @@ import {
   getDarkAfterDepartureTrajectoryOverrides,
   getPortIntrusionTrajectoryOverrides,
 } from './eventTypeMappers';
+import { getKinematicsTrajectoryOverrides } from './kinematicsTrajectory';
 import type { EventDetailsBase, TimeWindow, TrajectoryOverrideFn, TrajectoryOverrideRule } from './types';
 
 // Separate from ui/PluginRegistry.tsx on purpose: trajectoryFn returns plain data
@@ -18,6 +19,10 @@ const TRAJECTORY_OVERRIDE_REGISTRY: Record<string, TrajectoryOverrideFn> = {
   signal_lost: getSignalLostTrajectoryOverrides,
   dark_after_departure: getDarkAfterDepartureTrajectoryOverrides,
   port_intrusion: getPortIntrusionTrajectoryOverrides,
+  // Kinematics family — all three share the same min-span-centred override.
+  sudden_stop: getKinematicsTrajectoryOverrides,
+  anomalous_acceleration: getKinematicsTrajectoryOverrides,
+  anomalous_jerk: getKinematicsTrajectoryOverrides,
 };
 
 export function getTrajectoryOverridesForType(
