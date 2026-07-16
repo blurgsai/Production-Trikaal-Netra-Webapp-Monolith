@@ -183,3 +183,76 @@ export interface UneconomicalTransitEvent {
   eventStartMs: number | null;
   eventEndMs: number | null;
 }
+
+// ── proximity / multi-vessel family (vessel_rendezvous / parallel_movement / duplicate_mmsi / coordinated_dark_activity) ──
+// All distances in metres, all speeds in m/s. `distanceThresholdM` (or the derived
+// `maxPlausibleDistanceM` for duplicate_mmsi) is what the shared VesselConnectionOverlay
+// / VesselClusterOverlay / InterVesselDistanceGraph compare live separation against.
+
+export interface VesselRendezvousEvent {
+  vesselIds: string[];
+  location: EventLocation | null;
+  minDistanceM: number;
+  maxDistanceM: number;
+  medianDistanceM: number;
+  avgSpeedV1Mps: number;
+  avgSpeedV2Mps: number;
+  distanceThresholdM: number | null;
+  durationThresholdSec: number | null;
+  severity: string;
+  eventStartMs: number | null;
+  eventEndMs: number | null;
+}
+
+export interface ParallelMovementEvent {
+  vesselIds: string[];
+  location: EventLocation | null;
+  distanceM: number;
+  headingDifferenceDeg: number;
+  speedDifferenceMps: number;
+  parallelityScore: number;
+  sustainedDurationSec: number;
+  distanceThresholdM: number | null;
+  durationThresholdSec: number | null;
+  severity: string;
+  eventStartMs: number | null;
+  eventEndMs: number | null;
+}
+
+export interface DuplicateMmsiEvent {
+  vesselIds: string[];
+  location: EventLocation | null;
+  spoofedMmsi: string;
+  distanceDiscrepancyM: number;
+  requiredSpeedKnots: number;
+  maxSpeedKnots: number;
+  // Derived: top speed × event duration. A live separation beyond this is physically
+  // impossible for one vessel → the cloning signal (used as the inverted overlay threshold).
+  maxPlausibleDistanceM: number;
+  probabilityOfSpoofing: number;
+  severity: string;
+  eventStartMs: number | null;
+  eventEndMs: number | null;
+}
+
+export interface CoordinatedDarkVesselRate {
+  vesselId: string;
+  ratePerHour: number;
+  lastUpdateSec: number;
+}
+
+export interface CoordinatedDarkActivityEvent {
+  vesselIds: string[];
+  location: EventLocation | null;
+  clusterSize: number;
+  coordinationScore: number;
+  coDarkWindowSec: number;
+  distanceThresholdM: number | null;
+  coordinationWindowThresholdSec: number | null;
+  areaAverageRatePerHour: number;
+  clusterAverageRatePerHour: number;
+  perVesselRates: CoordinatedDarkVesselRate[];
+  severity: string;
+  eventStartMs: number | null;
+  eventEndMs: number | null;
+}

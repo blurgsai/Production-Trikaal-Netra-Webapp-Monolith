@@ -91,6 +91,7 @@ export function PlaybackPanel({ eventId, eventType, isCompound }: PlaybackPanelP
                 eventDetails: details,
                 extras: data.extras,
                 currentTimestampMs,
+                currentPositions,
                 timeWindow: data.timeWindow,
               })}
             </Fragment>

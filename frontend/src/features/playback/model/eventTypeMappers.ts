@@ -13,6 +13,10 @@ import type {
   ProlongedLowSpeedEvent,
   ProlongedStationaryEvent,
   UneconomicalTransitEvent,
+  VesselRendezvousEvent,
+  ParallelMovementEvent,
+  DuplicateMmsiEvent,
+  CoordinatedDarkActivityEvent,
 } from './eventTypeTypes';
 import type { EventDetailsBase, TimeWindow, TrajectoryOverrideRule } from './types';
 
@@ -434,5 +438,96 @@ export function mapUneconomicalTransitEventFromDetails(base: EventDetailsBase): 
     vesselIds:              base.vessels,
     eventStartMs:           parseEventDate(base.startTime),
     eventEndMs:             parseEventDate(base.endTime),
+  };
+}
+
+// ── proximity / multi-vessel family (vessel_rendezvous / parallel_movement / duplicate_mmsi / coordinated_dark_activity) ──
+// Snake_case raw fields read via Record<string,unknown> bracket access (model-only import).
+// Trajectory highlighting is the SHARED getProximityTrajectoryOverrides (model/
+// proximityTrajectory.ts), registered under all four type keys — not defined here.
+
+export function mapVesselRendezvousEventFromDetails(base: EventDetailsBase): VesselRendezvousEvent {
+  const info       = base.information as Record<string, unknown>;
+  const thresholds = info['thresholds'] as Record<string, unknown> | undefined;
+  return {
+    vesselIds:            base.vessels,
+    location:             base.location,
+    minDistanceM:         (info['min_distance_m'] as number | undefined)    ?? 0,
+    maxDistanceM:         (info['max_distance_m'] as number | undefined)    ?? 0,
+    medianDistanceM:      (info['median_distance_m'] as number | undefined) ?? 0,
+    avgSpeedV1Mps:        knotsToMps((info['avg_speed_v1_knots'] as number | undefined) ?? 0),
+    avgSpeedV2Mps:        knotsToMps((info['avg_speed_v2_knots'] as number | undefined) ?? 0),
+    distanceThresholdM:   (thresholds?.['distance_threshold_m'] as number | undefined)      ?? null,
+    durationThresholdSec: (thresholds?.['duration_threshold_seconds'] as number | undefined) ?? null,
+    severity:             base.severity,
+    eventStartMs:         parseEventDate(base.startTime),
+    eventEndMs:           parseEventDate(base.endTime),
+  };
+}
+
+export function mapParallelMovementEventFromDetails(base: EventDetailsBase): ParallelMovementEvent {
+  const info       = base.information as Record<string, unknown>;
+  const thresholds = info['thresholds'] as Record<string, unknown> | undefined;
+  return {
+    vesselIds:            base.vessels,
+    location:             base.location,
+    distanceM:            (info['distance_m'] as number | undefined)                  ?? 0,
+    headingDifferenceDeg: (info['heading_difference_degrees'] as number | undefined)  ?? 0,
+    speedDifferenceMps:   (info['speed_difference_mps'] as number | undefined)        ?? 0,
+    parallelityScore:     (info['parallelity_score'] as number | undefined)           ?? 0,
+    sustainedDurationSec: (info['sustained_duration_seconds'] as number | undefined)  ?? 0,
+    distanceThresholdM:   (thresholds?.['distance_threshold_m'] as number | undefined)      ?? null,
+    durationThresholdSec: (thresholds?.['duration_threshold_seconds'] as number | undefined) ?? null,
+    severity:             base.severity,
+    eventStartMs:         parseEventDate(base.startTime),
+    eventEndMs:           parseEventDate(base.endTime),
+  };
+}
+
+export function mapDuplicateMmsiEventFromDetails(base: EventDetailsBase): DuplicateMmsiEvent {
+  const info          = base.information as Record<string, unknown>;
+  const spoofedMmsi   = info['spoofed_mmsi'];
+  const maxSpeedKnots = (info['vessel_max_speed'] as number | undefined) ?? 0;
+  const durationSec   = base.duration?.valueSeconds ?? 0;
+  return {
+    vesselIds:             base.vessels,
+    location:              base.location,
+    spoofedMmsi:           spoofedMmsi != null ? String(spoofedMmsi) : '',
+    distanceDiscrepancyM:  (info['distance_discrepancy_m'] as number | undefined)   ?? 0,
+    requiredSpeedKnots:    (info['speed_required_to_match'] as number | undefined)  ?? 0,
+    maxSpeedKnots,
+    // Farthest the vessel could plausibly travel at its top speed within the event
+    // window. Two conflicting positions farther apart than this make one MMSI
+    // physically impossible to be a single vessel.
+    maxPlausibleDistanceM: knotsToMps(maxSpeedKnots) * durationSec,
+    probabilityOfSpoofing: (info['probability_of_spoofing'] as number | undefined)  ?? 0,
+    severity:              base.severity,
+    eventStartMs:          parseEventDate(base.startTime),
+    eventEndMs:            parseEventDate(base.endTime),
+  };
+}
+
+export function mapCoordinatedDarkActivityEventFromDetails(base: EventDetailsBase): CoordinatedDarkActivityEvent {
+  const info       = base.information as Record<string, unknown>;
+  const thresholds = info['thresholds'] as Record<string, unknown> | undefined;
+  const rates      = (info['vessel_update_rates'] as Array<Record<string, unknown>> | undefined) ?? [];
+  return {
+    vesselIds:                      base.vessels,
+    location:                       base.location,
+    clusterSize:                    (info['cluster_size'] as number | undefined) ?? base.vessels.length,
+    coordinationScore:              (info['coordination_score'] as number | undefined)  ?? 0,
+    coDarkWindowSec:                (info['co_dark_window_seconds'] as number | undefined) ?? 0,
+    distanceThresholdM:             (thresholds?.['distance_threshold_m'] as number | undefined) ?? null,
+    coordinationWindowThresholdSec: (thresholds?.['coordination_threshold_window_seconds'] as number | undefined) ?? null,
+    areaAverageRatePerHour:         (info['area_average_update_rate_per_hour'] as number | undefined) ?? 0,
+    clusterAverageRatePerHour:      (info['cluster_average_update_rate'] as number | undefined) ?? 0,
+    perVesselRates: rates.map(r => ({
+      vesselId:      String(r['vessel_id'] ?? ''),
+      ratePerHour:   (r['rate_per_hour'] as number | undefined) ?? 0,
+      lastUpdateSec: (r['last_update_seconds'] as number | undefined) ?? 0,
+    })),
+    severity:     base.severity,
+    eventStartMs: parseEventDate(base.startTime),
+    eventEndMs:   parseEventDate(base.endTime),
   };
 }

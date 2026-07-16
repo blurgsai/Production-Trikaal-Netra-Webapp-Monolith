@@ -7,6 +7,7 @@ import {
   getHighSpeedTrajectoryOverrides,
 } from './eventTypeMappers';
 import { getKinematicsTrajectoryOverrides } from './kinematicsTrajectory';
+import { getProximityTrajectoryOverrides } from './proximityTrajectory';
 import type { EventDetailsBase, TimeWindow, TrajectoryOverrideFn, TrajectoryOverrideRule } from './types';
 
 // Separate from ui/PluginRegistry.tsx on purpose: trajectoryFn returns plain data
@@ -27,6 +28,11 @@ const TRAJECTORY_OVERRIDE_REGISTRY: Record<string, TrajectoryOverrideFn> = {
   // Speed family — only high_speed highlights its event window; the other three
   // (prolonged_low_speed / prolonged_stationary / uneconomical_transit) have none.
   high_speed: getHighSpeedTrajectoryOverrides,
+  // Proximity family — all four share the same min-span-centred, all-vessel override.
+  vessel_rendezvous: getProximityTrajectoryOverrides,
+  parallel_movement: getProximityTrajectoryOverrides,
+  duplicate_mmsi: getProximityTrajectoryOverrides,
+  coordinated_dark_activity: getProximityTrajectoryOverrides,
 };
 
 export function getTrajectoryOverridesForType(

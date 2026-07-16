@@ -294,3 +294,88 @@ export interface UneconomicalTransitInformationRaw {
 export interface UneconomicalTransitEventDetailsRaw extends EventDetailsBaseRaw {
   information: UneconomicalTransitInformationRaw;
 }
+
+// ── proximity / multi-vessel family (vessel_rendezvous / parallel_movement / duplicate_mmsi / coordinated_dark_activity) ──
+// All involve ≥2 vessels and a distance threshold. Speeds vary by unit per type
+// (knots for rendezvous/duplicate_mmsi, m/s for parallel_movement) — converted in
+// each mapper. Distances are metres throughout.
+
+export interface VesselRendezvousThresholdsRaw {
+  distance_threshold_m?: number;
+  duration_threshold_seconds?: number;
+}
+
+export interface VesselRendezvousInformationRaw {
+  [key: string]: unknown;
+  min_distance_m?: number;
+  max_distance_m?: number;
+  median_distance_m?: number;
+  avg_speed_v1_knots?: number;
+  avg_speed_v2_knots?: number;
+  thresholds?: VesselRendezvousThresholdsRaw;
+}
+
+export interface VesselRendezvousEventDetailsRaw extends EventDetailsBaseRaw {
+  information: VesselRendezvousInformationRaw;
+}
+
+export interface ParallelMovementThresholdsRaw {
+  distance_threshold_m?: number;
+  duration_threshold_seconds?: number;
+}
+
+export interface ParallelMovementInformationRaw {
+  [key: string]: unknown;
+  distance_m?: number;
+  heading_difference_degrees?: number;
+  speed_difference_mps?: number;
+  parallelity_score?: number;
+  sustained_duration_seconds?: number;
+  thresholds?: ParallelMovementThresholdsRaw;
+}
+
+export interface ParallelMovementEventDetailsRaw extends EventDetailsBaseRaw {
+  information: ParallelMovementInformationRaw;
+}
+
+// `spoofed_mmsi` mirrors the MMSI being cloned. Speeds in knots.
+export interface DuplicateMmsiInformationRaw {
+  [key: string]: unknown;
+  spoofed_mmsi?: number | string;
+  distance_discrepancy_m?: number;
+  speed_required_to_match?: number;
+  vessel_max_speed?: number;
+  probability_of_spoofing?: number;
+}
+
+export interface DuplicateMmsiEventDetailsRaw extends EventDetailsBaseRaw {
+  information: DuplicateMmsiInformationRaw;
+}
+
+// An N-vessel cluster (2–4) that goes AIS-dark together. `vessel_id` here is an
+// internal vessel_id (same namespace as vessels_involved / trajectory keys), NOT an MMSI.
+export interface CoordinatedDarkActivityThresholdsRaw {
+  distance_threshold_m?: number;
+  coordination_threshold_window_seconds?: number;
+}
+
+export interface CoordinatedDarkVesselUpdateRateRaw {
+  vessel_id?: number | string;
+  rate_per_hour?: number;
+  last_update_seconds?: number;
+}
+
+export interface CoordinatedDarkActivityInformationRaw {
+  [key: string]: unknown;
+  thresholds?: CoordinatedDarkActivityThresholdsRaw;
+  cluster_size?: number;
+  coordination_score?: number;
+  co_dark_window_seconds?: number;
+  area_average_update_rate_per_hour?: number;
+  vessel_update_rates?: CoordinatedDarkVesselUpdateRateRaw[];
+  cluster_average_update_rate?: number;
+}
+
+export interface CoordinatedDarkActivityEventDetailsRaw extends EventDetailsBaseRaw {
+  information: CoordinatedDarkActivityInformationRaw;
+}
