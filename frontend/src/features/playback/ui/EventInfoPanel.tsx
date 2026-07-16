@@ -86,11 +86,11 @@ export function EventInfoPanel({
         {information && Object.keys(information).length > 0 && (
           <>
             <Divider sx={{ borderColor: 'rgba(255,255,255,0.12)', my: 0.75 }} />
-            {Object.entries(information).map(([k, v]) => (
+            {flattenInformation(information).map(([k, v]) => (
               <InfoRow
                 key={k}
                 label={k.replace(/_/g, ' ')}
-                value={String(v ?? '—')}
+                value={v}
               />
             ))}
           </>
@@ -98,6 +98,27 @@ export function EventInfoPanel({
       </Collapse>
     </Paper>
   );
+}
+
+// The raw `information` block can nest plain objects (e.g. dark_after_departure's
+// `thresholds`) — flatten them into dotted-label leaf rows so nested values render
+// as real numbers/strings instead of "[object Object]". Arrays are joined inline.
+function flattenInformation(
+  obj: Record<string, unknown>,
+  prefix = '',
+): Array<[string, string]> {
+  const rows: Array<[string, string]> = [];
+  for (const [k, v] of Object.entries(obj)) {
+    const label = prefix ? `${prefix} ${k}` : k;
+    if (v !== null && typeof v === 'object' && !Array.isArray(v)) {
+      rows.push(...flattenInformation(v as Record<string, unknown>, label));
+    } else if (Array.isArray(v)) {
+      rows.push([label, v.map(String).join(', ') || '—']);
+    } else {
+      rows.push([label, String(v ?? '—')]);
+    }
+  }
+  return rows;
 }
 
 function InfoRow({ label, value }: { label: string; value: string }) {

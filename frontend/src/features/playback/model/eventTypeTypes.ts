@@ -38,3 +38,39 @@ export interface DarkShipEvent {
   eventStartMs: number | null;
   eventEndMs: number | null;
 }
+
+// ── signal_lost ──────────────────────────────────────────────────────────────
+
+export interface SignalLostEvent {
+  vesselIds: string[];
+  location: EventLocation | null;
+  thresholdSec: number;
+  silentDurationSec: number;
+  severity: string;
+  eventStartMs: number | null;
+  eventEndMs: number | null;
+}
+
+// ── dark_after_departure ──────────────────────────────────────────────────────
+
+export interface DarkAfterDepartureEvent {
+  vesselIds: string[];
+  location: EventLocation | null;
+  portId: string | null;
+  portName: string | null;
+  portDepartureMs: number | null;
+  darkStartMs: number | null;
+  timeSinceDepartureSec: number;
+  departureToDarkThresholdSec: number;
+  updateRatePerHour: number;
+  areaAverageRatePerHour: number;
+  timeSinceLastUpdateSec: number;
+  severity: string;
+  eventStartMs: number | null;
+  eventEndMs: number | null;
+  // Departure-port boundary attached by the backend as a `port_polygon` extra
+  // (same mechanism as geofence_intrusion's `geofence_polygon`). null when the
+  // response carries no port geometry.
+  // [lat, lon] rings — ready for react-leaflet; outer array = rings.
+  portPolygonPositions: [number, number][][] | null;
+}

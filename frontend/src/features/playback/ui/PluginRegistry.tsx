@@ -29,10 +29,14 @@ export interface EventPlugin {
 
 import GeofenceIntrusionPlugin from './plugins/geofenceIntrusion';
 import DarkShipPlugin from './plugins/darkShip';
+import SignalLostPlugin from './plugins/signalLost';
+import DarkAfterDeparturePlugin from './plugins/darkAfterDeparture';
 
 export const EVENT_TYPE_REGISTRY: Record<string, EventPlugin> = {
   geofence_intrusion: GeofenceIntrusionPlugin,
   dark_ship: DarkShipPlugin,
+  signal_lost: SignalLostPlugin,
+  dark_after_departure: DarkAfterDeparturePlugin,
 };
 
 // ── Accessors ─────────────────────────────────────────────────────────────────

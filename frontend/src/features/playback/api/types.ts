@@ -101,3 +101,45 @@ export interface DarkShipInformationRaw {
 export interface DarkShipEventDetailsRaw extends EventDetailsBaseRaw {
   information: DarkShipInformationRaw;
 }
+
+// ── signal_lost ──────────────────────────────────────────────────────────────
+
+// Per data-team schema — signal_lost.information. `last_known_position`
+// duplicates the top-level `location`, so the mapper doesn't need to read it.
+export interface SignalLostInformationRaw {
+  [key: string]: unknown;
+  detector?: string;
+  threshold_value?: number;
+  signal_lost_duration_seconds?: number;
+  last_known_position?: {
+    type: 'Point';
+    coordinates: [number, number];
+  };
+}
+
+export interface SignalLostEventDetailsRaw extends EventDetailsBaseRaw {
+  information: SignalLostInformationRaw;
+}
+
+// ── dark_after_departure ──────────────────────────────────────────────────────
+
+export interface DarkAfterDepartureThresholdsRaw {
+  departure_to_dark_threshold_seconds?: number;
+}
+
+// Per data-team schema — dark_after_departure.information
+export interface DarkAfterDepartureInformationRaw {
+  [key: string]: unknown;
+  thresholds?: DarkAfterDepartureThresholdsRaw;
+  port_id?: string;
+  port_departure_time?: string | null;
+  dark_start_time?: string | null;
+  time_since_departure_seconds?: number;
+  vessel_update_rate_per_hour?: number;
+  area_average_update_rate_per_hour?: number;
+  time_since_last_update_seconds?: number;
+}
+
+export interface DarkAfterDepartureEventDetailsRaw extends EventDetailsBaseRaw {
+  information: DarkAfterDepartureInformationRaw;
+}

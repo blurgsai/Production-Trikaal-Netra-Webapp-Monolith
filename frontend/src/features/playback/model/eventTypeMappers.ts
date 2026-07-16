@@ -1,5 +1,11 @@
 import { parseEventDate } from './playbackUtils';
-import type { GeofenceEvent, GeofencePolygonCoordinates, DarkShipEvent } from './eventTypeTypes';
+import type {
+  GeofenceEvent,
+  GeofencePolygonCoordinates,
+  DarkShipEvent,
+  SignalLostEvent,
+  DarkAfterDepartureEvent,
+} from './eventTypeTypes';
 import type { EventDetailsBase, TimeWindow, TrajectoryOverrideRule } from './types';
 
 // ── Event-type mappers + trajectory-override functions ───────────────────────
@@ -107,6 +113,106 @@ export function getDarkShipTrajectoryOverrides(
   timeWindow: TimeWindow,
 ): Record<string, TrajectoryOverrideRule[]> | null {
   const color = DARK_SHIP_SEVERITY_COLOR[eventDetails.severity] ?? '#ff4444';
+
+  const start = parseEventDate(eventDetails.startTime) ?? timeWindow.eventStartMs;
+  const end   = parseEventDate(eventDetails.endTime)   ?? timeWindow.eventEndMs ?? timeWindow.queryEndMs;
+
+  if (!eventDetails.vessels.length) return null;
+
+  return Object.fromEntries(
+    eventDetails.vessels.map(vesselId => [
+      vesselId,
+      [{ start, end, style: { color, weight: 3, opacity: 0.9 } }],
+    ]),
+  );
+}
+
+// ── signal_lost ──────────────────────────────────────────────────────────────
+
+export function mapSignalLostEventFromDetails(base: EventDetailsBase): SignalLostEvent {
+  const info = base.information as Record<string, unknown>;
+  return {
+    vesselIds:         base.vessels,
+    location:          base.location,
+    thresholdSec:      (info['threshold_value'] as number | undefined)               ?? 0,
+    silentDurationSec: (info['signal_lost_duration_seconds'] as number | undefined)   ?? 0,
+    severity:          base.severity,
+    eventStartMs:      parseEventDate(base.startTime),
+    eventEndMs:        parseEventDate(base.endTime),
+  };
+}
+
+// Same convention as dark_ship: the backend model already decided severity,
+// so colour the trajectory by that rather than inventing our own threshold.
+const SIGNAL_LOST_SEVERITY_COLOR: Record<string, string> = {
+  high:     '#ff4444',
+  medium:   '#ff8c00',
+  low:      '#42a5f5',
+  resolved: '#4caf50',
+};
+
+export function getSignalLostTrajectoryOverrides(
+  eventDetails: EventDetailsBase,
+  timeWindow: TimeWindow,
+): Record<string, TrajectoryOverrideRule[]> | null {
+  const color = SIGNAL_LOST_SEVERITY_COLOR[eventDetails.severity] ?? '#ff4444';
+
+  const start = parseEventDate(eventDetails.startTime) ?? timeWindow.eventStartMs;
+  const end   = parseEventDate(eventDetails.endTime)   ?? timeWindow.eventEndMs ?? timeWindow.queryEndMs;
+
+  if (!eventDetails.vessels.length) return null;
+
+  return Object.fromEntries(
+    eventDetails.vessels.map(vesselId => [
+      vesselId,
+      [{ start, end, style: { color, weight: 3, opacity: 0.9 } }],
+    ]),
+  );
+}
+
+// ── dark_after_departure ──────────────────────────────────────────────────────
+
+export function mapDarkAfterDepartureEventFromDetails(
+  base: EventDetailsBase,
+  extras: Record<string, unknown> = {},
+): DarkAfterDepartureEvent {
+  const info       = base.information as Record<string, unknown>;
+  const thresholds = info['thresholds'] as Record<string, unknown> | undefined;
+  const portPoly   = extras['port_polygon'] as (GeofencePolygonExtras & { asset_name?: string }) | undefined;
+
+  return {
+    vesselIds:                   base.vessels,
+    location:                    base.location,
+    portId:                      (info['port_id'] as string | undefined) ?? null,
+    portName:                    (portPoly?.asset_name as string | undefined) ?? null,
+    portDepartureMs:             parseEventDate(info['port_departure_time'] as string | null | undefined),
+    darkStartMs:                 parseEventDate(info['dark_start_time'] as string | null | undefined),
+    timeSinceDepartureSec:       (info['time_since_departure_seconds'] as number | undefined) ?? 0,
+    departureToDarkThresholdSec: (thresholds?.['departure_to_dark_threshold_seconds'] as number | undefined) ?? 0,
+    updateRatePerHour:           (info['vessel_update_rate_per_hour'] as number | undefined) ?? 0,
+    areaAverageRatePerHour:      (info['area_average_update_rate_per_hour'] as number | undefined) ?? 0,
+    timeSinceLastUpdateSec:      (info['time_since_last_update_seconds'] as number | undefined) ?? 0,
+    severity:                    base.severity,
+    eventStartMs:                parseEventDate(base.startTime),
+    eventEndMs:                  parseEventDate(base.endTime),
+    portPolygonPositions:        parseGeoJsonToPositions(portPoly),
+  };
+}
+
+// Same convention as dark_ship/signal_lost — backend model already decides
+// severity, reuse it for colour rather than re-deriving our own threshold.
+const DARK_AFTER_DEPARTURE_SEVERITY_COLOR: Record<string, string> = {
+  high:     '#ff4444',
+  medium:   '#ff8c00',
+  low:      '#42a5f5',
+  resolved: '#4caf50',
+};
+
+export function getDarkAfterDepartureTrajectoryOverrides(
+  eventDetails: EventDetailsBase,
+  timeWindow: TimeWindow,
+): Record<string, TrajectoryOverrideRule[]> | null {
+  const color = DARK_AFTER_DEPARTURE_SEVERITY_COLOR[eventDetails.severity] ?? '#ff4444';
 
   const start = parseEventDate(eventDetails.startTime) ?? timeWindow.eventStartMs;
   const end   = parseEventDate(eventDetails.endTime)   ?? timeWindow.eventEndMs ?? timeWindow.queryEndMs;

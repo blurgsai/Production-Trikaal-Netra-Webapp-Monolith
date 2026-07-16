@@ -1,4 +1,9 @@
-import { getGeofenceTrajectoryOverrides, getDarkShipTrajectoryOverrides } from './eventTypeMappers';
+import {
+  getGeofenceTrajectoryOverrides,
+  getDarkShipTrajectoryOverrides,
+  getSignalLostTrajectoryOverrides,
+  getDarkAfterDepartureTrajectoryOverrides,
+} from './eventTypeMappers';
 import type { EventDetailsBase, TimeWindow, TrajectoryOverrideFn, TrajectoryOverrideRule } from './types';
 
 // Separate from ui/PluginRegistry.tsx on purpose: trajectoryFn returns plain data
@@ -9,6 +14,8 @@ import type { EventDetailsBase, TimeWindow, TrajectoryOverrideFn, TrajectoryOver
 const TRAJECTORY_OVERRIDE_REGISTRY: Record<string, TrajectoryOverrideFn> = {
   geofence_intrusion: getGeofenceTrajectoryOverrides,
   dark_ship: getDarkShipTrajectoryOverrides,
+  signal_lost: getSignalLostTrajectoryOverrides,
+  dark_after_departure: getDarkAfterDepartureTrajectoryOverrides,
 };
 
 export function getTrajectoryOverridesForType(
