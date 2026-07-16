@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { fetchVesselImages } from "../api/dataManagementApi";
-import { mapVesselImagesFromApi } from "../model/dataManagementMappers";
+import { mapVesselImagesFromApi } from "../model/mappers";
 import type { PaginatedVesselImages } from "../model/dataManagementTypes";
 
 export const VESSEL_IMAGES_QUERY_KEY = ["admin", "data-management", "vessel-images"];

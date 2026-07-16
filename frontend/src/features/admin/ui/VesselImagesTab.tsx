@@ -47,7 +47,7 @@ import { useCreateVesselImage } from "../hooks/useCreateVesselImage";
 import { useUpdateVesselImage } from "../hooks/useUpdateVesselImage";
 import { useDeleteVesselImage } from "../hooks/useDeleteVesselImage";
 import { useBulkDeleteVesselImages } from "../hooks/useBulkDeleteVesselImages";
-import { getVesselImageUrl } from "../api/dataManagementApi";
+import { useVesselImageUrl } from "../hooks/useVesselImageUrl";
 import type { VesselImage, VesselImageUpdateRequest } from "../model/dataManagementTypes";
 
 const emptyUpdate: VesselImageUpdateRequest = { imo: "" };
@@ -59,6 +59,7 @@ export function VesselImagesTab() {
   const updateMutation = useUpdateVesselImage();
   const deleteMutation = useDeleteVesselImage();
   const bulkDeleteMutation = useBulkDeleteVesselImages();
+  const getVesselImageUrl = useVesselImageUrl();
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
@@ -166,7 +167,7 @@ export function VesselImagesTab() {
     return () => {
       if (revoke) URL.revokeObjectURL(revoke);
     };
-  }, [selectedImage]);
+  }, [selectedImage, getVesselImageUrl]);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value);

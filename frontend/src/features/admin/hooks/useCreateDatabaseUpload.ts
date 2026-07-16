@@ -12,6 +12,8 @@ export function useCreateDatabaseUpload() {
       const apiData = {
         database_name: data.databaseName,
         mmsi_field: data.mmsiField,
+        timestamp_field: data.timestampField,
+        timestamp_format: data.timestampFormat,
         file: data.file,
       };
       return await createDatabaseUpload(apiData);

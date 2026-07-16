@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { fetchDatabaseUploads } from "../api/dataManagementApi";
-import { mapDatabaseUploadsFromApi } from "../model/dataManagementMappers";
+import { mapDatabaseUploadsFromApi } from "../model/mappers";
 import type { PaginatedDatabaseUploads } from "../model/dataManagementTypes";
 
 export const DATABASE_UPLOADS_QUERY_KEY = ["admin", "data-management", "database-uploads"];

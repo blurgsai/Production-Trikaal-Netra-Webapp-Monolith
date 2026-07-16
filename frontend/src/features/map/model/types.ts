@@ -208,58 +208,58 @@ export interface VesselDataUpload {
 }
 
 export interface LloydsVesselData {
-  vessel_id: number;
-  snapshot_id: string;
+  vesselId: number;
+  snapshotId: string;
   timestamp: string;
   vessel: {
     imo: number;
-    vessel_name: string;
-    year_of_build: number | null;
+    vesselName: string;
+    yearOfBuild: number | null;
     flag: string | null;
-    call_sign: string | null;
+    callSign: string | null;
     mmsi: number | null;
-    port_of_registry: string | null;
+    portOfRegistry: string | null;
     gross: number | null;
     net: number | null;
     dwt: number | null;
-    gen_type: string | null;
-    sub_type: string | null;
-    vessel_type: string | null;
+    genType: string | null;
+    subType: string | null;
+    vesselType: string | null;
     status: string | null;
-    record_last_updated: string | null;
+    recordLastUpdated: string | null;
   };
   ownership: {
     current: Record<string, Array<{
-      start_date: string | null;
-      start_qualifier: string | null;
-      record_last_updated: string | null;
-      company_info: {
-        company_id: number;
-        company_name: string;
-        company_first_year: number | null;
-        company_first_year_qualifier: string | null;
-        company_status: string | null;
+      startDate: string | null;
+      startQualifier: string | null;
+      recordLastUpdated: string | null;
+      companyInfo: {
+        companyId: number;
+        companyName: string;
+        companyFirstYear: number | null;
+        companyFirstYearQualifier: string | null;
+        companyStatus: string | null;
       };
     }>>;
     history: Array<{
-      relationship_type: string;
-      current_ind: string;
-      start_date: string | null;
-      start_qualifier: string | null;
-      end_date: string | null;
-      end_qualifier: string | null;
-      record_last_updated: string | null;
-      company_info: Record<string, unknown>;
+      relationshipType: string;
+      currentInd: string;
+      startDate: string | null;
+      startQualifier: string | null;
+      endDate: string | null;
+      endQualifier: string | null;
+      recordLastUpdated: string | null;
+      companyInfo: Record<string, unknown>;
     }>;
   };
   inmarsat: Record<string, unknown>;
   engines: Record<string, unknown>;
   design: Record<string, unknown>;
-  propulsion_and_dimensions: Record<string, unknown>;
+  propulsionAndDimensions: Record<string, unknown>;
   capacities: Record<string, unknown>;
   casualties: Array<Record<string, unknown>>;
-  vigilance_score: number | null;
-  build_and_history: Record<string, unknown> | null;
-  flag_history: Array<Record<string, unknown>>;
-  name_history: Array<Record<string, unknown>>;
+  vigilanceScore: number | null;
+  buildAndHistory: Record<string, unknown> | null;
+  flagHistory: Array<Record<string, unknown>>;
+  nameHistory: Array<Record<string, unknown>>;
 }

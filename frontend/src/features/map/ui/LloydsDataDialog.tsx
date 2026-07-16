@@ -187,7 +187,7 @@ export default function LloydsDataDialog({ open, onClose, imo, data, loading, er
               <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 1.5 }}>
                 <Box>
                   <Typography variant="subtitle1" fontWeight={700} color="text.primary">
-                    {data.vessel.vessel_name || "Unknown"}
+                    {data.vessel.vesselName || "Unknown"}
                   </Typography>
                   <Box sx={{ display: "flex", gap: 0.75, mt: 1, flexWrap: "wrap" }}>
                     {data.vessel.flag && (
@@ -198,10 +198,10 @@ export default function LloydsDataDialog({ open, onClose, imo, data, loading, er
                         sx={{ height: 22, fontSize: "0.6875rem", borderColor: "border.strong" }}
                       />
                     )}
-                    {data.vessel.vessel_type && (
+                    {data.vessel.vesselType && (
                       <Chip
                         size="small"
-                        label={data.vessel.vessel_type}
+                        label={data.vessel.vesselType}
                         variant="outlined"
                         sx={{ height: 22, fontSize: "0.6875rem", borderColor: "border.strong" }}
                       />
@@ -222,13 +222,13 @@ export default function LloydsDataDialog({ open, onClose, imo, data, loading, er
                     )}
                   </Box>
                 </Box>
-                {data.vigilance_score != null && (
+                {data.vigilanceScore != null && (
                   <Box sx={{ textAlign: "center", minWidth: 80 }}>
                     <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 0.25 }}>
                       Vigilance
                     </Typography>
                     <Typography variant="h6" fontWeight={700} color="primary.main">
-                      {data.vigilance_score}
+                      {data.vigilanceScore}
                     </Typography>
                   </Box>
                 )}
@@ -254,12 +254,12 @@ export default function LloydsDataDialog({ open, onClose, imo, data, loading, er
                     <Typography variant="caption" fontWeight={600} color="primary.main" sx={{ display: "block", mb: 1, fontSize: "0.6875rem" }}>
                       {formatKey(role)}
                     </Typography>
-                    {(entries as Array<{ company_info?: { company_name?: string }; start_date?: string }>).map((entry, idx) => (
+                    {(entries as Array<{ companyInfo?: { companyName?: string }; startDate?: string }>).map((entry, idx) => (
                       <Box key={idx} sx={{ pl: 1.5, mb: 1, "&:last-child": { mb: 0 } }}>
-                        <DataField label="Company" value={val(entry?.company_info?.company_name)} />
-                        {entry?.start_date && (
+                        <DataField label="Company" value={val(entry?.companyInfo?.companyName)} />
+                        {entry?.startDate && (
                           <Box sx={{ mt: 0.5 }}>
-                            <DataField label="Since" value={val(entry.start_date)} />
+                            <DataField label="Since" value={val(entry.startDate)} />
                           </Box>
                         )}
                       </Box>
@@ -270,10 +270,10 @@ export default function LloydsDataDialog({ open, onClose, imo, data, loading, er
             )}
 
             {/* Dimensions */}
-            {data.propulsion_and_dimensions && Object.keys(data.propulsion_and_dimensions).length > 0 && (
+            {data.propulsionAndDimensions && Object.keys(data.propulsionAndDimensions).length > 0 && (
               <SectionCard icon={<StraightenIcon sx={{ fontSize: 18 }} />} title="Dimensions & Propulsion">
                 <DataGrid
-                  entries={Object.entries(data.propulsion_and_dimensions).filter(([k]) => k !== "_id")}
+                  entries={Object.entries(data.propulsionAndDimensions).filter(([k]) => k !== "_id")}
                 />
               </SectionCard>
             )}
@@ -330,9 +330,9 @@ export default function LloydsDataDialog({ open, onClose, imo, data, loading, er
             )}
 
             {/* Flag History */}
-            {data.flag_history && data.flag_history.length > 0 && (
-              <SectionCard icon={<FlagIcon sx={{ fontSize: 18 }} />} title={`Flag History (${data.flag_history.length})`}>
-                {data.flag_history.map((fh, idx) => (
+            {data.flagHistory && data.flagHistory.length > 0 && (
+              <SectionCard icon={<FlagIcon sx={{ fontSize: 18 }} />} title={`Flag History (${data.flagHistory.length})`}>
+                {data.flagHistory.map((fh, idx) => (
                   <Box key={idx} sx={{ pl: 1.5, mb: 1.5, "&:last-child": { mb: 0 } }}>
                     <DataGrid
                       entries={Object.entries(fh).filter(([k]) => k !== "_id")}
@@ -343,9 +343,9 @@ export default function LloydsDataDialog({ open, onClose, imo, data, loading, er
             )}
 
             {/* Name History */}
-            {data.name_history && data.name_history.length > 0 && (
-              <SectionCard icon={<HistoryIcon sx={{ fontSize: 18 }} />} title={`Name History (${data.name_history.length})`}>
-                {data.name_history.map((nh, idx) => (
+            {data.nameHistory && data.nameHistory.length > 0 && (
+              <SectionCard icon={<HistoryIcon sx={{ fontSize: 18 }} />} title={`Name History (${data.nameHistory.length})`}>
+                {data.nameHistory.map((nh, idx) => (
                   <Box key={idx} sx={{ pl: 1.5, mb: 1.5, "&:last-child": { mb: 0 } }}>
                     <DataGrid
                       entries={Object.entries(nh).filter(([k]) => k !== "_id")}
@@ -377,7 +377,7 @@ export default function LloydsDataDialog({ open, onClose, imo, data, loading, er
             >
               <LocalOfferIcon sx={{ fontSize: 14, color: "text.secondary" }} />
               <Typography variant="caption" color="text.secondary">
-                Snapshot: {data.snapshot_id} · Recorded: {data.timestamp}
+                Snapshot: {data.snapshotId} · Recorded: {data.timestamp}
               </Typography>
             </Box>
           </Box>

@@ -1,14 +1,56 @@
 import axiosInstance from "@/shared/api/client";
-import type {
-  DatabaseUploadApiResponse,
-  DatabaseUploadCreateApiRequest,
-  DatabaseUploadUpdateApiRequest,
-  PaginatedDatabaseUploadApiResponse,
-  PaginatedVesselImageApiResponse,
-  VesselImageApiResponse,
-  VesselImageCreateApiRequest,
-  VesselImageUpdateApiRequest,
-} from "../model/dataManagementApiTypes";
+
+export interface DatabaseUploadApiResponse {
+  _id: string;
+  database_name: string;
+  mmsi: string;
+  data: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PaginatedDatabaseUploadApiResponse {
+  items: DatabaseUploadApiResponse[];
+  total: number;
+}
+
+export interface DatabaseUploadCreateApiRequest {
+  database_name: string;
+  mmsi_field: string;
+  timestamp_field?: string;
+  timestamp_format?: string;
+  file: File;
+}
+
+export interface DatabaseUploadUpdateApiRequest {
+  database_name?: string;
+  mmsi?: string;
+  data?: Record<string, unknown>;
+}
+
+export interface VesselImageApiResponse {
+  _id: string;
+  imo: string;
+  file_name: string;
+  file_size: number;
+  mime_type: string;
+  uploaded_at: string;
+  updated_at: string;
+}
+
+export interface PaginatedVesselImageApiResponse {
+  items: VesselImageApiResponse[];
+  total: number;
+}
+
+export interface VesselImageCreateApiRequest {
+  files: File[];
+  imos: string[];
+}
+
+export interface VesselImageUpdateApiRequest {
+  imo: string;
+}
 
 // Database Uploads API
 export async function fetchDatabaseUploads(params?: {
@@ -39,6 +81,12 @@ export async function createDatabaseUpload(
   const formData = new FormData();
   formData.append("database_name", data.database_name);
   formData.append("mmsi_field", data.mmsi_field);
+  if (data.timestamp_field) {
+    formData.append("timestamp_field", data.timestamp_field);
+  }
+  if (data.timestamp_format) {
+    formData.append("timestamp_format", data.timestamp_format);
+  }
   if (data.file) {
     formData.append("file", data.file);
   }

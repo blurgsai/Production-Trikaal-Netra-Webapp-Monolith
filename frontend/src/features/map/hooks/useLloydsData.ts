@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { fetchLloydsData } from "../api/vesselDataApi";
+import { mapLloydsDataFromApi } from "../model/mappers";
 import type { LloydsVesselData } from "../model/types";
 
 export function useLloydsData(imo: string | undefined) {
@@ -17,7 +18,7 @@ export function useLloydsData(imo: string | undefined) {
     setError("");
     try {
       const result = await fetchLloydsData(imo);
-      setData(result);
+      setData(mapLloydsDataFromApi(result));
     } catch {
       setData(null);
       setError("Lloyds data not available for this vessel");
