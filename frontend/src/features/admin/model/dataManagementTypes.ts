@@ -2,7 +2,7 @@ export interface DatabaseUpload {
   id: string;
   databaseName: string;
   mmsi: string;
-  data: Record<string, any>;
+  data: Record<string, unknown>;
   createdAt: string;
   updatedAt: string;
 }
@@ -15,13 +15,15 @@ export interface PaginatedDatabaseUploads {
 export interface DatabaseUploadCreateRequest {
   databaseName: string;
   mmsiField: string;
+  timestampField?: string;
+  timestampFormat?: string;
   file: File;
 }
 
 export interface DatabaseUploadUpdateRequest {
   databaseName?: string;
   mmsi?: string;
-  data?: Record<string, any>;
+  data?: Record<string, unknown>;
 }
 
 export interface VesselImage {

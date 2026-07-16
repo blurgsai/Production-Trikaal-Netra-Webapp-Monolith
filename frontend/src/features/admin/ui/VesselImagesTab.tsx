@@ -84,7 +84,7 @@ export function VesselImagesTab() {
     page,
     pageSize: rowsPerPage,
   });
-  const images = data?.items ?? [];
+  const images = useMemo(() => data?.items ?? [], [data?.items]);
   const totalCount = data?.total ?? 0;
 
   const [createOpen, setCreateOpen] = useState(false);
@@ -279,8 +279,9 @@ export function VesselImagesTab() {
           message: `Successfully uploaded ${results.length} image${results.length !== 1 ? "s" : ""} from ZIP`,
           severity: "success",
         });
-      } catch (err: any) {
-        setCreateError(err?.response?.data?.detail || err?.message || "Failed to upload ZIP");
+      } catch (err: unknown) {
+        const error = err as { response?: { data?: { detail?: string } }; message?: string };
+        setCreateError(error?.response?.data?.detail || error?.message || "Failed to upload ZIP");
       }
       return;
     }
@@ -309,8 +310,9 @@ export function VesselImagesTab() {
         message: `Successfully uploaded ${results.length} image${results.length !== 1 ? "s" : ""}`,
         severity: "success",
       });
-    } catch (err: any) {
-      setCreateError(err?.response?.data?.detail || err?.message || "Failed to upload images");
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { detail?: string } }; message?: string };
+      setCreateError(error?.response?.data?.detail || error?.message || "Failed to upload images");
     }
   };
 

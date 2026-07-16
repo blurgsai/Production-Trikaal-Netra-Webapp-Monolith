@@ -8,7 +8,7 @@ export function useUpdateDatabaseUpload() {
 
   return useMutation({
     mutationFn: async ({ id, data }: { id: string; data: DatabaseUploadUpdateRequest }) => {
-      const apiData: any = {};
+      const apiData: Record<string, unknown> = {};
       if (data.databaseName !== undefined) apiData.database_name = data.databaseName;
       if (data.mmsi !== undefined) apiData.mmsi = data.mmsi;
       if (data.data !== undefined) apiData.data = data.data;

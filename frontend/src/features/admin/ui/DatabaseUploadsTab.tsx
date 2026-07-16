@@ -90,7 +90,7 @@ export function DatabaseUploadsTab() {
     page,
     pageSize: rowsPerPage,
   });
-  const uploads = data?.items ?? [];
+  const uploads = useMemo(() => data?.items ?? [], [data?.items]);
   const totalCount = data?.total ?? 0;
 
   const [createOpen, setCreateOpen] = useState(false);
@@ -112,12 +112,16 @@ export function DatabaseUploadsTab() {
   const [csvFile, setCsvFile] = useState<File | null>(null);
   const [csvHeaders, setCsvHeaders] = useState<string[]>([]);
   const [mmsiField, setMmsiField] = useState<string>("");
+  const [timestampField, setTimestampField] = useState<string>("");
+  const [timestampFormat, setTimestampFormat] = useState<string>("");
 
   // Append data state
   const [appendOpen, setAppendOpen] = useState(false);
   const [appendCsvFile, setAppendCsvFile] = useState<File | null>(null);
   const [appendCsvHeaders, setAppendCsvHeaders] = useState<string[]>([]);
   const [appendMmsiField, setAppendMmsiField] = useState<string>("");
+  const [appendTimestampField, setAppendTimestampField] = useState<string>("");
+  const [appendTimestampFormat, setAppendTimestampFormat] = useState<string>("");
   const [appendError, setAppendError] = useState<string | null>(null);
 
   const selectedUpload = useMemo(
@@ -148,6 +152,8 @@ export function DatabaseUploadsTab() {
     setCsvFile(null);
     setCsvHeaders([]);
     setMmsiField("");
+    setTimestampField("");
+    setTimestampFormat("");
     setCreateError(null);
     setCreateOpen(true);
   };
@@ -216,6 +222,13 @@ export function DatabaseUploadsTab() {
       if (mmsiCandidate) {
         setMmsiField(mmsiCandidate);
       }
+      // Auto-select timestamp field if found
+      const tsCandidate = headers.find((h) =>
+        h.toLowerCase().match(/timestamp|date|time|created/),
+      );
+      if (tsCandidate) {
+        setTimestampField(tsCandidate);
+      }
     };
     reader.readAsText(file);
   };
@@ -240,6 +253,13 @@ export function DatabaseUploadsTab() {
       );
       if (mmsiCandidate) {
         setAppendMmsiField(mmsiCandidate);
+      }
+      // Auto-select timestamp field if found
+      const tsCandidate = headers.find((h) =>
+        h.toLowerCase().match(/timestamp|date|time|created/),
+      );
+      if (tsCandidate) {
+        setAppendTimestampField(tsCandidate);
       }
     };
     reader.readAsText(file);
@@ -271,6 +291,8 @@ export function DatabaseUploadsTab() {
     const payload: DatabaseUploadCreateRequest = {
       databaseName: createForm.databaseName,
       mmsiField: mmsiField,
+      timestampField: timestampField || undefined,
+      timestampFormat: timestampFormat || undefined,
       file: csvFile,
     };
 
@@ -284,6 +306,8 @@ export function DatabaseUploadsTab() {
         setCsvFile(null);
         setCsvHeaders([]);
         setMmsiField("");
+        setTimestampField("");
+        setTimestampFormat("");
         setToast({ open: true, message: "Database uploaded successfully", severity: "success" });
       },
       onError: (err: Error) => {
@@ -305,13 +329,15 @@ export function DatabaseUploadsTab() {
     }
 
     createMutation.mutate(
-      { databaseName: selectedDatabaseName, mmsiField: appendMmsiField, file: appendCsvFile },
+      { databaseName: selectedDatabaseName, mmsiField: appendMmsiField, timestampField: appendTimestampField || undefined, timestampFormat: appendTimestampFormat || undefined, file: appendCsvFile },
       {
         onSuccess: () => {
           setAppendOpen(false);
           setAppendCsvFile(null);
           setAppendCsvHeaders([]);
           setAppendMmsiField("");
+          setAppendTimestampField("");
+          setAppendTimestampFormat("");
           setAppendError(null);
           setToast({ open: true, message: "Data appended successfully", severity: "success" });
         },
@@ -488,6 +514,8 @@ export function DatabaseUploadsTab() {
                   setAppendCsvFile(null);
                   setAppendCsvHeaders([]);
                   setAppendMmsiField("");
+                  setAppendTimestampField("");
+                  setAppendTimestampFormat("");
                   setAppendError(null);
                 }}
               >
@@ -740,7 +768,7 @@ export function DatabaseUploadsTab() {
 
               {selectedUpload.data &&
                 (Array.isArray(selectedUpload.data)
-                  ? selectedUpload.data.flatMap((record: Record<string, any>, idx: number) =>
+                  ? selectedUpload.data.flatMap((record: Record<string, unknown>, idx: number) =>
                       Object.entries(record).map(([key, value]) => (
                         <Box key={`${idx}-${key}`}>
                           <Typography variant="overline" color="text.secondary">
@@ -900,6 +928,52 @@ export function DatabaseUploadsTab() {
                   </Select>
                 </FormControl>
 
+                <FormControl size="small" fullWidth>
+                  <InputLabel>Timestamp Field (Optional)</InputLabel>
+                  <Select
+                    label="Timestamp Field (Optional)"
+                    value={timestampField}
+                    onChange={(e) => {
+                      setTimestampField(e.target.value);
+                      if (!e.target.value) setTimestampFormat("");
+                    }}
+                  >
+                    <MenuItem value="">
+                      <em>None</em>
+                    </MenuItem>
+                    {csvHeaders.map((header) => (
+                      <MenuItem key={header} value={header}>
+                        {header}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+
+                {timestampField && (
+                  <FormControl size="small" fullWidth>
+                    <InputLabel>Timestamp Format</InputLabel>
+                    <Select
+                      label="Timestamp Format"
+                      value={timestampFormat}
+                      onChange={(e) => setTimestampFormat(e.target.value)}
+                    >
+                      <MenuItem value="">
+                        <em>Select format…</em>
+                      </MenuItem>
+                      <MenuItem value="ISO 8601 (YYYY-MM-DDTHH:MM:SSZ)">ISO 8601 (YYYY-MM-DDTHH:MM:SSZ)</MenuItem>
+                      <MenuItem value="ISO Date (YYYY-MM-DD)">ISO Date (YYYY-MM-DD)</MenuItem>
+                      <MenuItem value="US Date (MM/DD/YYYY)">US Date (MM/DD/YYYY)</MenuItem>
+                      <MenuItem value="EU Date (DD/MM/YYYY)">EU Date (DD/MM/YYYY)</MenuItem>
+                    </Select>
+                  </FormControl>
+                )}
+
+                {timestampField && !timestampFormat && (
+                  <Alert severity="warning">
+                    Please select a timestamp format. If none of the formats match your CSV data, the upload will be rejected.
+                  </Alert>
+                )}
+
                 <Alert severity="info" sx={{ mt: 1 }}>
                   CSV file selected: {csvFile?.name}
                 </Alert>
@@ -962,6 +1036,52 @@ export function DatabaseUploadsTab() {
                     ))}
                   </Select>
                 </FormControl>
+
+                <FormControl size="small" fullWidth>
+                  <InputLabel>Timestamp Field (Optional)</InputLabel>
+                  <Select
+                    label="Timestamp Field (Optional)"
+                    value={appendTimestampField}
+                    onChange={(e) => {
+                      setAppendTimestampField(e.target.value);
+                      if (!e.target.value) setAppendTimestampFormat("");
+                    }}
+                  >
+                    <MenuItem value="">
+                      <em>None</em>
+                    </MenuItem>
+                    {appendCsvHeaders.map((header) => (
+                      <MenuItem key={header} value={header}>
+                        {header}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+
+                {appendTimestampField && (
+                  <FormControl size="small" fullWidth>
+                    <InputLabel>Timestamp Format</InputLabel>
+                    <Select
+                      label="Timestamp Format"
+                      value={appendTimestampFormat}
+                      onChange={(e) => setAppendTimestampFormat(e.target.value)}
+                    >
+                      <MenuItem value="">
+                        <em>Select format…</em>
+                      </MenuItem>
+                      <MenuItem value="ISO 8601 (YYYY-MM-DDTHH:MM:SSZ)">ISO 8601 (YYYY-MM-DDTHH:MM:SSZ)</MenuItem>
+                      <MenuItem value="ISO Date (YYYY-MM-DD)">ISO Date (YYYY-MM-DD)</MenuItem>
+                      <MenuItem value="US Date (MM/DD/YYYY)">US Date (MM/DD/YYYY)</MenuItem>
+                      <MenuItem value="EU Date (DD/MM/YYYY)">EU Date (DD/MM/YYYY)</MenuItem>
+                    </Select>
+                  </FormControl>
+                )}
+
+                {appendTimestampField && !appendTimestampFormat && (
+                  <Alert severity="warning">
+                    Please select a timestamp format. If none of the formats match your CSV data, the upload will be rejected.
+                  </Alert>
+                )}
 
                 <Alert severity="info" sx={{ mt: 1 }}>
                   CSV file selected: {appendCsvFile?.name}

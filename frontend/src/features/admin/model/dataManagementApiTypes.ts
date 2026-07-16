@@ -2,7 +2,7 @@ export interface DatabaseUploadApiResponse {
   _id: string;
   database_name: string;
   mmsi: string;
-  data: Record<string, any>;
+  data: Record<string, unknown>;
   created_at: string;
   updated_at: string;
 }
@@ -15,13 +15,15 @@ export interface PaginatedDatabaseUploadApiResponse {
 export interface DatabaseUploadCreateApiRequest {
   database_name: string;
   mmsi_field: string;
+  timestamp_field?: string;
+  timestamp_format?: string;
   file: File;
 }
 
 export interface DatabaseUploadUpdateApiRequest {
   database_name?: string;
   mmsi?: string;
-  data?: Record<string, any>;
+  data?: Record<string, unknown>;
 }
 
 export interface VesselImageApiResponse {
