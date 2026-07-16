@@ -1,7 +1,13 @@
-import type { UserApiResponse } from "../api/types";
 import type { BaseMapAdminApiResponse } from "../api/basemapsApi";
 import type { OverlayAdminApiResponse } from "../api/overlaysApi";
-import type { User, BaseMap, Overlay } from "./types";
+import type {
+  DatabaseUploadApiResponse,
+  UserApiResponse,
+  VesselImageApiResponse,
+} from "../api/types";
+import type { DatabaseUpload } from "./databaseUploadTypes";
+import type { BaseMap, Overlay, User } from "./types";
+import type { VesselImage } from "./vesselImageTypes";
 
 export function mapUserFromApi(raw: UserApiResponse): User {
   return {
@@ -47,4 +53,39 @@ export function mapOverlayFromApi(raw: OverlayAdminApiResponse): Overlay {
 
 export function mapOverlaysFromApi(raw: OverlayAdminApiResponse[]): Overlay[] {
   return raw.map(mapOverlayFromApi);
+}
+
+export function mapDatabaseUploadFromApi(
+  api: DatabaseUploadApiResponse,
+): DatabaseUpload {
+  return {
+    id: api._id,
+    databaseName: api.database_name,
+    mmsi: api.mmsi,
+    data: api.data,
+    createdAt: api.created_at,
+    updatedAt: api.updated_at,
+  };
+}
+
+export function mapDatabaseUploadsFromApi(
+  apis: DatabaseUploadApiResponse[],
+): DatabaseUpload[] {
+  return apis.map(mapDatabaseUploadFromApi);
+}
+
+export function mapVesselImageFromApi(api: VesselImageApiResponse): VesselImage {
+  return {
+    id: api._id,
+    imo: api.imo,
+    fileName: api.file_name,
+    fileSize: api.file_size,
+    mimeType: api.mime_type,
+    uploadedAt: api.uploaded_at,
+    updatedAt: api.updated_at,
+  };
+}
+
+export function mapVesselImagesFromApi(apis: VesselImageApiResponse[]): VesselImage[] {
+  return apis.map(mapVesselImageFromApi);
 }
