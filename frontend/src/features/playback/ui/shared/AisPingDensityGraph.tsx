@@ -88,7 +88,7 @@ export function AisPingDensityGraph({
   const playheadX = scaleX(currentTimestampMs);
 
   return (
-    <Paper elevation={1} sx={{ mt: 0.5, p: 1, backgroundColor: 'rgba(0,0,0,0.7)', borderRadius: 1 }}>
+    <Paper elevation={1} sx={{ mt: 0.5, p: 1, bgcolor: 'background.input', border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
       <Box sx={{ fontSize: '0.75rem', color: accentColor, mb: 0.5, ml: 1 }}>{title}</Box>
 
       <svg

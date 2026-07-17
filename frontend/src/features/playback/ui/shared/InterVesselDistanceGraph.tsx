@@ -152,7 +152,7 @@ export function InterVesselDistanceGraph({
   const playheadX = scaleX(currentTimestampMs);
 
   return (
-    <Paper elevation={1} sx={{ mt: 1, p: 1, backgroundColor: 'rgba(0,0,0,0.7)', borderRadius: 1 }}>
+    <Paper elevation={1} sx={{ mt: 1, p: 1, bgcolor: 'background.input', border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5, ml: 1, gap: 2, flexWrap: 'wrap' }}>
         <Box sx={{ fontSize: '0.75rem', color: '#fff' }}>Separation Over Time</Box>
         {nearest && (

@@ -4,6 +4,8 @@ import {
 } from '@mui/material';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import { SeverityChip } from '@/shared/ui/SeverityChip';
+import { defenseColors } from '@/shared/theme/colors';
 import { formatPlaybackTimestamp } from '../model/playbackUtils';
 import type { TimeWindow } from '../model/types';
 
@@ -18,13 +20,6 @@ interface EventInfoPanelProps {
   information?: Record<string, unknown>;
 }
 
-const SEVERITY_COLOR: Record<string, 'error' | 'warning' | 'info' | 'success' | 'default'> = {
-  high:     'error',
-  medium:   'warning',
-  low:      'info',
-  resolved: 'success',
-};
-
 export function EventInfoPanel({
   eventId,
   eventType,
@@ -36,8 +31,6 @@ export function EventInfoPanel({
   information,
 }: EventInfoPanelProps) {
   const [expanded, setExpanded] = useState(true);
-
-  const sevColor = severity ? (SEVERITY_COLOR[severity.toLowerCase()] ?? 'default') : 'default';
 
   return (
     <Paper
@@ -54,34 +47,50 @@ export function EventInfoPanel({
         // of the playback controls bar that floats at the bottom.
         maxHeight: 'calc(100% - 32px)',
         overflowY: 'auto',
-        backgroundColor: 'rgba(18,18,18,0.9)',
-        backdropFilter: 'blur(4px)',
-        color: 'white',
-        p: 1,
+        // App surface language (matches eventTable / menus / dialogs): solid surface,
+        // 1px divider border, elevation shadow token — no ad-hoc glassmorphism.
+        bgcolor: 'background.surfaceAlt',
+        border: '1px solid',
+        borderColor: 'divider',
+        boxShadow: defenseColors.shadow,
+        color: 'text.primary',
+        p: 1.5,
       }}
     >
       {/* Header */}
-      <Stack direction="row" alignItems="center" justifyContent="space-between">
-        <Typography variant="caption" sx={{ fontFamily: 'monospace', opacity: 0.6, fontSize: '0.65rem' }}>
+      <Stack direction="row" alignItems="center" justifyContent="space-between" mb={0.5}>
+        <Typography
+          variant="caption"
+          sx={{ fontFamily: 'monospace', color: 'text.secondary', fontSize: '0.7rem' }}
+        >
           {eventId}
         </Typography>
-        <IconButton size="small" onClick={() => setExpanded(e => !e)} sx={{ color: 'white' }}>
+        <IconButton size="small" onClick={() => setExpanded(e => !e)} sx={{ color: 'text.secondary' }}>
           {expanded ? <ExpandLessIcon fontSize="small" /> : <ExpandMoreIcon fontSize="small" />}
         </IconButton>
       </Stack>
 
-      <Typography variant="subtitle2" sx={{ textTransform: 'capitalize', mb: 0.5 }}>
+      <Typography variant="subtitle2" sx={{ textTransform: 'capitalize', mb: 0.75 }}>
         {eventType.replace(/_/g, ' ')}
       </Typography>
 
-      <Stack direction="row" spacing={0.5} flexWrap="wrap" mb={0.5}>
-        {isCompound && <Chip label="Compound" size="small" color="secondary" />}
-        {severity && <Chip label={severity} size="small" color={sevColor} />}
-        {status && <Chip label={status} size="small" variant="outlined" sx={{ color: 'white', borderColor: 'rgba(255,255,255,0.4)' }} />}
+      <Stack direction="row" spacing={0.5} flexWrap="wrap" useFlexGap mb={0.5}>
+        {isCompound && (
+          <Chip label="Compound" size="small" color="secondary" sx={{ borderRadius: 1, fontWeight: 600 }} />
+        )}
+        {severity && <SeverityChip severity={severity} />}
+        {status && (
+          <Chip
+            label={status}
+            size="small"
+            variant="outlined"
+            sx={{ borderRadius: 1, textTransform: 'capitalize', color: 'text.secondary', borderColor: 'divider' }}
+          />
+        )}
       </Stack>
 
       <Collapse in={expanded}>
-        <Divider sx={{ borderColor: 'rgba(255,255,255,0.12)', my: 0.75 }} />
+        <Divider sx={{ my: 1 }} />
 
         <InfoRow label="Vessels" value={String(vesselCount)} />
         <InfoRow label="Start" value={formatPlaybackTimestamp(timeWindow.eventStartMs)} />
@@ -91,7 +100,7 @@ export function EventInfoPanel({
 
         {information && Object.keys(information).length > 0 && (
           <>
-            <Divider sx={{ borderColor: 'rgba(255,255,255,0.12)', my: 0.75 }} />
+            <Divider sx={{ my: 1 }} />
             {Object.entries(information).map(([k, v]) => (
               <InfoNode key={k} label={k.replace(/_/g, ' ')} value={v} depth={0} />
             ))}
@@ -173,25 +182,27 @@ function ExpandableNode({
           justifyContent: 'space-between',
           cursor: 'pointer',
           userSelect: 'none',
-          mb: 0.25,
+          mb: 0.5,
           pl: depth,
-          '&:hover': { opacity: 0.85 },
+          color: 'text.secondary',
+          transition: 'color 0.15s ease',
+          '&:hover': { color: 'text.primary' },
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25, minWidth: 0 }}>
           {open ? <ExpandLessIcon sx={{ fontSize: 15 }} /> : <ExpandMoreIcon sx={{ fontSize: 15 }} />}
-          <Typography variant="caption" sx={{ opacity: 0.6, textTransform: 'capitalize' }}>
+          <Typography variant="caption" sx={{ textTransform: 'capitalize' }}>
             {label}
           </Typography>
         </Box>
         {badge && (
-          <Typography variant="caption" sx={{ opacity: 0.5, ml: 1 }}>
+          <Typography variant="caption" sx={{ color: 'text.disabled', ml: 1 }}>
             {badge}
           </Typography>
         )}
       </Box>
       <Collapse in={open} unmountOnExit>
-        <Box sx={{ ml: depth + 0.75, pl: 0.75, borderLeft: '1px solid rgba(255,255,255,0.12)' }}>
+        <Box sx={{ ml: depth + 0.75, pl: 0.75, borderLeft: '1px solid', borderColor: 'divider' }}>
           {children}
         </Box>
       </Collapse>
@@ -201,11 +212,11 @@ function ExpandableNode({
 
 function InfoRow({ label, value, depth = 0 }: { label: string; value: string; depth?: number }) {
   return (
-    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.25, pl: depth }}>
-      <Typography variant="caption" sx={{ opacity: 0.6, textTransform: 'capitalize', mr: 1 }}>
+    <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 1.5, mb: 0.5, pl: depth }}>
+      <Typography variant="caption" sx={{ color: 'text.secondary', textTransform: 'capitalize', flexShrink: 0 }}>
         {label}
       </Typography>
-      <Typography variant="caption" sx={{ textAlign: 'right', wordBreak: 'break-word' }}>
+      <Typography variant="caption" sx={{ color: 'text.primary', textAlign: 'right', wordBreak: 'break-word' }}>
         {value}
       </Typography>
     </Box>

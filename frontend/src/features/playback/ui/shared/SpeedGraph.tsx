@@ -114,7 +114,7 @@ export function SpeedGraph({
   return (
     <Paper
       elevation={1}
-      sx={{ mt: 1, p: 1, backgroundColor: 'rgba(0,0,0,0.7)', borderRadius: 1 }}
+      sx={{ mt: 1, p: 1, bgcolor: 'background.input', border: '1px solid', borderColor: 'divider', borderRadius: 1 }}
     >
       {/* Header + legend (legend only when multiple vessels) */}
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5, ml: 1, gap: 2, flexWrap: 'wrap' }}>
