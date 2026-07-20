@@ -34,6 +34,7 @@ const defaultFilters: ArticleFilters = {
 const mockMetadata: WorldMonitorMetadataApiResponse = {
   success: true,
   sources: ["GNews", "Reuters", "BBC"],
+  source_types: [],
   processing_statuses: ["processed", "pending", "failed"],
   event_types: [],
   threat_levels: [],
@@ -329,7 +330,7 @@ describe("useArticles", () => {
     });
 
     it("handles empty metadata arrays", async () => {
-      vi.mocked(getArticleMetadata).mockResolvedValue({ success: true, sources: [], processing_statuses: [], event_types: [], threat_levels: [], sort_options: [] });
+      vi.mocked(getArticleMetadata).mockResolvedValue({ success: true, sources: [], source_types: [], processing_statuses: [], event_types: [], threat_levels: [], sort_options: [] });
       vi.mocked(getArticles).mockResolvedValue(mockArticlesResponse);
       const { result } = renderHook(() => useArticles(defaultFilters, 1, 10), { wrapper: createWrapper() });
       await waitFor(() => {
