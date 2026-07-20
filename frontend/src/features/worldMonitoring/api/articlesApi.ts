@@ -17,6 +17,17 @@ export interface ArticleFiltersRequest {
   search?: string;
   source?: string;
   processingStatus?: string;
+  title?: string;
+  author?: string;
+  sourceType?: string;
+  publishedFrom?: string;
+  publishedTo?: string;
+  ingestedFrom?: string;
+  ingestedTo?: string;
+  updatedFrom?: string;
+  updatedTo?: string;
+  tags?: string;
+  locationName?: string;
   sort?: string;
 }
 
@@ -38,6 +49,39 @@ export async function getArticles(
   }
   if (filters.processingStatus) {
     params.processing_status = filters.processingStatus;
+  }
+  if (filters.title?.trim()) {
+    params.title = filters.title.trim();
+  }
+  if (filters.author?.trim()) {
+    params.author = filters.author.trim();
+  }
+  if (filters.sourceType) {
+    params.source_type = filters.sourceType;
+  }
+  if (filters.publishedFrom) {
+    params.published_from = filters.publishedFrom;
+  }
+  if (filters.publishedTo) {
+    params.published_to = filters.publishedTo;
+  }
+  if (filters.ingestedFrom) {
+    params.ingested_from = filters.ingestedFrom;
+  }
+  if (filters.ingestedTo) {
+    params.ingested_to = filters.ingestedTo;
+  }
+  if (filters.updatedFrom) {
+    params.updated_from = filters.updatedFrom;
+  }
+  if (filters.updatedTo) {
+    params.updated_to = filters.updatedTo;
+  }
+  if (filters.tags?.trim()) {
+    params.tags = filters.tags.trim();
+  }
+  if (filters.locationName?.trim()) {
+    params.location_name = filters.locationName.trim();
   }
   if (filters.sort) {
     params.sort = filters.sort;
