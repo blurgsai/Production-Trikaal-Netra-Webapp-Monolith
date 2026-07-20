@@ -18,6 +18,10 @@ class Settings(BaseSettings):
     JWT_SECRET: str
     JWT_ALGORITHM: str = "HS256"
 
+    # Collection names — overridable per environment (e.g. EVENTS_COLLECTION=events_temp).
+    EVENTS_COLLECTION: str = "events"
+    COMPOUND_COLLECTION: str = "compound_events"
+
     CLICKHOUSE_USER: str = "default"
     CLICKHOUSE_PASSWORD: str = ""
     CLICKHOUSE_HOST: str = "localhost"
