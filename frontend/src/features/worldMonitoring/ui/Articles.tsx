@@ -11,6 +11,7 @@ import {
 import FilterListIcon from "@mui/icons-material/FilterList";
 
 import { useArticles } from "../hooks/useArticles";
+import { useWorldMonitoringUrlParams } from "../hooks/useWorldMonitoringUrlParams";
 import { ArticleDetailDialog } from "./ArticleDetailDialog";
 import { ArticleFilterDialog } from "./ArticleFilterDialog";
 import { useNavigate } from "react-router-dom";
@@ -140,12 +141,51 @@ function progressiveFiltersToArticleFilters(
 }
 
 export function Articles() {
-  const [filters, setFilters] = useState(DEFAULT_FILTERS);
+  const urlParams = useWorldMonitoringUrlParams();
+  const [filters, setFilters] = useState(() =>
+    urlParams.hasParams
+      ? { ...DEFAULT_FILTERS, ...urlParams.articleFilters }
+      : DEFAULT_FILTERS,
+  );
   const [page, setPage] = useState(1);
 
   const [progressiveFilters, setProgressiveFilters] = useState<
     ArticleProgressiveFilter[]
-  >([]);
+  >(() => {
+    if (!urlParams.hasParams) return [];
+    const progressive: ArticleProgressiveFilter[] = [];
+    if (urlParams.keyword) {
+      progressive.push({ field: "keyword", operator: "contains", value: urlParams.keyword, combinator: "AND" });
+    }
+    if (urlParams.articleFilters.title) {
+      progressive.push({ field: "title", operator: "contains", value: urlParams.articleFilters.title, combinator: "AND" });
+    }
+    if (urlParams.articleFilters.author) {
+      progressive.push({ field: "author", operator: "contains", value: urlParams.articleFilters.author, combinator: "AND" });
+    }
+    if (urlParams.articleFilters.source) {
+      progressive.push({ field: "source", operator: "=", value: urlParams.articleFilters.source, combinator: "AND" });
+    }
+    if (urlParams.articleFilters.sourceType) {
+      progressive.push({ field: "source_type", operator: "=", value: urlParams.articleFilters.sourceType, combinator: "AND" });
+    }
+    if (urlParams.articleFilters.processingStatus) {
+      progressive.push({ field: "processing_status", operator: "=", value: urlParams.articleFilters.processingStatus, combinator: "AND" });
+    }
+    if (urlParams.articleFilters.publishedFrom) {
+      progressive.push({ field: "published", operator: ">=", value: urlParams.articleFilters.publishedFrom, combinator: "AND" });
+    }
+    if (urlParams.articleFilters.publishedTo) {
+      progressive.push({ field: "published", operator: "<=", value: urlParams.articleFilters.publishedTo, combinator: "AND" });
+    }
+    if (urlParams.articleFilters.tags) {
+      progressive.push({ field: "tags", operator: "contains", value: urlParams.articleFilters.tags, combinator: "AND" });
+    }
+    if (urlParams.articleFilters.locationName) {
+      progressive.push({ field: "location.name", operator: "contains", value: urlParams.articleFilters.locationName, combinator: "AND" });
+    }
+    return progressive;
+  });
   const [savedFilters, setSavedFilters] = useState<SavedArticleFilterSet[]>(
     () => loadSavedArticleFilters(),
   );

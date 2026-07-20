@@ -1,10 +1,11 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useRef, useState, useEffect } from "react";
 
 import { Box, Fade, Paper, Typography } from "@mui/material";
 import MapIcon from "@mui/icons-material/Map";
 import PlayArrowRoundedIcon from "@mui/icons-material/PlayArrowRounded";
 
 import type { PlaybackRange, TimeGranularity, PlaybackFilter } from "../model/types";
+import { usePlaybackUrlParams } from "../hooks/usePlaybackUrlParams";
 
 import PlaybackMap from "./PlaybackMap";
 import PlaybackDialog from "./PlaybackDialog";
@@ -29,23 +30,37 @@ interface PlaybackSession {
 }
 
 export default function HistoricalPlayback() {
+  const urlParams = usePlaybackUrlParams();
+
   const [polygon, setPolygon] = useState<
     GeoJSON.Feature | GeoJSON.Geometry | null
   >(null);
 
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  const [playbackRange, setPlaybackRange] = useState<PlaybackRange>({
-    start: toLocalDatetime(DATA_START_UTC),
-    end: toLocalDatetime(DATA_END_UTC),
-  });
+  const [playbackRange, setPlaybackRange] = useState<PlaybackRange>(() => ({
+    start: urlParams.start ?? toLocalDatetime(DATA_START_UTC),
+    end: urlParams.end ?? toLocalDatetime(DATA_END_UTC),
+  }));
 
-  const [filters, setFilters] = useState<PlaybackFilter[]>([]);
+  const [filters, setFilters] = useState<PlaybackFilter[]>(() =>
+    urlParams.filters,
+  );
 
-  const [granularity, setGranularity] = useState<TimeGranularity>("hour");
+  const [granularity, setGranularity] = useState<TimeGranularity>(() =>
+    urlParams.granularity ?? "hour",
+  );
 
   const [vesselsData, setVesselsData] = useState<PlaybackSession | null>(null);
   const [drawingActive, setDrawingActive] = useState(false);
+
+  // Apply zone polygon from URL on mount
+  useEffect(() => {
+    if (urlParams.zone) {
+      setPolygon(urlParams.zone);
+      setDialogOpen(true);
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const clearDrawnShapeRef = useRef<(() => void) | null>(null);
   const drawPolygonRef = useRef<(() => void) | null>(null);

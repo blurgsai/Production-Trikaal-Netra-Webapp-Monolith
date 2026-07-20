@@ -6,6 +6,7 @@ import {
 } from "@mui/material";
 
 import { useThreats } from "../hooks/useThreats";
+import { useWorldMonitoringUrlParams } from "../hooks/useWorldMonitoringUrlParams";
 
 import type {
   ThreatFilters,
@@ -146,13 +147,20 @@ function progressiveFiltersToThreatFilters(
 }
 
 export function Threats() {
-  const [filters, setFilters] = useState<ThreatFilters>(DEFAULT_FILTERS);
-  const [keywordInput, setKeywordInput] = useState("");
+  const urlParams = useWorldMonitoringUrlParams();
+  const [filters, setFilters] = useState<ThreatFilters>(() =>
+    urlParams.hasParams
+      ? { ...DEFAULT_FILTERS, ...urlParams.threatFilters }
+      : DEFAULT_FILTERS,
+  );
+  const [keywordInput, setKeywordInput] = useState(() =>
+    urlParams.keyword ?? "",
+  );
   const [page, setPage] = useState(1);
 
   const [progressiveFilters, setProgressiveFilters] = useState<
     ThreatProgressiveFilter[]
-  >([]);
+  >(() => urlParams.threatProgressiveFilters);
   const [savedFilters, setSavedFilters] = useState<SavedThreatFilterSet[]>(
     () => loadSavedThreatFilters(),
   );
