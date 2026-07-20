@@ -1,5 +1,5 @@
 import { Box } from "@mui/material";
-import { BaseMap, MapNavbar, VesselTableTool, LayerPanel, VesselConfigPanel, ChartHouse, useMapConfig, useVesselTrajectory, useVesselTable, useVesselColumns, MapTileSettings, useMapUrlParams, fetchVesselByMmsi, mapRawVesselToInfo } from "@/features/map";
+import { BaseMap, MapNavbar, VesselTableTool, LayerPanel, VesselConfigPanel, ChartHouse, useMapConfig, useVesselTrajectory, useVesselTable, useVesselColumns, MapTileSettings, useMapUrlParams, useVesselByMmsi } from "@/features/map";
 import type { VesselInfo, VesselConfig, ViewTile, Polygon, PopupFieldConfig, ChartConfig } from "@/features/map";
 import { useLocalStorage } from "@/shared";
 import { useState, useEffect, useCallback } from "react";
@@ -19,6 +19,7 @@ const DEFAULT_LAYOUT: MosaicNode<ViewTile> = {
 
 function MapPage() {
   const urlParams = useMapUrlParams();
+  const vesselFromUrl = useVesselByMmsi(urlParams.vessel);
   const { fetchColumns, searchValues } = useVesselColumns();
   const {
     baseMaps,
@@ -145,25 +146,18 @@ function MapPage() {
   };
 
   useEffect(() => {
-    if (!urlParams.vessel) return;
-    let cancelled = false;
-    fetchVesselByMmsi(urlParams.vessel).then((raw) => {
-      if (cancelled || !raw) return;
-      const vessel = mapRawVesselToInfo(raw);
-      if (!vessel) return;
-      setSelectedVessel(vessel);
-      setSelectedVesselPosition({ lat: vessel.locationCurrentLat, lng: vessel.locationCurrentLon });
-      loadTrajectory({
-        vesselId: vessel.id,
-        timeSeconds: vesselConfig.trajectory.timeSeconds,
-        lat: vessel.locationCurrentLat,
-        lon: vessel.locationCurrentLon,
-        heading: vessel.headingCurrentConsensusValue,
-        speed: vessel.speedCurrentConsensusValue,
-      });
+    if (!vesselFromUrl) return;
+    setSelectedVessel(vesselFromUrl);
+    setSelectedVesselPosition({ lat: vesselFromUrl.locationCurrentLat, lng: vesselFromUrl.locationCurrentLon });
+    loadTrajectory({
+      vesselId: vesselFromUrl.id,
+      timeSeconds: vesselConfig.trajectory.timeSeconds,
+      lat: vesselFromUrl.locationCurrentLat,
+      lon: vesselFromUrl.locationCurrentLon,
+      heading: vesselFromUrl.headingCurrentConsensusValue,
+      speed: vesselFromUrl.speedCurrentConsensusValue,
     });
-    return () => { cancelled = true; };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [vesselFromUrl, loadTrajectory, vesselConfig.trajectory.timeSeconds, setSelectedVessel]);
 
   const handleApplyVesselStyle = async (draft: VesselConfig) => {
     await applyVesselStyle(draft);
