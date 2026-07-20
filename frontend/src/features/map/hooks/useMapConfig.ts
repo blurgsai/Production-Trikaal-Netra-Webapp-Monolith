@@ -88,6 +88,8 @@ export function useMapConfig(options: UseMapConfigOptions = {}) {
   const styleRequestIdRef = useRef(0);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const skipSaveRef = useRef(true);
+  const urlOverridesRef = useRef(urlOverrides);
+  urlOverridesRef.current = urlOverrides;
 
   const allBaseMaps = useMemo(() => [...defaultBaseMaps, ...customBaseMaps], [customBaseMaps]);
   const allOverlayLayers = useMemo(() => [...overlayLayers, ...dynamicOverlays], [dynamicOverlays]);
@@ -117,26 +119,27 @@ export function useMapConfig(options: UseMapConfigOptions = {}) {
         setVesselConfig(domain.vesselConfig ?? DEFAULT_VESSEL_CONFIG);
         setMapControlSettings(domain.mapControlSettings ?? DEFAULT_MAP_CONTROL_SETTINGS);
 
-        if (urlOverrides) {
-          if (urlOverrides.basemap) {
-            const map = mergedBaseMaps.find((m) => m.id === urlOverrides.basemap);
+        const overrides = urlOverridesRef.current;
+        if (overrides) {
+          if (overrides.basemap) {
+            const map = mergedBaseMaps.find((m) => m.id === overrides.basemap);
             if (map) setSelectedBaseMap(map);
           }
-          if (urlOverrides.layers && urlOverrides.layers.length > 0) {
+          if (overrides.layers && overrides.layers.length > 0) {
             const newActive: Record<string, boolean> = {};
-            urlOverrides.layers.forEach((id) => { newActive[id] = true; });
+            overrides.layers.forEach((id) => { newActive[id] = true; });
             setActiveLayers(newActive);
           }
-          if (urlOverrides.briefing) {
+          if (overrides.briefing) {
             setMapControlSettings({ toolbar: false, zoombar: true, minimap: false, statusbar: false });
           }
-          if (urlOverrides.flyto) {
-            setFlyToBounds(urlOverrides.flyto);
+          if (overrides.flyto) {
+            setFlyToBounds(overrides.flyto);
           }
-          if (urlOverrides.trackSeconds) {
+          if (overrides.trackSeconds) {
             setVesselConfig((prev) => ({
               ...prev,
-              trajectory: { ...prev.trajectory, timeSeconds: urlOverrides.trackSeconds! },
+              trajectory: { ...prev.trajectory, timeSeconds: overrides.trackSeconds! },
             }));
           }
         }

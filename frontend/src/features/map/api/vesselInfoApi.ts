@@ -1,6 +1,4 @@
 import L from "leaflet";
-import { mapRawVesselToInfo } from "../model/mappers";
-import type { VesselInfo } from "../model/types";
 
 const GEOSERVER_WMS_URL = `${import.meta.env.VITE_GEOSERVER_BASE_URL}/${
   import.meta.env.VITE_GEOSERVER_WORKSPACE
@@ -50,7 +48,7 @@ export async function fetchVesselInfo(
   return data?.features?.[0]?.properties ?? null;
 }
 
-export async function fetchVesselByMmsi(mmsi: string): Promise<VesselInfo | null> {
+export async function fetchVesselByMmsi(mmsi: string): Promise<RawVesselFeature | null> {
   const cql = `identification_mmsi=${mmsi}`;
   const url =
     `${GEOSERVER_WFS_URL}?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature` +
@@ -61,7 +59,7 @@ export async function fetchVesselByMmsi(mmsi: string): Promise<VesselInfo | null
     const data = await res.json();
     const props = data?.features?.[0]?.properties;
     if (!props) return null;
-    return mapRawVesselToInfo(props);
+    return props as RawVesselFeature;
   } catch {
     return null;
   }

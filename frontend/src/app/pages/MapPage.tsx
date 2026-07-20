@@ -1,5 +1,5 @@
 import { Box } from "@mui/material";
-import { BaseMap, MapNavbar, VesselTableTool, LayerPanel, VesselConfigPanel, ChartHouse, useMapConfig, useVesselTrajectory, useVesselTable, useVesselColumns, MapTileSettings, useMapUrlParams, fetchVesselByMmsi } from "@/features/map";
+import { BaseMap, MapNavbar, VesselTableTool, LayerPanel, VesselConfigPanel, ChartHouse, useMapConfig, useVesselTrajectory, useVesselTable, useVesselColumns, MapTileSettings, useMapUrlParams, fetchVesselByMmsi, mapRawVesselToInfo } from "@/features/map";
 import type { VesselInfo, VesselConfig, ViewTile, Polygon, PopupFieldConfig, ChartConfig } from "@/features/map";
 import { useLocalStorage } from "@/shared";
 import { useState, useEffect, useCallback } from "react";
@@ -147,8 +147,10 @@ function MapPage() {
   useEffect(() => {
     if (!urlParams.vessel) return;
     let cancelled = false;
-    fetchVesselByMmsi(urlParams.vessel).then((vessel) => {
-      if (cancelled || !vessel) return;
+    fetchVesselByMmsi(urlParams.vessel).then((raw) => {
+      if (cancelled || !raw) return;
+      const vessel = mapRawVesselToInfo(raw);
+      if (!vessel) return;
       setSelectedVessel(vessel);
       setSelectedVesselPosition({ lat: vessel.locationCurrentLat, lng: vessel.locationCurrentLon });
       loadTrajectory({

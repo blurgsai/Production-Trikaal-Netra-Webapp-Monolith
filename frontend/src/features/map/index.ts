@@ -8,6 +8,7 @@ export { useVesselTable } from "./hooks/useVesselTable";
 export { useMapUrlParams } from "./hooks/useMapUrlParams";
 export type { MapUrlParams } from "./hooks/useMapUrlParams";
 export { fetchVesselByMmsi } from "./api/vesselInfoApi";
+export { mapRawVesselToInfo } from "./model/mappers";
 export type { BaseMap as BaseMapConfig, OverlayLayerConfig, VesselConfig, CustomShape, StyleDefinition, StyleRule, VesselInfo, VesselDetails, VesselImage, TrajectoryPoint, VesselCountCategory, VesselTableFilter, VesselTableRow, SavedFilterSet, Polygon, PopupFieldConfig, MapControlSettings } from "./model/types";
 export type { ViewTile } from "./ui/MapNavbar";
 export { default as LayerPanel } from "./ui/LayerPanel";
