@@ -1,5 +1,5 @@
 import { Box } from "@mui/material";
-import { BaseMap, MapNavbar, VesselTableTool, LayerPanel, VesselConfigPanel, ChartHouse, useMapConfig, useVesselTrajectory, useVesselTable, useVesselColumns, MapTileSettings } from "@/features/map";
+import { BaseMap, MapNavbar, VesselTableTool, LayerPanel, VesselConfigPanel, ChartHouse, useMapConfig, useVesselTrajectory, useVesselTable, useVesselColumns, MapTileSettings, useMapUrlParams, fetchVesselByMmsi } from "@/features/map";
 import type { VesselInfo, VesselConfig, ViewTile, Polygon, PopupFieldConfig, ChartConfig } from "@/features/map";
 import { useLocalStorage } from "@/shared";
 import { useState, useEffect, useCallback } from "react";
@@ -18,6 +18,7 @@ const DEFAULT_LAYOUT: MosaicNode<ViewTile> = {
 } as unknown as MosaicNode<ViewTile>;
 
 function MapPage() {
+  const urlParams = useMapUrlParams();
   const { fetchColumns, searchValues } = useVesselColumns();
   const {
     baseMaps,
@@ -40,13 +41,29 @@ function MapPage() {
     flyToBounds,
     setFlyToBounds,
     flyToLayer,
-  } = useMapConfig();
+  } = useMapConfig({
+    urlOverrides: urlParams.hasParams
+      ? {
+          basemap: urlParams.basemap,
+          layers: urlParams.layers,
+          briefing: urlParams.briefing,
+          flyto: urlParams.flyto,
+          trackSeconds: urlParams.track,
+        }
+      : undefined,
+  });
 
   const [selectedVesselPosition, setSelectedVesselPosition] = useState<{ lat: number; lng: number } | null>(null);
-  const [polygonFilters, setPolygonFilters] = useState<Polygon[]>([]);
+  const [polygonFilters, setPolygonFilters] = useState<Polygon[]>(urlParams.zone);
   const [visibleTiles, setVisibleTiles] = useLocalStorage<ViewTile[]>("trikaal_mosaic_tiles", DEFAULT_TILES);
   const [mosaicLayout, setMosaicLayout] = useLocalStorage<MosaicNode<ViewTile>>("trikaal_mosaic_layout", DEFAULT_LAYOUT);
   const [chartConfigs, setChartConfigs] = useLocalStorage<ChartConfig[]>("trikaal_chart_configs", []);
+
+  useEffect(() => {
+    if (urlParams.view.length > 0) {
+      setVisibleTiles(urlParams.view as ViewTile[]);
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleCreateChart = useCallback((chart: ChartConfig) => {
     setChartConfigs((prev) => [...prev, chart]);
@@ -90,7 +107,11 @@ function MapPage() {
     saveCurrentFilter,
     loadSavedFilter,
     deleteSavedFilter,
-  } = useVesselTable({ polygonFilters, onPolygonFiltersChange: setPolygonFilters });
+  } = useVesselTable({
+    polygonFilters,
+    onPolygonFiltersChange: setPolygonFilters,
+    initialFilters: urlParams.filters.length > 0 ? urlParams.filters : undefined,
+  });
   
   console.log("🗺️ Map CQL Debug:", {
     appliedFilters,
@@ -122,6 +143,25 @@ function MapPage() {
   const handlePopupFieldsChange = (fields: PopupFieldConfig) => {
     setVesselConfig((prev) => ({ ...prev, popupFields: fields }));
   };
+
+  useEffect(() => {
+    if (!urlParams.vessel) return;
+    let cancelled = false;
+    fetchVesselByMmsi(urlParams.vessel).then((vessel) => {
+      if (cancelled || !vessel) return;
+      setSelectedVessel(vessel);
+      setSelectedVesselPosition({ lat: vessel.locationCurrentLat, lng: vessel.locationCurrentLon });
+      loadTrajectory({
+        vesselId: vessel.id,
+        timeSeconds: vesselConfig.trajectory.timeSeconds,
+        lat: vessel.locationCurrentLat,
+        lon: vessel.locationCurrentLon,
+        heading: vessel.headingCurrentConsensusValue,
+        speed: vessel.speedCurrentConsensusValue,
+      });
+    });
+    return () => { cancelled = true; };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleApplyVesselStyle = async (draft: VesselConfig) => {
     await applyVesselStyle(draft);

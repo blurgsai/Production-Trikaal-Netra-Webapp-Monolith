@@ -10,12 +10,13 @@ interface UseVesselTableOptions {
   pageSize?: number;
   polygonFilters?: Polygon[];
   onPolygonFiltersChange?: (polygons: Polygon[]) => void;
+  initialFilters?: VesselTableFilter[];
 }
 
 export function useVesselTable(options: UseVesselTableOptions = {}) {
   const { polygonFilters = [], onPolygonFiltersChange } = options;
-  const [filters, setFilters] = useState<VesselTableFilter[]>([]);
-  const [appliedFilters, setAppliedFilters] = useState<VesselTableFilter[]>([]);
+  const [filters, setFilters] = useState<VesselTableFilter[]>(options.initialFilters ?? []);
+  const [appliedFilters, setAppliedFilters] = useState<VesselTableFilter[]>(options.initialFilters ?? []);
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(options.pageSize ?? DEFAULT_PAGE_SIZE);
   const [sortBy, setSortBy] = useState<string | undefined>(undefined);

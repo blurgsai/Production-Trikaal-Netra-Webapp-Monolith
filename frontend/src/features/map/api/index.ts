@@ -4,7 +4,7 @@ export { fetchDynamicOverlays, fetchOverlayBounds, setCachedOverlays } from "./o
 export { applyVesselStyle, validateStyleExists } from "./vesselStyleApi";
 export { fetchVesselTrajectory } from "./trajectoryApi";
 export type { FetchTrajectoryParams } from "./trajectoryApi";
-export { fetchVesselInfo } from "./vesselInfoApi";
+export { fetchVesselInfo, fetchVesselByMmsi } from "./vesselInfoApi";
 export { fetchCountryPrefixes } from "./countryPrefixesApi";
 export { fetchVesselTable, fetchVesselCount, fetchVesselCategoryCounts, fetchUniqueColumnValues, searchColumnValues, fetchVesselTableColumns } from "./vesselTableApi";
 export { fetchVesselDetails } from "./vesselDetailsApi";

@@ -61,7 +61,18 @@ const DEFAULT_MAP_CONTROL_SETTINGS: MapControlSettings = {
   statusbar: true,
 };
 
-export function useMapConfig() {
+export interface UseMapConfigOptions {
+  urlOverrides?: {
+    basemap?: string;
+    layers?: string[];
+    briefing?: boolean;
+    flyto?: [number, number, number, number];
+    trackSeconds?: number;
+  };
+}
+
+export function useMapConfig(options: UseMapConfigOptions = {}) {
+  const { urlOverrides } = options;
   const [customBaseMaps, setCustomBaseMaps] = useState<BaseMap[]>([]);
   const [dynamicOverlays, setDynamicOverlays] = useState<OverlayLayerConfig[]>([]);
   const [selectedBaseMap, setSelectedBaseMap] = useState<BaseMap>(() => defaultBaseMap);
@@ -105,6 +116,31 @@ export function useMapConfig() {
         });
         setVesselConfig(domain.vesselConfig ?? DEFAULT_VESSEL_CONFIG);
         setMapControlSettings(domain.mapControlSettings ?? DEFAULT_MAP_CONTROL_SETTINGS);
+
+        if (urlOverrides) {
+          if (urlOverrides.basemap) {
+            const map = mergedBaseMaps.find((m) => m.id === urlOverrides.basemap);
+            if (map) setSelectedBaseMap(map);
+          }
+          if (urlOverrides.layers && urlOverrides.layers.length > 0) {
+            const newActive: Record<string, boolean> = {};
+            urlOverrides.layers.forEach((id) => { newActive[id] = true; });
+            setActiveLayers(newActive);
+          }
+          if (urlOverrides.briefing) {
+            setMapControlSettings({ toolbar: false, zoombar: true, minimap: false, statusbar: false });
+          }
+          if (urlOverrides.flyto) {
+            setFlyToBounds(urlOverrides.flyto);
+          }
+          if (urlOverrides.trackSeconds) {
+            setVesselConfig((prev) => ({
+              ...prev,
+              trajectory: { ...prev.trajectory, timeSeconds: urlOverrides.trackSeconds! },
+            }));
+          }
+        }
+
         skipSaveRef.current = false;
       });
     });
