@@ -1,10 +1,10 @@
 import { useState } from "react";
 import {
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
-  Box,
+  Dialog,
+  DialogTitle,
+  DialogContent,
   Button,
+  Box,
   Chip,
   CircularProgress,
   Divider,
@@ -18,11 +18,12 @@ import {
 import FlagIcon from "@mui/icons-material/Flag";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import SendIcon from "@mui/icons-material/Send";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import type { VesselFlag, VesselFlagStatus } from "../model/types";
 import { useVesselFlags } from "../hooks/useVesselFlags";
 
-interface VesselFlagsProps {
+interface VesselFlagsDialogProps {
+  open: boolean;
+  onClose: () => void;
   vesselId: string;
 }
 
@@ -48,7 +49,7 @@ function formatTimestamp(iso: string): string {
   });
 }
 
-function VesselFlags({ vesselId }: VesselFlagsProps) {
+export default function VesselFlagsDialog({ open, onClose, vesselId }: VesselFlagsDialogProps) {
   const { flags, loading, error, addFlag, removeFlag } = useVesselFlags(vesselId);
   const [selectedFlag, setSelectedFlag] = useState<VesselFlagStatus>("safe");
   const [comment, setComment] = useState("");
@@ -69,19 +70,41 @@ function VesselFlags({ vesselId }: VesselFlagsProps) {
   };
 
   return (
-    <Accordion disableGutters square elevation={0} defaultExpanded={false} sx={{ "&:before": { display: "none" } }}>
-      <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={{ px: 1.5, minHeight: 40, "&.Mui-expanded": { minHeight: 40 } }}>
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1, width: "100%", pr: 1 }}>
-          <FlagIcon fontSize="small" color="action" />
-          <Typography variant="subtitle2" fontWeight={600}>Vessel Flags</Typography>
-          {flags.length > 0 && (
-            <Chip label={flags.length} size="small" sx={{ height: 18, fontSize: "0.65rem" }} />
-          )}
+    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: 2 } }}>
+      <DialogTitle sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", pr: 1, borderBottom: 1, borderColor: "divider" }}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+          <Box
+            sx={{
+              width: 32,
+              height: 32,
+              borderRadius: 1,
+              bgcolor: "primary.main",
+              color: "primary.contrastText",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <FlagIcon sx={{ fontSize: 18 }} />
+          </Box>
+          <Box>
+            <Typography variant="subtitle1" fontWeight={700}>
+              Vessel Flags
+            </Typography>
+            <Typography variant="caption" color="text.secondary">
+              {flags.length} flag{flags.length !== 1 ? "s" : ""}
+            </Typography>
+          </Box>
         </Box>
-      </AccordionSummary>
-      <AccordionDetails sx={{ px: 1.5, py: 1 }}>
-        <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+        <Button onClick={onClose} size="small">
+          Close
+        </Button>
+      </DialogTitle>
+
+      <DialogContent sx={{ px: 3, py: 2 }}>
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          {/* Add Flag Form */}
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
             <FormControl size="small" fullWidth>
               <Select
                 value={selectedFlag}
@@ -121,8 +144,8 @@ function VesselFlags({ vesselId }: VesselFlagsProps) {
           </Box>
 
           {loading && (
-            <Box sx={{ display: "flex", justifyContent: "center", py: 1 }}>
-              <CircularProgress size={16} />
+            <Box sx={{ display: "flex", justifyContent: "center", py: 2 }}>
+              <CircularProgress size={20} />
             </Box>
           )}
 
@@ -132,20 +155,23 @@ function VesselFlags({ vesselId }: VesselFlagsProps) {
             </Typography>
           )}
 
+          {/* Flags List */}
           {!loading && flags.length > 0 && (
             <>
-              <Divider sx={{ my: 0.5 }} />
-              <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+              <Divider />
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
                 {flags.map((flag: VesselFlag) => (
                   <Box
                     key={flag.id}
                     sx={{
                       display: "flex",
                       flexDirection: "column",
-                      gap: 0.5,
-                      p: 1,
+                      gap: 0.75,
+                      p: 1.5,
                       borderRadius: 1,
-                      bgcolor: "action.hover",
+                      bgcolor: "background.elevated",
+                      border: 1,
+                      borderColor: "border.default",
                     }}
                   >
                     <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
@@ -153,23 +179,23 @@ function VesselFlags({ vesselId }: VesselFlagsProps) {
                         label={flag.flag}
                         size="small"
                         color={getFlagColor(flag.flag)}
-                        sx={{ height: 20, fontSize: "0.65rem", fontWeight: 600 }}
+                        sx={{ height: 22, fontSize: "0.6875rem", fontWeight: 600 }}
                       />
                       <IconButton
                         size="small"
                         aria-label="delete flag"
                         onClick={() => removeFlag(flag.id)}
-                        sx={{ p: 0.25 }}
+                        sx={{ p: 0.5 }}
                       >
                         <DeleteOutlineIcon fontSize="small" />
                       </IconButton>
                     </Box>
                     {flag.comment && (
-                      <Typography variant="caption" sx={{ wordBreak: "break-word" }}>
+                      <Typography variant="body2" sx={{ wordBreak: "break-word", lineHeight: 1.5 }}>
                         {flag.comment}
                       </Typography>
                     )}
-                    <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                    <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                       <Typography variant="caption" color="text.secondary" fontWeight={600}>
                         {flag.userId}
                       </Typography>
@@ -184,14 +210,12 @@ function VesselFlags({ vesselId }: VesselFlagsProps) {
           )}
 
           {!loading && flags.length === 0 && !error && (
-            <Typography variant="caption" color="text.secondary" sx={{ textAlign: "center", py: 0.5 }}>
+            <Typography variant="body2" color="text.secondary" sx={{ textAlign: "center", py: 2 }}>
               No flags yet for this vessel.
             </Typography>
           )}
         </Box>
-      </AccordionDetails>
-    </Accordion>
+      </DialogContent>
+    </Dialog>
   );
 }
-
-export default VesselFlags;
