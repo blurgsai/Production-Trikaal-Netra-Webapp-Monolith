@@ -221,7 +221,7 @@ def _extract_reasoning(event_doc: dict[str, Any]) -> str | None:
     if direct:
         return direct
     for item in event_doc.get("extracted_data", []) or []:
-        nested = _clean_text((item or {}).get("extracted_data", {}).get("reasoning"))
+        nested = _clean_text((item if isinstance(item, dict) else {}).get("extracted_data", {}).get("reasoning"))
         if nested:
             return nested
     return None
@@ -232,7 +232,7 @@ def _extract_threat_level(event_doc: dict[str, Any]) -> str:
     if isinstance(level, str) and level.strip():
         return level.strip().upper()
     for item in event_doc.get("extracted_data", []) or []:
-        nested = (item or {}).get("extracted_data", {}).get("threat_level")
+        nested = (item if isinstance(item, dict) else {}).get("extracted_data", {}).get("threat_level")
         if isinstance(nested, str) and nested.strip():
             return nested.strip().upper()
     return "MEDIUM"
@@ -240,7 +240,7 @@ def _extract_threat_level(event_doc: dict[str, Any]) -> str:
 
 def _primary_location_name(event_doc: dict[str, Any]) -> str | None:
     for item in event_doc.get("extracted_data", []) or []:
-        nested_location = (item or {}).get("extracted_data", {}).get("location")
+        nested_location = (item if isinstance(item, dict) else {}).get("extracted_data", {}).get("location")
         if isinstance(nested_location, str) and nested_location.strip():
             return nested_location.strip()
     locations = event_doc.get("location") or []
@@ -303,7 +303,7 @@ def _build_event_title(
     threat_type = None
 
     for item in event_doc.get("extracted_data", []) or []:
-        payload = (item or {}).get("extracted_data", {})
+        payload = (item if isinstance(item, dict) else {}).get("extracted_data", {})
         vessel_name = vessel_name or _clean_text(payload.get("vessel_name"))
         threat_type = threat_type or _clean_text(payload.get("threat_type"))
 
@@ -327,7 +327,7 @@ def _build_event_summary(
         return direct_summary
 
     for item in event_doc.get("extracted_data", []) or []:
-        payload = (item or {}).get("extracted_data", {})
+        payload = (item if isinstance(item, dict) else {}).get("extracted_data", {})
         nested_summary = _clean_text(payload.get("summary"))
         if nested_summary:
             return nested_summary
@@ -359,7 +359,7 @@ def _extract_structured_fields(event_doc: dict[str, Any]) -> list[dict[str, Any]
     fields: list[dict[str, Any]] = []
     seen: set[str] = set()
     for item in event_doc.get("extracted_data", []) or []:
-        payload = (item or {}).get("extracted_data", {})
+        payload = (item if isinstance(item, dict) else {}).get("extracted_data", {})
         for key, value in payload.items():
             if key in {"summary", "reasoning", "threat_level"} or value in (None, "", []):
                 continue
@@ -384,9 +384,9 @@ def map_article_preview_from_doc(
         "source_type": _clean_text(article_doc.get("source_type")),
         "author": _clean_text(article_doc.get("author")),
         "published": _stringify_datetime(article_doc.get("published")),
-        "summary": _clean_text(article_doc.get("summary")),
+        "summary": _strip_html(article_doc.get("summary")),
         "image_url": article_doc.get("image_url"),
-        "processed_content": _clean_text(article_doc.get("processed_content")),
+        "processed_content": _strip_html(article_doc.get("processed_content")),
         "raw_content": _strip_html(article_doc.get("raw_content")),
         "tags": [str(tag) for tag in article_doc.get("tags") or []],
         "locations": locations,
@@ -461,7 +461,7 @@ def map_article_from_doc(
         "published": _stringify_datetime(article_doc.get("published")),
         "updated": _stringify_datetime(article_doc.get("updated")),
         "ingested_at": _stringify_datetime(article_doc.get("ingested_at")),
-        "summary": _clean_text(article_doc.get("summary")),
+        "summary": _strip_html(article_doc.get("summary")),
         "image_url": article_doc.get("image_url"),
         "tags": [str(tag) for tag in article_doc.get("tags") or []],
         "processing_status": article_doc.get("processing_status"),
@@ -471,9 +471,8 @@ def map_article_from_doc(
     }
 
     if include_linked_events:
-        normalized["processed_content"] = (
-            _clean_text(article_doc.get("processed_content"))
-            or _strip_html(article_doc.get("processed_content"))
+        normalized["processed_content"] = _strip_html(
+            article_doc.get("processed_content")
         )
         normalized["raw_content"] = _strip_html(article_doc.get("raw_content"))
         normalized["locations"] = locations

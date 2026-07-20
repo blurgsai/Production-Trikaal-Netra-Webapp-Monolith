@@ -1,17 +1,18 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Alert,
-  Autocomplete,
   Box,
   CircularProgress,
   Pagination,
   Paper,
-  TextField,
   Typography,
+  Button,
 } from "@mui/material";
+import FilterListIcon from "@mui/icons-material/FilterList";
 
 import { useArticles } from "../hooks/useArticles";
 import { ArticleDetailDialog } from "./ArticleDetailDialog";
+import { ArticleFilterDialog } from "./ArticleFilterDialog";
 import { useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
 import { ArticleCard } from "./ArticleCard";
@@ -19,26 +20,139 @@ import { WorldMonitorScrollbarStyles } from "./ScrollbarStyles";
 
 import { defenseColors } from "@/shared/theme";
 
-const filterInputSx = {
-  pt: 0.5,
-  "& .MuiOutlinedInput-root": {
-    color: defenseColors.text.primary,
-    backgroundColor: defenseColors.border.soft,
-    "& fieldset": { borderColor: defenseColors.border.strong },
-    "&:hover fieldset": { borderColor: defenseColors.text.muted },
-  },
+import type {
+  ArticleProgressiveFilter,
+  SavedArticleFilterSet,
+} from "../model/types";
+import {
+  loadSavedArticleFilters,
+  saveArticleFilter,
+  deleteSavedArticleFilter,
+} from "../model/articleFilterStorage";
+
+const DEFAULT_FILTERS = {
+  search: "",
+  source: "",
+  processingStatus: "",
+  sort: "latest",
 };
 
-export function Articles() {
-  const [filters, setFilters] = useState({
+function progressiveFiltersToArticleFilters(
+  progressive: ArticleProgressiveFilter[],
+  sort: string,
+) {
+  const result = {
     search: "",
     source: "",
     processingStatus: "",
-  });
+    title: "",
+    author: "",
+    sourceType: "",
+    publishedFrom: "",
+    publishedTo: "",
+    ingestedFrom: "",
+    ingestedTo: "",
+    updatedFrom: "",
+    updatedTo: "",
+    tags: "",
+    locationName: "",
+    sort,
+  };
+
+  for (const f of progressive) {
+    if (!f.field || !f.operator || !f.value) continue;
+
+    switch (f.field) {
+      case "keyword":
+        if (f.operator === "contains" || f.operator === "=") {
+          result.search = f.value;
+        }
+        break;
+      case "title":
+        if (f.operator === "contains" || f.operator === "=") {
+          result.title = f.value;
+        }
+        break;
+      case "author":
+        if (f.operator === "contains" || f.operator === "=") {
+          result.author = f.value;
+        }
+        break;
+      case "source":
+        if (f.operator === "=" || f.operator === "contains") {
+          result.source = f.value;
+        }
+        break;
+      case "source_type":
+        if (f.operator === "=") {
+          result.sourceType = f.value;
+        }
+        break;
+      case "processing_status":
+        if (f.operator === "=") {
+          result.processingStatus = f.value;
+        }
+        break;
+      case "published":
+        if (f.operator === ">=") {
+          result.publishedFrom = f.value;
+        } else if (f.operator === "<=") {
+          result.publishedTo = f.value;
+        } else if (f.operator === "between") {
+          result.publishedFrom = f.value;
+          result.publishedTo = f.value2 || "";
+        }
+        break;
+      case "ingested_at":
+        if (f.operator === ">=") {
+          result.ingestedFrom = f.value;
+        } else if (f.operator === "<=") {
+          result.ingestedTo = f.value;
+        } else if (f.operator === "between") {
+          result.ingestedFrom = f.value;
+          result.ingestedTo = f.value2 || "";
+        }
+        break;
+      case "updated":
+        if (f.operator === ">=") {
+          result.updatedFrom = f.value;
+        } else if (f.operator === "<=") {
+          result.updatedTo = f.value;
+        } else if (f.operator === "between") {
+          result.updatedFrom = f.value;
+          result.updatedTo = f.value2 || "";
+        }
+        break;
+      case "tags":
+        if (f.operator === "contains" || f.operator === "=") {
+          result.tags = f.value;
+        }
+        break;
+      case "location.name":
+        if (f.operator === "contains" || f.operator === "=") {
+          result.locationName = f.value;
+        }
+        break;
+    }
+  }
+
+  return result;
+}
+
+export function Articles() {
+  const [filters, setFilters] = useState(DEFAULT_FILTERS);
+  const [page, setPage] = useState(1);
+
+  const [progressiveFilters, setProgressiveFilters] = useState<
+    ArticleProgressiveFilter[]
+  >([]);
+  const [savedFilters, setSavedFilters] = useState<SavedArticleFilterSet[]>(
+    () => loadSavedArticleFilters(),
+  );
+  const [filterDialogOpen, setFilterDialogOpen] = useState(false);
 
   const { articleId } = useParams<{ articleId?: string }>();
   const navigate = useNavigate();
-  const [page, setPage] = useState(1);
   const [selectedArticleId, setSelectedArticleId] = useState<string | null>(
     null,
   );
@@ -58,10 +172,70 @@ export function Articles() {
   const articles = data?.articles ?? [];
   const pagination = data?.pagination;
 
-  function setFilter(key: string, value: string) {
-    setFilters((prev) => ({ ...prev, [key]: value }));
+  const handleAddProgressiveFilter = useCallback(() => {
+    setProgressiveFilters((prev) => [
+      ...prev,
+      {
+        field: "keyword",
+        operator: "contains",
+        value: "",
+        combinator: "AND",
+      },
+    ]);
+  }, []);
+
+  const handleUpdateProgressiveFilter = useCallback(
+    (index: number, update: Partial<ArticleProgressiveFilter>) => {
+      setProgressiveFilters((prev) => {
+        const updated = [...prev];
+        updated[index] = { ...updated[index], ...update };
+        return updated;
+      });
+    },
+    [],
+  );
+
+  const handleRemoveProgressiveFilter = useCallback((index: number) => {
+    setProgressiveFilters((prev) => prev.filter((_, i) => i !== index));
+  }, []);
+
+  const handleResetProgressiveFilters = useCallback(() => {
+    setProgressiveFilters([]);
+  }, []);
+
+  const handleApplyProgressiveFilters = useCallback(() => {
+    const newFilters = progressiveFiltersToArticleFilters(
+      progressiveFilters,
+      filters.sort,
+    );
+    setFilters(newFilters);
     setPage(1);
-  }
+  }, [progressiveFilters, filters.sort]);
+
+  const handleSaveFilter = useCallback((name: string) => {
+    const updated = saveArticleFilter(name, progressiveFilters);
+    setSavedFilters(updated);
+  }, [progressiveFilters]);
+
+  const handleLoadSavedFilter = useCallback((name: string) => {
+    const saved = savedFilters.find((s) => s.name === name);
+    if (saved) {
+      setProgressiveFilters(saved.filters.map((f) => ({ ...f })));
+    }
+  }, [savedFilters]);
+
+  const handleDeleteSavedFilter = useCallback((name: string) => {
+    const updated = deleteSavedArticleFilter(name);
+    setSavedFilters(updated);
+  }, []);
+
+  const handleOpenFilterDialog = useCallback(() => {
+    setFilterDialogOpen(true);
+  }, []);
+
+  const handleCloseFilterDialog = useCallback(() => {
+    setFilterDialogOpen(false);
+  }, []);
 
   return (
     <Box
@@ -78,8 +252,9 @@ export function Articles() {
     >
       <Paper
         sx={{
-          display: "grid",
-          gridTemplateColumns: { xs: "1fr", md: "2fr 1fr 1fr" },
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
           gap: 1.5,
           p: 1.5,
           borderRadius: 3,
@@ -87,35 +262,24 @@ export function Articles() {
           background: `linear-gradient(180deg, ${defenseColors.background.surfaceAlt}, ${defenseColors.background.surface})`,
         }}
       >
-        <TextField
-          value={filters.search}
-          onChange={(e) => setFilter("search", e.target.value)}
-          size="small"
-          placeholder="Search title, summary, source, author"
-          sx={filterInputSx}
-        />
-
-        <Autocomplete
-          size="small"
-          options={metadata?.sources ?? []}
-          value={filters.source || null}
-          onChange={(_, value) => setFilter("source", value ?? "")}
-          renderInput={(params) => (
-            <TextField {...params} placeholder="All sources" sx={filterInputSx} />
+        <Typography variant="h6" sx={{ fontSize: "1.1rem", fontWeight: 600 }}>
+          Source Intelligence
+        </Typography>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          {progressiveFilters.length > 0 && (
+            <Typography variant="caption" color="textSecondary">
+              {progressiveFilters.length} filter{progressiveFilters.length !== 1 ? "s" : ""}
+            </Typography>
           )}
-          sx={{ minWidth: 0 }}
-        />
-
-        <Autocomplete
-          size="small"
-          options={metadata?.processingStatuses ?? []}
-          value={filters.processingStatus || null}
-          onChange={(_, value) => setFilter("processingStatus", value ?? "")}
-          renderInput={(params) => (
-            <TextField {...params} placeholder="All statuses" sx={filterInputSx} />
-          )}
-          sx={{ minWidth: 0 }}
-        />
+          <Button
+            size="small"
+            variant="outlined"
+            startIcon={<FilterListIcon />}
+            onClick={handleOpenFilterDialog}
+          >
+            Filters
+          </Button>
+        </Box>
       </Paper>
 
       {error && (
@@ -187,6 +351,22 @@ export function Articles() {
           setSelectedArticleId(null);
           navigate(`/world-monitoring/threats/${eventId}`);
         }}
+      />
+
+      <ArticleFilterDialog
+        open={filterDialogOpen}
+        onClose={handleCloseFilterDialog}
+        filters={progressiveFilters}
+        savedFilters={savedFilters}
+        metadata={metadata}
+        onAddFilter={handleAddProgressiveFilter}
+        onUpdateFilter={handleUpdateProgressiveFilter}
+        onRemoveFilter={handleRemoveProgressiveFilter}
+        onResetFilters={handleResetProgressiveFilters}
+        onApplyFilters={handleApplyProgressiveFilters}
+        onSaveFilter={handleSaveFilter}
+        onLoadSavedFilter={handleLoadSavedFilter}
+        onDeleteSavedFilter={handleDeleteSavedFilter}
       />
 
       <WorldMonitorScrollbarStyles />

@@ -22,6 +22,15 @@ export interface ThreatFiltersRequest {
   dateTo?: string;
   hasLinkedArticle?: boolean;
   sort?: string;
+  relevanceScoreFrom?: number;
+  relevanceScoreTo?: number;
+  extractedDataLocation?: string;
+  extractedDataVesselName?: string;
+  extractedDataThreatType?: string;
+  extractedDataOrigin?: string;
+  extractedDataDamage?: string;
+  extractedDataCountermeasures?: string;
+  locationName?: string;
 }
 
 function buildEventParams(
@@ -57,6 +66,33 @@ function buildEventParams(
   }
   if (filters.sort) {
     params.sort = filters.sort;
+  }
+  if (filters.relevanceScoreFrom !== undefined) {
+    params.relevance_score_from = filters.relevanceScoreFrom;
+  }
+  if (filters.relevanceScoreTo !== undefined) {
+    params.relevance_score_to = filters.relevanceScoreTo;
+  }
+  if (filters.extractedDataLocation?.trim()) {
+    params.extracted_data_location = filters.extractedDataLocation.trim();
+  }
+  if (filters.extractedDataVesselName?.trim()) {
+    params.extracted_data_vessel_name = filters.extractedDataVesselName.trim();
+  }
+  if (filters.extractedDataThreatType?.trim()) {
+    params.extracted_data_threat_type = filters.extractedDataThreatType.trim();
+  }
+  if (filters.extractedDataOrigin?.trim()) {
+    params.extracted_data_origin = filters.extractedDataOrigin.trim();
+  }
+  if (filters.extractedDataDamage?.trim()) {
+    params.extracted_data_damage = filters.extractedDataDamage.trim();
+  }
+  if (filters.extractedDataCountermeasures?.trim()) {
+    params.extracted_data_countermeasures = filters.extractedDataCountermeasures.trim();
+  }
+  if (filters.locationName?.trim()) {
+    params.location_name = filters.locationName.trim();
   }
 
   return params;

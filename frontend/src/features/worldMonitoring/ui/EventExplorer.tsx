@@ -12,11 +12,15 @@ import {
   Typography,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import FilterListIcon from "@mui/icons-material/FilterList";
 
 import type {
   ThreatEvent,
   ThreatMapMarker,
   ThreatPagination,
+  ThreatProgressiveFilter,
+  SavedThreatFilterSet,
+  ThreatMetadata,
 } from "../model/types";
 
 import { defenseColors } from "@/shared/theme";
@@ -29,6 +33,7 @@ import {
 import { useThreatDetail } from "../hooks/useThreatDetail";
 
 import EventDetailDialog from "./EventDetailDialog";
+import { ThreatFilterDialog } from "./ThreatFilterDialog";
 
 interface EventRowProps {
   event: ThreatEvent;
@@ -129,6 +134,20 @@ interface EventExplorerProps {
   onPageChange: (page: number) => void;
   onCloseDetail: () => void;
   onOpenArticle: (articleId: string) => void;
+  filterDialogOpen: boolean;
+  progressiveFilters: ThreatProgressiveFilter[];
+  savedFilters: SavedThreatFilterSet[];
+  metadata?: ThreatMetadata;
+  onOpenFilterDialog: () => void;
+  onCloseFilterDialog: () => void;
+  onAddFilter: () => void;
+  onUpdateFilter: (index: number, update: Partial<ThreatProgressiveFilter>) => void;
+  onRemoveFilter: (index: number) => void;
+  onResetFilters: () => void;
+  onApplyFilters: () => void;
+  onSaveFilter: (name: string) => void;
+  onLoadSavedFilter: (name: string) => void;
+  onDeleteSavedFilter: (name: string) => void;
 }
 
 export function EventExplorer({
@@ -141,6 +160,20 @@ export function EventExplorer({
   onPageChange,
   onCloseDetail,
   onOpenArticle,
+  filterDialogOpen,
+  progressiveFilters,
+  savedFilters,
+  metadata,
+  onOpenFilterDialog,
+  onCloseFilterDialog,
+  onAddFilter,
+  onUpdateFilter,
+  onRemoveFilter,
+  onResetFilters,
+  onApplyFilters,
+  onSaveFilter,
+  onLoadSavedFilter,
+  onDeleteSavedFilter,
 }: EventExplorerProps) {
   const { data: eventDetail, isLoading } = useThreatDetail(
     selectedEventId ?? undefined,
@@ -181,34 +214,66 @@ export function EventExplorer({
   return (
     <>
         <Paper
-          sx={{ p: 2, borderBottom: `1px solid ${defenseColors.border.default}` }}
+          sx={{ p: 2, borderBottom: `1px solid ${defenseColors.border.default}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}
         >
-        <Typography
-          variant="h6"
-          sx={{ color: defenseColors.text.primary, fontWeight: 800 }}
-        >
-          Event Explorer
-        </Typography>
-        <Typography
-          variant="body2"
-          sx={{ color: defenseColors.text.muted }}
-        >
-          {pagination?.total ?? 0} events match the active threat filters.
-        </Typography>
-        {!!selectedEventMarkers.length && (
+        <Box>
           <Typography
-            variant="caption"
-            sx={{
-              color: defenseColors.primary.main,
-              display: "block",
-              mt: 0.75,
-            }}
+            variant="h6"
+            sx={{ color: defenseColors.text.primary, fontWeight: 800 }}
           >
-            Selected event is highlighted on the map across{" "}
-            {selectedEventMarkers.length} mapped location
-            {selectedEventMarkers.length > 1 ? "s" : ""}.
+            Event Explorer
           </Typography>
-        )}
+          <Typography
+            variant="body2"
+            sx={{ color: defenseColors.text.muted }}
+          >
+            {pagination?.total ?? 0} events match the active threat filters.
+          </Typography>
+          {!!selectedEventMarkers.length && (
+            <Typography
+              variant="caption"
+              sx={{
+                color: defenseColors.primary.main,
+                display: "block",
+                mt: 0.75,
+              }}
+            >
+              Selected event is highlighted on the map across{" "}
+              {selectedEventMarkers.length} mapped location
+              {selectedEventMarkers.length > 1 ? "s" : ""}.
+            </Typography>
+          )}
+        </Box>
+        <Button
+          variant="outlined"
+          startIcon={<FilterListIcon />}
+          onClick={onOpenFilterDialog}
+          sx={{
+            color: defenseColors.text.primary,
+            borderColor: defenseColors.border.strong,
+            textTransform: "none",
+            fontWeight: 600,
+            "&:hover": {
+              borderColor: defenseColors.primary.main,
+              backgroundColor: defenseColors.primary.soft,
+            },
+          }}
+        >
+          Filters
+          {progressiveFilters.length > 0 && (
+            <Chip
+              label={progressiveFilters.length}
+              size="small"
+              color="primary"
+              sx={{
+                ml: 0.5,
+                height: 18,
+                fontSize: "0.65rem",
+                minWidth: 18,
+              }}
+            />
+          )}
+        </Button>
         </Paper>
       {loading ? (
         <Box sx={{ flex: 1, display: "grid", placeItems: "center" }}>
@@ -259,6 +324,22 @@ export function EventExplorer({
         )}
         </>
       )}
+
+      <ThreatFilterDialog
+        open={filterDialogOpen}
+        onClose={onCloseFilterDialog}
+        filters={progressiveFilters}
+        savedFilters={savedFilters}
+        metadata={metadata}
+        onAddFilter={onAddFilter}
+        onUpdateFilter={onUpdateFilter}
+        onRemoveFilter={onRemoveFilter}
+        onResetFilters={onResetFilters}
+        onApplyFilters={onApplyFilters}
+        onSaveFilter={onSaveFilter}
+        onLoadSavedFilter={onLoadSavedFilter}
+        onDeleteSavedFilter={onDeleteSavedFilter}
+      />
     </>
   );
 }
