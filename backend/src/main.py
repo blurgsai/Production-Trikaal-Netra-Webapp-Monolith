@@ -5,9 +5,9 @@ import uvicorn
 from dotenv import load_dotenv
 from fastapi import FastAPI
 
+from src.features.admin.router import router as admin_router
 from src.features.compound_events.router import router as compound_events_router
 from src.features.events.router import router as events_router
-from src.features.admin.router import router as admin_router
 from src.features.users.router import router as user_router
 from src.features.vessel_flags.router import router as vessel_flags_router
 from src.features.vessels.router import router as vessel_router
