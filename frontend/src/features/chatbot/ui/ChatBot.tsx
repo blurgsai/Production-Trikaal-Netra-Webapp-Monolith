@@ -64,11 +64,13 @@ export default function Chatbot({ open, onClose }: ChatbotProps) {
   const createNewSession = useCallback(async () => {
     try {
       const newSessionId = await createSession();
+      setIsNewSession(true);
+      setMessages([]);
       setSessionId(newSessionId);
     } catch (error) {
       console.log(error);
     }
-  }, [createSession]);
+  }, [createSession, setMessages]);
 
   // Fetch messages if session Id.Else create new session.
   useEffect(() => {
@@ -96,12 +98,15 @@ export default function Chatbot({ open, onClose }: ChatbotProps) {
 
   const handleSend = async () => {
     if (!input.trim()) return;
+    if (!sessionId) return;
 
     const userMsg: Message = {
-      messageId: Date.now(),
+      messageId: String(Date.now()),
+      sessionId: sessionId!,
       role: "user",
-      navigationLink: null,
       content: input,
+      createdAt: new Date().toISOString(),
+      navigationLink: null,
     };
 
     setMessages([...messages, userMsg]);
@@ -126,10 +131,12 @@ export default function Chatbot({ open, onClose }: ChatbotProps) {
         // CREATE assistant message (first chunk)
         if (latestIndexRef.current === null) {
           const newMsg: Message = {
-            messageId: Date.now() + 1,
+            messageId: String(Date.now() + 1),
+            sessionId: sessionId!,
             role: "assistant",
-            navigationLink: null,
             content: text,
+            createdAt: new Date().toISOString(),
+            navigationLink: null,
           };
 
           const current = messagesRef.current;
@@ -172,10 +179,12 @@ export default function Chatbot({ open, onClose }: ChatbotProps) {
           setMessages(updated);
         } else {
           const errorMsg: Message = {
-            messageId: Date.now() + 1,
+            messageId: String(Date.now() + 1),
+            sessionId: sessionId!,
             role: "assistant",
-            navigationLink: null,
             content: "Error fetching response",
+            createdAt: new Date().toISOString(),
+            navigationLink: null,
           };
 
           const next = [...current, errorMsg];
@@ -250,25 +259,23 @@ export default function Chatbot({ open, onClose }: ChatbotProps) {
               </Box>
 
               <Box sx={{ display: "flex", gap: 0.5 }}>
-                {fullscreen && (
-                  <IconButton
-                    title="Toggle history"
-                    onClick={() => setShowHistory((s) => !s)}
-                    sx={{
-                      color: "text.primary",
-                      width: 40,
-                      height: 40,
-                      borderRadius: 2,
-                      transition: "all 0.2s ease",
-                      "&:hover": {
-                        bgcolor: (theme) => alpha(theme.palette.primary.main, 0.1),
-                        transform: "scale(1.05)",
-                      },
-                    }}
-                  >
+                <IconButton
+                  title="Toggle history"
+                  onClick={() => setShowHistory((s) => !s)}
+                  sx={{
+                    color: "text.primary",
+                    width: 40,
+                    height: 40,
+                    borderRadius: 2,
+                    transition: "all 0.2s ease",
+                    "&:hover": {
+                      bgcolor: (theme) => alpha(theme.palette.primary.main, 0.1),
+                      transform: "scale(1.05)",
+                    },
+                  }}
+                >
                     <HistoryIcon />
-                  </IconButton>
-                )}
+                </IconButton>
 
                 <IconButton
                   onClick={() => setFullscreen((f) => !f)}
@@ -316,7 +323,7 @@ export default function Chatbot({ open, onClose }: ChatbotProps) {
               }}
             >
               {/* History */}
-              {fullscreen && (
+              {showHistory && (
                 <ChatHistoryPanel
                   sessionId={sessionId}
                   setSessionId={setSessionId}
@@ -324,6 +331,7 @@ export default function Chatbot({ open, onClose }: ChatbotProps) {
                   chatHistory={chatHistory}
                   fetchChatHistory={fetchChatHistory}
                   createNewSession={createNewSession}
+                  fullscreen={fullscreen}
                 />
               )}
 
@@ -606,7 +614,7 @@ export default function Chatbot({ open, onClose }: ChatbotProps) {
                   <Button
                     variant="contained"
                     onClick={handleSend}
-                    disabled={!input.trim()}
+                    disabled={!input.trim() || !sessionId}
                     sx={{
                       minWidth: 100,
                       height: 48,

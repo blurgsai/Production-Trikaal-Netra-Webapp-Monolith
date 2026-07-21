@@ -3,37 +3,60 @@ import { renderHook, act, waitFor } from "@testing-library/react";
 import { useChatMessages } from "../useChatMessages";
 import * as chatbotApi from "../../api/chatbotApi";
 import * as mappers from "../../model/mappers";
-import type { MessageResponse, StreamChunk as RawStreamChunk } from "../../api/types";
-import type { Message, StreamChunk } from "../../model/types";
+import type { MessageResponse, ChatResponse, StreamChunk as RawStreamChunk } from "../../api/types";
+import type { Message, StreamChunk, ChatResult } from "../../model/types";
 
 vi.mock("../../api/chatbotApi", () => ({
   fetchMessages: vi.fn(),
   streamMessage: vi.fn(),
+  sendChatMessage: vi.fn(),
 }));
 
 vi.mock("../../model/mappers", () => ({
   mapMessageResponse: vi.fn((raw: MessageResponse) => ({
     messageId: raw.message_id,
+    sessionId: raw.session_id,
     role: raw.role,
-    navigationLink: raw.navigation_link,
     content: raw.content,
+    createdAt: raw.created_at,
+    navigationLink: raw.navigation_link,
   })),
   mapStreamChunk: vi.fn((raw: RawStreamChunk) => ({
     part: raw.p,
     operation: raw.o,
     value: raw.v,
   })),
+  mapChatResponse: vi.fn((raw: ChatResponse) => ({
+    message: raw.message,
+    provider: raw.provider,
+    sessionId: raw.session_id,
+    messageId: raw.message_id,
+  })),
 }));
 
 const mockRawMessages: MessageResponse[] = [
-  { message_id: 1, role: "user", navigation_link: null, content: "Hello" },
-  { message_id: 2, role: "assistant", navigation_link: "/dashboard", content: "Hi there" },
+  { message_id: "msg-1", session_id: "sess-1", role: "user", content: "Hello", created_at: "2026-07-21T07:45:00.000Z", navigation_link: null },
+  { message_id: "msg-2", session_id: "sess-1", role: "assistant", content: "Hi there", created_at: "2026-07-21T07:45:00.000Z", navigation_link: "/dashboard" },
 ];
 
 const mockMappedMessages: Message[] = [
-  { messageId: 1, role: "user", navigationLink: null, content: "Hello" },
-  { messageId: 2, role: "assistant", navigationLink: "/dashboard", content: "Hi there" },
+  { messageId: "msg-1", sessionId: "sess-1", role: "user", content: "Hello", createdAt: "2026-07-21T07:45:00.000Z", navigationLink: null },
+  { messageId: "msg-2", sessionId: "sess-1", role: "assistant", content: "Hi there", createdAt: "2026-07-21T07:45:00.000Z", navigationLink: "/dashboard" },
 ];
+
+const mockChatResponse: ChatResponse = {
+  message: "Hello from bot",
+  provider: "openai",
+  session_id: "sess-1",
+  message_id: "msg-3",
+};
+
+const mockChatResult: ChatResult = {
+  message: "Hello from bot",
+  provider: "openai",
+  sessionId: "sess-1",
+  messageId: "msg-3",
+};
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -67,10 +90,15 @@ describe("useChatMessages", () => {
       expect(typeof result.current.streamMessage).toBe("function");
     });
 
+    it("sendChatMessage is a function", () => {
+      const { result } = renderHook(() => useChatMessages());
+      expect(typeof result.current.sendChatMessage).toBe("function");
+    });
+
     it("return object has exactly the expected keys", () => {
       const { result } = renderHook(() => useChatMessages());
       expect(Object.keys(result.current).sort()).toEqual([
-        "error", "fetchMessages", "isLoading", "streamMessage",
+        "error", "fetchMessages", "isLoading", "sendChatMessage", "streamMessage",
       ]);
     });
   });
@@ -305,10 +333,12 @@ describe("useChatMessages", () => {
 
     it("handles large dataset (10000 messages)", async () => {
       const largeRaw: MessageResponse[] = Array.from({ length: 10000 }, (_, i) => ({
-        message_id: i + 1,
+        message_id: `msg-${i + 1}`,
+        session_id: "sess-1",
         role: "user" as const,
-        navigation_link: null,
         content: `Message ${i + 1}`,
+        created_at: "2026-07-21T07:45:00.000Z",
+        navigation_link: null,
       }));
       vi.mocked(chatbotApi.fetchMessages).mockResolvedValue(largeRaw);
       const { result } = renderHook(() => useChatMessages());
@@ -322,7 +352,7 @@ describe("useChatMessages", () => {
 
     it("handles messages with null navigation_link", async () => {
       vi.mocked(chatbotApi.fetchMessages).mockResolvedValue([
-        { message_id: 1, role: "user", navigation_link: null, content: "Hi" },
+        { message_id: "msg-1", session_id: "sess-1", role: "user", content: "Hi", created_at: "2026-07-21T07:45:00.000Z", navigation_link: null },
       ]);
       const { result } = renderHook(() => useChatMessages());
       let messages: Message[] = [];
@@ -334,7 +364,7 @@ describe("useChatMessages", () => {
 
     it("handles messages with non-null navigation_link", async () => {
       vi.mocked(chatbotApi.fetchMessages).mockResolvedValue([
-        { message_id: 1, role: "assistant", navigation_link: "/reports", content: "See reports" },
+        { message_id: "msg-1", session_id: "sess-1", role: "assistant", content: "See reports", created_at: "2026-07-21T07:45:00.000Z", navigation_link: "/reports" },
       ]);
       const { result } = renderHook(() => useChatMessages());
       let messages: Message[] = [];
@@ -346,8 +376,8 @@ describe("useChatMessages", () => {
 
     it("handles duplicate message_ids from API", async () => {
       vi.mocked(chatbotApi.fetchMessages).mockResolvedValue([
-        { message_id: 1, role: "user", navigation_link: null, content: "First" },
-        { message_id: 1, role: "assistant", navigation_link: null, content: "Second" },
+        { message_id: "dup", session_id: "sess-1", role: "user", content: "First", created_at: "2026-07-21T07:45:00.000Z", navigation_link: null },
+        { message_id: "dup", session_id: "sess-1", role: "assistant", content: "Second", created_at: "2026-07-21T07:45:00.000Z", navigation_link: null },
       ]);
       const { result } = renderHook(() => useChatMessages());
       let messages: Message[] = [];
@@ -355,8 +385,8 @@ describe("useChatMessages", () => {
         messages = await result.current.fetchMessages("s1");
       });
       expect(messages).toHaveLength(2);
-      expect(messages[0].messageId).toBe(1);
-      expect(messages[1].messageId).toBe(1);
+      expect(messages[0].messageId).toBe("dup");
+      expect(messages[1].messageId).toBe("dup");
     });
   });
 
@@ -611,6 +641,236 @@ describe("useChatMessages", () => {
     });
   });
 
+  // ── sendChatMessage — Success ──────────────────────────────────────────
+
+  describe("sendChatMessage success", () => {
+    it("returns mapped ChatResult on success", async () => {
+      vi.mocked(chatbotApi.sendChatMessage).mockResolvedValue(mockChatResponse);
+      const { result } = renderHook(() => useChatMessages());
+      let chatResult: ChatResult;
+      await act(async () => {
+        chatResult = await result.current.sendChatMessage("sess-1", "Hello");
+      });
+      expect(chatResult!).toEqual(mockChatResult);
+    });
+
+    it("calls sendChatMessageApi with correct request body", async () => {
+      vi.mocked(chatbotApi.sendChatMessage).mockResolvedValue(mockChatResponse);
+      const { result } = renderHook(() => useChatMessages());
+      await act(async () => {
+        await result.current.sendChatMessage("sess-1", "Hello");
+      });
+      expect(chatbotApi.sendChatMessage).toHaveBeenCalledWith({
+        session_id: "sess-1",
+        message: "Hello",
+      });
+    });
+
+    it("calls mapChatResponse with raw response", async () => {
+      vi.mocked(chatbotApi.sendChatMessage).mockResolvedValue(mockChatResponse);
+      const { result } = renderHook(() => useChatMessages());
+      await act(async () => {
+        await result.current.sendChatMessage("sess-1", "Hello");
+      });
+      expect(mappers.mapChatResponse).toHaveBeenCalledWith(mockChatResponse);
+    });
+
+    it("sets isLoading to true during send then false on success", async () => {
+      let resolveFn!: (v: ChatResponse) => void;
+      vi.mocked(chatbotApi.sendChatMessage).mockImplementationOnce(
+        () => new Promise((r) => { resolveFn = r; })
+      );
+      const { result } = renderHook(() => useChatMessages());
+      let pending: Promise<ChatResult>;
+      act(() => { pending = result.current.sendChatMessage("sess-1", "Hello"); });
+      await waitFor(() => expect(result.current.isLoading).toBe(true));
+      await act(async () => { resolveFn(mockChatResponse); await pending; });
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    it("clears error on successful send after a previous error", async () => {
+      vi.mocked(chatbotApi.sendChatMessage)
+        .mockRejectedValueOnce(new Error("Network"))
+        .mockResolvedValueOnce(mockChatResponse);
+      const { result } = renderHook(() => useChatMessages());
+      await act(async () => {
+        try { await result.current.sendChatMessage("sess-1", "Hello"); } catch { /* expected */ }
+      });
+      expect(result.current.error).toBe("Network");
+      await act(async () => {
+        await result.current.sendChatMessage("sess-1", "Hello");
+      });
+      expect(result.current.error).toBeNull();
+    });
+
+    it("does not call mapChatResponse on error", async () => {
+      vi.mocked(chatbotApi.sendChatMessage).mockRejectedValue(new Error("fail"));
+      const { result } = renderHook(() => useChatMessages());
+      await act(async () => {
+        try { await result.current.sendChatMessage("sess-1", "Hello"); } catch { /* expected */ }
+      });
+      expect(mappers.mapChatResponse).not.toHaveBeenCalled();
+    });
+  });
+
+  // ── sendChatMessage — Error ──────────────────────────────────────────────
+
+  describe("sendChatMessage error", () => {
+    it("sets error message when sendChatMessageApi rejects with Error", async () => {
+      vi.mocked(chatbotApi.sendChatMessage).mockRejectedValue(new Error("500"));
+      const { result } = renderHook(() => useChatMessages());
+      await act(async () => {
+        try { await result.current.sendChatMessage("sess-1", "Hello"); } catch { /* expected */ }
+      });
+      expect(result.current.error).toBe("500");
+    });
+
+    it("rethrows the original error", async () => {
+      const err = new Error("Network failure");
+      vi.mocked(chatbotApi.sendChatMessage).mockRejectedValue(err);
+      const { result } = renderHook(() => useChatMessages());
+      await expect(
+        act(async () => { await result.current.sendChatMessage("sess-1", "Hello"); })
+      ).rejects.toThrow("Network failure");
+    });
+
+    it("sets error to generic message when rejection is not an Error instance", async () => {
+      vi.mocked(chatbotApi.sendChatMessage).mockRejectedValue("string error");
+      const { result } = renderHook(() => useChatMessages());
+      await act(async () => {
+        try { await result.current.sendChatMessage("sess-1", "Hello"); } catch { /* expected */ }
+      });
+      expect(result.current.error).toBe("Failed to send chat message");
+    });
+
+    it("sets error to generic message when rejection is null", async () => {
+      vi.mocked(chatbotApi.sendChatMessage).mockRejectedValue(null);
+      const { result } = renderHook(() => useChatMessages());
+      await act(async () => {
+        try { await result.current.sendChatMessage("sess-1", "Hello"); } catch { /* expected */ }
+      });
+      expect(result.current.error).toBe("Failed to send chat message");
+    });
+
+    it("sets isLoading to false after error", async () => {
+      vi.mocked(chatbotApi.sendChatMessage).mockRejectedValue(new Error("fail"));
+      const { result } = renderHook(() => useChatMessages());
+      await act(async () => {
+        try { await result.current.sendChatMessage("sess-1", "Hello"); } catch { /* expected */ }
+      });
+      expect(result.current.isLoading).toBe(false);
+    });
+  });
+
+  // ── sendChatMessage — Edge Cases ─────────────────────────────────────────
+
+  describe("sendChatMessage edge cases", () => {
+    it("handles empty string message", async () => {
+      vi.mocked(chatbotApi.sendChatMessage).mockResolvedValue(mockChatResponse);
+      const { result } = renderHook(() => useChatMessages());
+      await act(async () => {
+        await result.current.sendChatMessage("sess-1", "");
+      });
+      expect(chatbotApi.sendChatMessage).toHaveBeenCalledWith({
+        session_id: "sess-1",
+        message: "",
+      });
+    });
+
+    it("handles very long message", async () => {
+      vi.mocked(chatbotApi.sendChatMessage).mockResolvedValue(mockChatResponse);
+      const longMsg = "x".repeat(10000);
+      const { result } = renderHook(() => useChatMessages());
+      await act(async () => {
+        await result.current.sendChatMessage("sess-1", longMsg);
+      });
+      expect(chatbotApi.sendChatMessage).toHaveBeenCalledWith({
+        session_id: "sess-1",
+        message: longMsg,
+      });
+    });
+
+    it("handles message with special characters", async () => {
+      vi.mocked(chatbotApi.sendChatMessage).mockResolvedValue(mockChatResponse);
+      const { result } = renderHook(() => useChatMessages());
+      await act(async () => {
+        await result.current.sendChatMessage("sess-1", "Hello!@#$%^&*()");
+      });
+      expect(chatbotApi.sendChatMessage).toHaveBeenCalledWith({
+        session_id: "sess-1",
+        message: "Hello!@#$%^&*()",
+      });
+    });
+
+    it("handles message with unicode characters", async () => {
+      vi.mocked(chatbotApi.sendChatMessage).mockResolvedValue(mockChatResponse);
+      const { result } = renderHook(() => useChatMessages());
+      await act(async () => {
+        await result.current.sendChatMessage("sess-1", "こんにちは");
+      });
+      expect(chatbotApi.sendChatMessage).toHaveBeenCalledWith({
+        session_id: "sess-1",
+        message: "こんにちは",
+      });
+    });
+
+    it("handles empty string sessionId", async () => {
+      vi.mocked(chatbotApi.sendChatMessage).mockResolvedValue(mockChatResponse);
+      const { result } = renderHook(() => useChatMessages());
+      await act(async () => {
+        await result.current.sendChatMessage("", "Hello");
+      });
+      expect(chatbotApi.sendChatMessage).toHaveBeenCalledWith({
+        session_id: "",
+        message: "Hello",
+      });
+    });
+  });
+
+  // ── sendChatMessage — State Transitions ──────────────────────────────────
+
+  describe("sendChatMessage state transitions", () => {
+    it("transitions from idle to loading to success", async () => {
+      vi.mocked(chatbotApi.sendChatMessage).mockResolvedValue(mockChatResponse);
+      const { result } = renderHook(() => useChatMessages());
+      expect(result.current.isLoading).toBe(false);
+      let pending: Promise<ChatResult>;
+      act(() => { pending = result.current.sendChatMessage("sess-1", "Hello"); });
+      await waitFor(() => expect(result.current.isLoading).toBe(true));
+      await act(async () => { await pending; });
+      expect(result.current.isLoading).toBe(false);
+      expect(result.current.error).toBeNull();
+    });
+
+    it("transitions from idle to loading to error", async () => {
+      vi.mocked(chatbotApi.sendChatMessage).mockRejectedValue(new Error("fail"));
+      const { result } = renderHook(() => useChatMessages());
+      expect(result.current.isLoading).toBe(false);
+      let pending!: Promise<ChatResult>;
+      act(() => { pending = result.current.sendChatMessage("sess-1", "Hello").catch(() => mockChatResult); });
+      await waitFor(() => expect(result.current.isLoading).toBe(true));
+      await act(async () => { await pending; });
+      expect(result.current.isLoading).toBe(false);
+      expect(result.current.error).toBe("fail");
+    });
+
+    it("can send successfully after a previous error", async () => {
+      vi.mocked(chatbotApi.sendChatMessage)
+        .mockRejectedValueOnce(new Error("fail"))
+        .mockResolvedValueOnce(mockChatResponse);
+      const { result } = renderHook(() => useChatMessages());
+      await act(async () => {
+        try { await result.current.sendChatMessage("sess-1", "Hello"); } catch { /* expected */ }
+      });
+      expect(result.current.error).toBe("fail");
+      await act(async () => {
+        await result.current.sendChatMessage("sess-1", "Hello");
+      });
+      expect(result.current.error).toBeNull();
+      expect(result.current.isLoading).toBe(false);
+    });
+  });
+
   // ── Callback Stability ──────────────────────────────────────────────────
 
   describe("callback stability", () => {
@@ -626,6 +886,13 @@ describe("useChatMessages", () => {
       const ref1 = result.current.streamMessage;
       rerender();
       expect(result.current.streamMessage).toBe(ref1);
+    });
+
+    it("sendChatMessage identity is stable across re-renders", () => {
+      const { result, rerender } = renderHook(() => useChatMessages());
+      const ref1 = result.current.sendChatMessage;
+      rerender();
+      expect(result.current.sendChatMessage).toBe(ref1);
     });
   });
 

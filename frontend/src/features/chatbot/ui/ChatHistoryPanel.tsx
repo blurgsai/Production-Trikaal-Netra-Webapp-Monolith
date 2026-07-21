@@ -19,6 +19,7 @@ interface ChatHistoryPanelProps {
   chatHistory: ChatSession[];
   fetchChatHistory: () => Promise<void>;
   createNewSession: () => Promise<void>;
+  fullscreen?: boolean;
 }
 
 export default function ChatHistoryPanel({
@@ -28,6 +29,7 @@ export default function ChatHistoryPanel({
   chatHistory,
   fetchChatHistory,
   createNewSession,
+  fullscreen = false,
 }: ChatHistoryPanelProps) {
   useEffect(() => {
     if (open) {
@@ -40,7 +42,7 @@ export default function ChatHistoryPanel({
   return (
     <Box
       sx={{
-        width: 300,
+        width: fullscreen ? 300 : 240,
         borderRight: (theme) => `1px solid ${alpha(theme.palette.divider, 0.15)}`,
         overflowY: "auto",
         p: 2,

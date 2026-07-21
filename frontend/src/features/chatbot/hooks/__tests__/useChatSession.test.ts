@@ -17,25 +17,36 @@ vi.mock("../../api/chatbotApi", () => ({
 vi.mock("../../model/mappers", () => ({
   mapCreateSessionResponse: vi.fn((raw: CreateSessionResponse) => ({
     sessionId: raw.session_id,
+    title: raw.title,
+    summary: raw.summary,
+    userId: raw.user_id,
+    createdAt: raw.created_at,
   })),
   mapChatSessionResponse: vi.fn((raw: ChatSessionResponse) => ({
     sessionId: raw.session_id,
     title: raw.title,
+    summary: raw.summary,
+    updatedAt: raw.updated_at,
+    createdAt: raw.created_at,
   })),
 }));
 
 const mockCreateSessionResponse: CreateSessionResponse = {
   session_id: "sess-123",
+  title: "Test Session",
+  summary: null,
+  user_id: "user-1",
+  created_at: "2026-07-21T07:45:00.000Z",
 };
 
 const mockChatHistory: ChatSessionResponse[] = [
-  { session_id: "sess-1", title: "First Chat" },
-  { session_id: "sess-2", title: "Second Chat" },
+  { session_id: "sess-1", title: "First Chat", summary: null, updated_at: "2026-07-21T07:45:00.000Z", created_at: "2026-07-21T07:45:00.000Z" },
+  { session_id: "sess-2", title: "Second Chat", summary: null, updated_at: "2026-07-21T07:45:00.000Z", created_at: "2026-07-21T07:45:00.000Z" },
 ];
 
 const mockMappedHistory: ChatSession[] = [
-  { sessionId: "sess-1", title: "First Chat" },
-  { sessionId: "sess-2", title: "Second Chat" },
+  { sessionId: "sess-1", title: "First Chat", summary: null, updatedAt: "2026-07-21T07:45:00.000Z", createdAt: "2026-07-21T07:45:00.000Z" },
+  { sessionId: "sess-2", title: "Second Chat", summary: null, updatedAt: "2026-07-21T07:45:00.000Z", createdAt: "2026-07-21T07:45:00.000Z" },
 ];
 
 beforeEach(() => {
@@ -102,14 +113,14 @@ describe("useChatSession", () => {
       expect(sessionId).toBe("sess-123");
     });
 
-    it("calls createSessionApi with no arguments", async () => {
+    it("calls createSessionApi with no arguments when called without params", async () => {
       vi.mocked(chatbotApi.createSession).mockResolvedValue(mockCreateSessionResponse);
       vi.mocked(chatbotApi.fetchChatHistory).mockResolvedValue(mockChatHistory);
       const { result } = renderHook(() => useChatSession());
       await act(async () => {
         await result.current.createSession();
       });
-      expect(chatbotApi.createSession).toHaveBeenCalledWith();
+      expect(chatbotApi.createSession).toHaveBeenCalledWith(undefined);
     });
 
     it("calls mapCreateSessionResponse with raw response", async () => {
@@ -457,6 +468,9 @@ describe("useChatSession", () => {
       const largeRaw: ChatSessionResponse[] = Array.from({ length: 10000 }, (_, i) => ({
         session_id: `sess-${i}`,
         title: `Chat ${i}`,
+        summary: null,
+        updated_at: "2026-07-21T07:45:00.000Z",
+        created_at: "2026-07-21T07:45:00.000Z",
       }));
       vi.mocked(chatbotApi.fetchChatHistory).mockResolvedValue(largeRaw);
       const { result } = renderHook(() => useChatSession());
@@ -469,7 +483,7 @@ describe("useChatSession", () => {
 
     it("handles sessions with empty string titles", async () => {
       vi.mocked(chatbotApi.fetchChatHistory).mockResolvedValue([
-        { session_id: "s1", title: "" },
+        { session_id: "s1", title: "", summary: null, updated_at: "2026-07-21T07:45:00.000Z", created_at: "2026-07-21T07:45:00.000Z" },
       ]);
       const { result } = renderHook(() => useChatSession());
       await act(async () => {
@@ -480,7 +494,7 @@ describe("useChatSession", () => {
 
     it("handles sessions with special characters in title", async () => {
       vi.mocked(chatbotApi.fetchChatHistory).mockResolvedValue([
-        { session_id: "s1", title: "Chat!@#$%^&*()" },
+        { session_id: "s1", title: "Chat!@#$%^&*()", summary: null, updated_at: "2026-07-21T07:45:00.000Z", created_at: "2026-07-21T07:45:00.000Z" },
       ]);
       const { result } = renderHook(() => useChatSession());
       await act(async () => {
@@ -491,7 +505,7 @@ describe("useChatSession", () => {
 
     it("handles sessions with unicode characters in title", async () => {
       vi.mocked(chatbotApi.fetchChatHistory).mockResolvedValue([
-        { session_id: "s1", title: "チャット" },
+        { session_id: "s1", title: "チャット", summary: null, updated_at: "2026-07-21T07:45:00.000Z", created_at: "2026-07-21T07:45:00.000Z" },
       ]);
       const { result } = renderHook(() => useChatSession());
       await act(async () => {
@@ -502,8 +516,8 @@ describe("useChatSession", () => {
 
     it("handles duplicate session_ids from API", async () => {
       vi.mocked(chatbotApi.fetchChatHistory).mockResolvedValue([
-        { session_id: "dup", title: "First" },
-        { session_id: "dup", title: "Second" },
+        { session_id: "dup", title: "First", summary: null, updated_at: "2026-07-21T07:45:00.000Z", created_at: "2026-07-21T07:45:00.000Z" },
+        { session_id: "dup", title: "Second", summary: null, updated_at: "2026-07-21T07:45:00.000Z", created_at: "2026-07-21T07:45:00.000Z" },
       ]);
       const { result } = renderHook(() => useChatSession());
       await act(async () => {
@@ -521,7 +535,7 @@ describe("useChatSession", () => {
     it("sets chatHistory to a new value", () => {
       const { result } = renderHook(() => useChatSession());
       const newHistory: ChatSession[] = [
-        { sessionId: "new-1", title: "New Chat" },
+        { sessionId: "new-1", title: "New Chat", summary: null, updatedAt: "2026-07-21T07:45:00.000Z", createdAt: "2026-07-21T07:45:00.000Z" },
       ];
       act(() => {
         result.current.setChatHistory(newHistory);
@@ -532,7 +546,7 @@ describe("useChatSession", () => {
     it("replaces chatHistory with empty array", () => {
       const { result } = renderHook(() => useChatSession());
       act(() => {
-        result.current.setChatHistory([{ sessionId: "s1", title: "Test" }]);
+        result.current.setChatHistory([{ sessionId: "s1", title: "Test", summary: null, updatedAt: "2026-07-21T07:45:00.000Z", createdAt: "2026-07-21T07:45:00.000Z" }]);
       });
       act(() => {
         result.current.setChatHistory([]);
@@ -543,10 +557,10 @@ describe("useChatSession", () => {
     it("overwrites previous chatHistory on second call", () => {
       const { result } = renderHook(() => useChatSession());
       act(() => {
-        result.current.setChatHistory([{ sessionId: "s1", title: "First" }]);
+        result.current.setChatHistory([{ sessionId: "s1", title: "First", summary: null, updatedAt: "2026-07-21T07:45:00.000Z", createdAt: "2026-07-21T07:45:00.000Z" }]);
       });
       act(() => {
-        result.current.setChatHistory([{ sessionId: "s2", title: "Second" }]);
+        result.current.setChatHistory([{ sessionId: "s2", title: "Second", summary: null, updatedAt: "2026-07-21T07:45:00.000Z", createdAt: "2026-07-21T07:45:00.000Z" }]);
       });
       expect(result.current.chatHistory).toHaveLength(1);
       expect(result.current.chatHistory[0].sessionId).toBe("s2");
@@ -555,12 +569,12 @@ describe("useChatSession", () => {
     it("accepts a functional updater", () => {
       const { result } = renderHook(() => useChatSession());
       act(() => {
-        result.current.setChatHistory([{ sessionId: "s1", title: "First" }]);
+        result.current.setChatHistory([{ sessionId: "s1", title: "First", summary: null, updatedAt: "2026-07-21T07:45:00.000Z", createdAt: "2026-07-21T07:45:00.000Z" }]);
       });
       act(() => {
         result.current.setChatHistory((prev) => [
           ...prev,
-          { sessionId: "s2", title: "Second" },
+          { sessionId: "s2", title: "Second", summary: null, updatedAt: "2026-07-21T07:45:00.000Z", createdAt: "2026-07-21T07:45:00.000Z" },
         ]);
       });
       expect(result.current.chatHistory).toHaveLength(2);

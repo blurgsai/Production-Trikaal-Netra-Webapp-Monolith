@@ -1,8 +1,16 @@
 import axios from "axios";
 import type {
+  CreateSessionRequest,
   CreateSessionResponse,
   MessageResponse,
   ChatSessionResponse,
+  ChatRequest,
+  ChatResponse,
+  HealthCheckResponse,
+  DocumentResponse,
+  AddSessionDocumentsRequest,
+  AddGlobalDocumentsRequest,
+  EnableDisableDocumentRequest,
   StreamChunk,
 } from "./types";
 
@@ -10,12 +18,37 @@ const chatbotBaseUrl = import.meta.env.VITE_CHATBOT_BASE_URL;
 
 const getAuthToken = () => `Bearer ${localStorage.getItem("token")}`;
 
-export async function createSession(): Promise<CreateSessionResponse> {
+const authHeaders = () => ({ Authorization: getAuthToken() });
+
+// ── Health Check ───────────────────────────────────────────────────────
+
+export async function healthCheck(): Promise<HealthCheckResponse> {
+  const { data } = await axios.get<HealthCheckResponse>(
+    `${chatbotBaseUrl}/health`
+  );
+  return data;
+}
+
+// ── Session Management ─────────────────────────────────────────────────
+
+export async function createSession(
+  params?: CreateSessionRequest
+): Promise<CreateSessionResponse> {
   const { data } = await axios.post<CreateSessionResponse>(
     `${chatbotBaseUrl}/sessions`,
-    {},
+    params ?? {},
     {
-      headers: { Authorization: getAuthToken() },
+      headers: authHeaders(),
+    }
+  );
+  return data;
+}
+
+export async function fetchChatHistory(): Promise<ChatSessionResponse[]> {
+  const { data } = await axios.get<ChatSessionResponse[]>(
+    `${chatbotBaseUrl}/sessions`,
+    {
+      headers: authHeaders(),
     }
   );
   return data;
@@ -27,17 +60,22 @@ export async function fetchMessages(
   const { data } = await axios.get<MessageResponse[]>(
     `${chatbotBaseUrl}/sessions/${sessionId}/messages`,
     {
-      headers: { Authorization: getAuthToken() },
+      headers: authHeaders(),
     }
   );
   return data || [];
 }
 
-export async function fetchChatHistory(): Promise<ChatSessionResponse[]> {
-  const { data } = await axios.get<ChatSessionResponse[]>(
-    `${chatbotBaseUrl}/sessions`,
+// ── Chat & Streaming ───────────────────────────────────────────────────
+
+export async function sendChatMessage(
+  params: ChatRequest
+): Promise<ChatResponse> {
+  const { data } = await axios.post<ChatResponse>(
+    `${chatbotBaseUrl}/chat`,
+    params,
     {
-      headers: { Authorization: getAuthToken() },
+      headers: authHeaders(),
     }
   );
   return data;
@@ -87,12 +125,17 @@ export async function streamMessage(
         const dataStr = line.trim();
         if (!dataStr) continue;
 
-        if (dataStr === "[DONE]") {
+        // Strip SSE "data: " prefix
+        const payload = dataStr.startsWith("data: ")
+          ? dataStr.slice(6).trim()
+          : dataStr;
+
+        if (payload === "[DONE]") {
           return;
         }
 
         try {
-          const parsed: StreamChunk = JSON.parse(dataStr);
+          const parsed: StreamChunk = JSON.parse(payload);
           onChunk(parsed);
         } catch (err) {
           console.error("Parse error:", err, dataStr);
@@ -102,4 +145,58 @@ export async function streamMessage(
   } catch (error) {
     onError(error as Error);
   }
+}
+
+// ── Document & RAG Management ──────────────────────────────────────────
+
+export async function addSessionDocuments(
+  params: AddSessionDocumentsRequest
+): Promise<DocumentResponse> {
+  const { data } = await axios.post<DocumentResponse>(
+    `${chatbotBaseUrl}/add-session-documents`,
+    params,
+    {
+      headers: authHeaders(),
+    }
+  );
+  return data;
+}
+
+export async function addGlobalDocuments(
+  params: AddGlobalDocumentsRequest
+): Promise<DocumentResponse> {
+  const { data } = await axios.post<DocumentResponse>(
+    `${chatbotBaseUrl}/add-global-documents`,
+    params,
+    {
+      headers: authHeaders(),
+    }
+  );
+  return data;
+}
+
+export async function enableDocument(
+  params: EnableDisableDocumentRequest
+): Promise<DocumentResponse> {
+  const { data } = await axios.get<DocumentResponse>(
+    `${chatbotBaseUrl}/enable-file`,
+    {
+      params,
+      headers: authHeaders(),
+    }
+  );
+  return data;
+}
+
+export async function disableDocument(
+  params: EnableDisableDocumentRequest
+): Promise<DocumentResponse> {
+  const { data } = await axios.get<DocumentResponse>(
+    `${chatbotBaseUrl}/disable-file`,
+    {
+      params,
+      headers: authHeaders(),
+    }
+  );
+  return data;
 }

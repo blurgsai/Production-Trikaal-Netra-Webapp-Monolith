@@ -108,7 +108,7 @@ describe("useChatbot", () => {
     it("does not affect messages when closing chatbot", () => {
       const { result } = renderHook(() => useChatbot(), { wrapper });
       const testMessages: Message[] = [
-        { messageId: 1, role: "user", navigationLink: null, content: "Hi" },
+        { messageId: "1", sessionId: "s1", role: "user", navigationLink: null, content: "Hi", createdAt: "2026-01-01T00:00:00Z" },
       ];
       act(() => result.current.setMessages(testMessages));
       act(() => result.current.closeChatbot());
@@ -166,7 +166,7 @@ describe("useChatbot", () => {
     it("sets messages to a new array", () => {
       const { result } = renderHook(() => useChatbot(), { wrapper });
       const testMessages: Message[] = [
-        { messageId: 1, role: "user", navigationLink: null, content: "Hello" },
+        { messageId: "1", sessionId: "s1", role: "user", navigationLink: null, content: "Hello", createdAt: "2026-01-01T00:00:00Z" },
       ];
       act(() => result.current.setMessages(testMessages));
       expect(result.current.messages).toEqual(testMessages);
@@ -175,7 +175,7 @@ describe("useChatbot", () => {
     it("replaces messages with empty array", () => {
       const { result } = renderHook(() => useChatbot(), { wrapper });
       act(() => result.current.setMessages([
-        { messageId: 1, role: "user", navigationLink: null, content: "Hi" },
+        { messageId: "1", sessionId: "s1", role: "user", navigationLink: null, content: "Hi", createdAt: "2026-01-01T00:00:00Z" },
       ]));
       act(() => result.current.setMessages([]));
       expect(result.current.messages).toEqual([]);
@@ -184,24 +184,24 @@ describe("useChatbot", () => {
     it("overwrites previous messages on second call", () => {
       const { result } = renderHook(() => useChatbot(), { wrapper });
       act(() => result.current.setMessages([
-        { messageId: 1, role: "user", navigationLink: null, content: "First" },
+        { messageId: "1", sessionId: "s1", role: "user", navigationLink: null, content: "First", createdAt: "2026-01-01T00:00:00Z" },
       ]));
       act(() => result.current.setMessages([
-        { messageId: 2, role: "assistant", navigationLink: "/home", content: "Second" },
+        { messageId: "2", sessionId: "s1", role: "assistant", navigationLink: "/home", content: "Second", createdAt: "2026-01-01T00:00:01Z" },
       ]));
       expect(result.current.messages).toHaveLength(1);
-      expect(result.current.messages[0].messageId).toBe(2);
+      expect(result.current.messages[0].messageId).toBe("2");
     });
 
     it("appends messages by setting a new array with previous items", () => {
       const { result } = renderHook(() => useChatbot(), { wrapper });
       act(() => result.current.setMessages([
-        { messageId: 1, role: "user", navigationLink: null, content: "First" },
+        { messageId: "1", sessionId: "s1", role: "user", navigationLink: null, content: "First", createdAt: "2026-01-01T00:00:00Z" },
       ]));
       act(() => {
         result.current.setMessages([
           ...result.current.messages,
-          { messageId: 2, role: "assistant", navigationLink: null, content: "Second" },
+          { messageId: "2", sessionId: "s1", role: "assistant", navigationLink: null, content: "Second", createdAt: "2026-01-01T00:00:01Z" },
         ]);
       });
       expect(result.current.messages).toHaveLength(2);
@@ -210,7 +210,7 @@ describe("useChatbot", () => {
     it("handles messages with navigation links", () => {
       const { result } = renderHook(() => useChatbot(), { wrapper });
       act(() => result.current.setMessages([
-        { messageId: 1, role: "assistant", navigationLink: "/dashboard", content: "Go to dashboard" },
+        { messageId: "1", sessionId: "s1", role: "assistant", navigationLink: "/dashboard", content: "Go to dashboard", createdAt: "2026-01-01T00:00:00Z" },
       ]));
       expect(result.current.messages[0].navigationLink).toBe("/dashboard");
     });
@@ -218,7 +218,7 @@ describe("useChatbot", () => {
     it("handles messages with null navigation links", () => {
       const { result } = renderHook(() => useChatbot(), { wrapper });
       act(() => result.current.setMessages([
-        { messageId: 1, role: "user", navigationLink: null, content: "Hi" },
+        { messageId: "1", sessionId: "s1", role: "user", navigationLink: null, content: "Hi", createdAt: "2026-01-01T00:00:00Z" },
       ]));
       expect(result.current.messages[0].navigationLink).toBeNull();
     });
@@ -226,10 +226,12 @@ describe("useChatbot", () => {
     it("handles large message arrays", () => {
       const { result } = renderHook(() => useChatbot(), { wrapper });
       const largeMessages: Message[] = Array.from({ length: 1000 }, (_, i) => ({
-        messageId: i + 1,
+        messageId: String(i + 1),
+        sessionId: "s1",
         role: i % 2 === 0 ? "user" as const : "assistant" as const,
         navigationLink: null,
         content: `Message ${i + 1}`,
+        createdAt: "2026-01-01T00:00:00Z",
       }));
       act(() => result.current.setMessages(largeMessages));
       expect(result.current.messages).toHaveLength(1000);
@@ -326,7 +328,7 @@ describe("useChatbot", () => {
       const { result } = renderHook(() => useChatbot(), { wrapper });
       act(() => result.current.openChatbot());
       act(() => result.current.setMessages([
-        { messageId: 1, role: "user", navigationLink: null, content: "Hi" },
+        { messageId: "1", sessionId: "s1", role: "user", navigationLink: null, content: "Hi", createdAt: "2026-01-01T00:00:00Z" },
       ]));
       expect(result.current.isChatbotOpen).toBe(true);
       expect(result.current.messages).toHaveLength(1);
@@ -339,7 +341,7 @@ describe("useChatbot", () => {
       const { result } = renderHook(() => useChatbot(), { wrapper });
       act(() => result.current.openChatbot());
       act(() => result.current.setMessages([
-        { messageId: 1, role: "user", navigationLink: null, content: "Test" },
+        { messageId: "1", sessionId: "s1", role: "user", navigationLink: null, content: "Test", createdAt: "2026-01-01T00:00:00Z" },
       ]));
       expect(result.current.isChatbotOpen).toBe(true);
     });
@@ -347,7 +349,7 @@ describe("useChatbot", () => {
     it("openChatbot does not affect messages", () => {
       const { result } = renderHook(() => useChatbot(), { wrapper });
       const msgs: Message[] = [
-        { messageId: 1, role: "user", navigationLink: null, content: "Existing" },
+        { messageId: "1", sessionId: "s1", role: "user", navigationLink: null, content: "Existing", createdAt: "2026-01-01T00:00:00Z" },
       ];
       act(() => result.current.setMessages(msgs));
       act(() => result.current.openChatbot());
@@ -370,7 +372,7 @@ describe("useChatbot", () => {
       const { result: result1 } = renderHook(() => useChatbot(), { wrapper });
       const { result: result2 } = renderHook(() => useChatbot(), { wrapper });
       act(() => result1.current.setMessages([
-        { messageId: 1, role: "user", navigationLink: null, content: "A" },
+        { messageId: "1", sessionId: "s1", role: "user", navigationLink: null, content: "A", createdAt: "2026-01-01T00:00:00Z" },
       ]));
       expect(result1.current.messages).toHaveLength(1);
       expect(result2.current.messages).toEqual([]);
@@ -390,7 +392,7 @@ describe("useChatbot", () => {
     it("messages persist across rerenders", () => {
       const { result, rerender } = renderHook(() => useChatbot(), { wrapper });
       const msgs: Message[] = [
-        { messageId: 1, role: "user", navigationLink: null, content: "Persist" },
+        { messageId: "1", sessionId: "s1", role: "user", navigationLink: null, content: "Persist", createdAt: "2026-01-01T00:00:00Z" },
       ];
       act(() => result.current.setMessages(msgs));
       rerender();
@@ -438,7 +440,7 @@ describe("useChatbot", () => {
     it("setMessages with identical array reference does not throw", () => {
       const { result } = renderHook(() => useChatbot(), { wrapper });
       const msgs: Message[] = [
-        { messageId: 1, role: "user", navigationLink: null, content: "Same" },
+        { messageId: "1", sessionId: "s1", role: "user", navigationLink: null, content: "Same", createdAt: "2026-01-01T00:00:00Z" },
       ];
       expect(() => {
         act(() => result.current.setMessages(msgs));
@@ -449,7 +451,7 @@ describe("useChatbot", () => {
     it("messages with empty string content are accepted", () => {
       const { result } = renderHook(() => useChatbot(), { wrapper });
       act(() => result.current.setMessages([
-        { messageId: 1, role: "user", navigationLink: null, content: "" },
+        { messageId: "1", sessionId: "s1", role: "user", navigationLink: null, content: "", createdAt: "2026-01-01T00:00:00Z" },
       ]));
       expect(result.current.messages[0].content).toBe("");
     });
@@ -457,7 +459,7 @@ describe("useChatbot", () => {
     it("messages with special characters in content are accepted", () => {
       const { result } = renderHook(() => useChatbot(), { wrapper });
       act(() => result.current.setMessages([
-        { messageId: 1, role: "user", navigationLink: null, content: "!@#$%^&*()" },
+        { messageId: "1", sessionId: "s1", role: "user", navigationLink: null, content: "!@#$%^&*()", createdAt: "2026-01-01T00:00:00Z" },
       ]));
       expect(result.current.messages[0].content).toBe("!@#$%^&*()");
     });
@@ -465,7 +467,7 @@ describe("useChatbot", () => {
     it("messages with unicode content are accepted", () => {
       const { result } = renderHook(() => useChatbot(), { wrapper });
       act(() => result.current.setMessages([
-        { messageId: 1, role: "user", navigationLink: null, content: "こんにちは" },
+        { messageId: "1", sessionId: "s1", role: "user", navigationLink: null, content: "こんにちは", createdAt: "2026-01-01T00:00:00Z" },
       ]));
       expect(result.current.messages[0].content).toBe("こんにちは");
     });
@@ -474,7 +476,7 @@ describe("useChatbot", () => {
       const { result } = renderHook(() => useChatbot(), { wrapper });
       const longContent = "x".repeat(10000);
       act(() => result.current.setMessages([
-        { messageId: 1, role: "user", navigationLink: null, content: longContent },
+        { messageId: "1", sessionId: "s1", role: "user", navigationLink: null, content: longContent, createdAt: "2026-01-01T00:00:00Z" },
       ]));
       expect(result.current.messages[0].content).toBe(longContent);
     });
