@@ -15,4 +15,3 @@ export type {
   StreamChunk,
   CreateSessionResult,
 } from "./model/types";
-export type { CreateSessionRequest } from "./api/types";
