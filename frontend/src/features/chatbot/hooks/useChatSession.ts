@@ -8,6 +8,7 @@ import {
   mapChatSessionResponse,
 } from "../model/mappers";
 import type { ChatSession } from "../model/types";
+import type { CreateSessionRequest } from "../api/types";
 
 export function useChatSession() {
   const [chatHistory, setChatHistory] = useState<ChatSession[]>([]);
@@ -30,11 +31,11 @@ export function useChatSession() {
     }
   }, []);
 
-  const createSession = useCallback(async () => {
+  const createSession = useCallback(async (params?: CreateSessionRequest) => {
     try {
       setIsLoading(true);
       setError(null);
-      const rawResponse = await createSessionApi();
+      const rawResponse = await createSessionApi(params);
       const result = mapCreateSessionResponse(rawResponse);
       
       // Refresh history after creating session

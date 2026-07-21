@@ -4,4 +4,15 @@ export { ChatbotProvider } from "./hooks/ChatbotProvider";
 export { useChatbot } from "./hooks/useChatbot";
 export { useChatSession } from "./hooks/useChatSession";
 export { useChatMessages } from "./hooks/useChatMessages";
-export type { Message, MessageRole, ChatSession, StreamChunk } from "./model/types";
+export type {
+  Message,
+  MessageRole,
+  ChatSession,
+  ChatResult,
+  HealthStatus,
+  DocumentResult,
+  DocumentType,
+  StreamChunk,
+  CreateSessionResult,
+} from "./model/types";
+export type { CreateSessionRequest } from "./api/types";
