@@ -4,3 +4,11 @@ env/
 .pytest_cache/
 .ruff_cache/
 .import_linter_cache/
+
+# Dev-only fixture generator (extra deps: shapely/pyproj/clickhouse-connect,
+# not in requirements.txt) — reproducible from scripts/playback_demo_data/README.md,
+# not meant to ship. Whole scripts/ dir (not just playback_demo_data/) because
+# check-backend-src-enforcement.sh only allows src/ and tests/ under backend/ —
+# a bare scripts/__init__.py package marker would fail that CI gate on its own.
+# See project memory for regeneration instructions.
+scripts/

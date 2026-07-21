@@ -80,6 +80,7 @@ export interface EventOverlayProps {
   eventDetails: EventDetailsBase;
   extras: Record<string, unknown>; // event-specific top-level response fields
   currentTimestampMs: number;
+  currentPositions: Record<string, VesselPosition>; // live positions at currentTimestampMs — lets an overlay draw between vessels (e.g. multi-vessel proximity)
   timeWindow: TimeWindow;
 }
 
