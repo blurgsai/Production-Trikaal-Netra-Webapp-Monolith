@@ -46,6 +46,7 @@ export function mapOverlayFromApi(raw: OverlayAdminApiResponse): Overlay {
     attribution: raw.attribution,
     color: raw.color,
     opacity: raw.opacity,
+    maxZoom: raw.max_zoom,
     createdAt: raw.created_at,
   };
 }

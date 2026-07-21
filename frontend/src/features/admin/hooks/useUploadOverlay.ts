@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { uploadOverlayFile } from "../api/overlaysApi";
-import type { OverlayAdminApiResponse } from "../api/overlaysApi";
+import type { OverlayAdminApiResponse, DensityUploadOptions } from "../api/overlaysApi";
 
 const OVERLAYS_QUERY_KEY = ["admin", "overlays"];
 
@@ -9,10 +9,10 @@ export function useUploadOverlay() {
   return useMutation<
     OverlayAdminApiResponse,
     Error,
-    { name: string; file: File; attribution: string; color: string; opacity: number }
+    { name: string; file: File; attribution: string; color: string; opacity: number; density?: DensityUploadOptions }
   >({
-    mutationFn: ({ name, file, attribution, color, opacity }) =>
-      uploadOverlayFile(name, file, attribution, color, opacity),
+    mutationFn: ({ name, file, attribution, color, opacity, density }) =>
+      uploadOverlayFile(name, file, attribution, color, opacity, density),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: OVERLAYS_QUERY_KEY });
     },

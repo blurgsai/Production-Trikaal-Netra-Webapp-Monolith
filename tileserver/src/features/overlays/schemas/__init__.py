@@ -11,6 +11,7 @@ class OverlayResponse(BaseModel):
     color: str
     opacity: float
     bounds: list[float] | None = None
+    max_zoom: int | None = None
     created_at: str
 
 
@@ -21,3 +22,9 @@ class UrlOverlayRequest(BaseModel):
     attribution: str = ""
     color: str = "#3388ff"
     opacity: float = 1.0
+
+
+class DensityUploadOptions(BaseModel):
+    weight_col: str = "unique_mmsi_count"
+    max_zoom: int = 18
+    color_ramp: str = "heat"
