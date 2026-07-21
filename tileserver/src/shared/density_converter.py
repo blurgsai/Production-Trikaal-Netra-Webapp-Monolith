@@ -38,7 +38,7 @@ PIXELS_PER_CELL_TARGET = 8
 WEIGHT_PERCENTILE = 95
 MAX_BACKTRACK = 6
 
-_HEAT_STOPS = [
+HEAT_STOPS = [
     (0.00, (0, 0, 0, 0)),
     (0.15, (0, 0, 255, 80)),
     (0.35, (0, 255, 255, 140)),
@@ -134,14 +134,14 @@ def _heat_color(normalized: float) -> tuple[int, int, int, int]:
     if normalized <= 0:
         return (0, 0, 0, 0)
     if normalized >= 1:
-        return _HEAT_STOPS[-1][1]
-    for i in range(len(_HEAT_STOPS) - 1):
-        t0, c0 = _HEAT_STOPS[i]
-        t1, c1 = _HEAT_STOPS[i + 1]
+        return HEAT_STOPS[-1][1]
+    for i in range(len(HEAT_STOPS) - 1):
+        t0, c0 = HEAT_STOPS[i]
+        t1, c1 = HEAT_STOPS[i + 1]
         if t0 <= normalized <= t1:
             f = (normalized - t0) / (t1 - t0) if t1 > t0 else 0
             return tuple(int(c0[k] + (c1[k] - c0[k]) * f) for k in range(4))
-    return _HEAT_STOPS[-1][1]
+    return HEAT_STOPS[-1][1]
 
 
 def _mono_color(normalized: float, base_hex: str) -> tuple[int, int, int, int]:
@@ -257,14 +257,14 @@ def _render_tile(
 # S2 column detection
 # ---------------------------------------------------------------------------
 
-_S2_COL_RE = re.compile(r"^s2_cell_l(\d+)$")
+S2_COL_RE = re.compile(r"^s2_cell_l(\d+)$")
 
 
 def _detect_s2_columns(df: pd.DataFrame) -> list[tuple[str, int]]:
     """Find all s2_cell_l<N> columns and return (column_name, level) sorted by level."""
     cols = []
     for col in df.columns:
-        m = _S2_COL_RE.match(col)
+        m = S2_COL_RE.match(col)
         if m:
             cols.append((col, int(m.group(1))))
     cols.sort(key=lambda c: c[1])
