@@ -113,6 +113,7 @@ export default function HistoricalPlayback() {
 
   const handlePlay = () => {
     if (!polygon) return;
+    if (sessions.length >= MAX_PLAYBACK_SESSIONS) return;
 
     const toUtcIso = (localDateTime: string) =>
       new Date(localDateTime).toISOString();
@@ -132,7 +133,9 @@ export default function HistoricalPlayback() {
       geometry,
     };
 
-    setSessions((prev) => [...prev, newSession]);
+    setSessions((prev) =>
+      prev.length >= MAX_PLAYBACK_SESSIONS ? prev : [...prev, newSession],
+    );
     setDialogOpen(false);
     setAddingSession(false);
     setPolygon(null);
@@ -163,11 +166,12 @@ export default function HistoricalPlayback() {
   };
 
   const handleAddSession = useCallback(() => {
+    if (sessions.length >= MAX_PLAYBACK_SESSIONS) return;
     resetDialogDefaults();
     setAddingSession(true);
     setPolygon(null);
     setTimeout(() => drawPolygonRef.current?.(), 100);
-  }, [resetDialogDefaults]);
+  }, [resetDialogDefaults, sessions.length]);
 
   const hasSessions = sessions.length > 0;
   const showOnboarding = !hasSessions && !polygon && !drawingActive && !addingSession;

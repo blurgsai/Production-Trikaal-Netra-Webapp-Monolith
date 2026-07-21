@@ -41,7 +41,8 @@ interface PlaybackControlsContextValue {
   canAddSession: boolean;
 }
 
-const PlaybackControlsContext = createContext<PlaybackControlsContextValue | null>(null);
+const PlaybackControlsContext =
+  createContext<PlaybackControlsContextValue | null>(null);
 
 export function PlaybackControlsProvider({
   children,
@@ -118,11 +119,12 @@ export function PlaybackControlsProvider({
     </PlaybackControlsContext.Provider>
   );
 }
-
 export function usePlaybackControls() {
   const ctx = useContext(PlaybackControlsContext);
   if (!ctx) {
-    throw new Error("usePlaybackControls must be used within PlaybackControlsProvider");
+    throw new Error(
+      "usePlaybackControls must be used within PlaybackControlsProvider",
+    );
   }
   return ctx;
 }

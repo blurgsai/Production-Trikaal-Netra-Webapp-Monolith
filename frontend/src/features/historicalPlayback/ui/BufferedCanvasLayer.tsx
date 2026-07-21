@@ -1,10 +1,25 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useMap } from "react-leaflet";
 import L from "leaflet";
-import { Paper, Typography, CircularProgress, alpha, Snackbar, Alert } from "@mui/material";
+import {
+  Paper,
+  Typography,
+  CircularProgress,
+  alpha,
+  Snackbar,
+  Alert,
+} from "@mui/material";
 import { usePlaybackControlsOptional } from "./PlaybackControlsContext";
 import { usePlaybackBuffer } from "../hooks/usePlaybackBuffer";
-import type { PlaybackChunk, PlaybackPoint, PlaybackRange, AnimationVessel as Vessel, TimeGranularity, PlaybackFilter, LabelVisibility } from "../model/types";
+import type {
+  PlaybackChunk,
+  PlaybackPoint,
+  PlaybackRange,
+  AnimationVessel as Vessel,
+  TimeGranularity,
+  PlaybackFilter,
+  LabelVisibility,
+} from "../model/types";
 import {
   mergeMinuteData,
   advanceVessel,
@@ -69,9 +84,10 @@ export default function BufferedCanvasLayer({
   const [totalChunks, setTotalChunks] = useState<number>(0);
   const [displayChunk, setDisplayChunk] = useState<number>(0);
   const [errorDismissed, setErrorDismissed] = useState<boolean>(false);
-  const [labelVisibility, setLabelVisibility] = useState<LabelVisibility>(DEFAULT_LABEL_VISIBILITY);
+  const [labelVisibility, setLabelVisibility] = useState<LabelVisibility>(
+    DEFAULT_LABEL_VISIBILITY,
+  );
   const labelVisibilityRef = useRef<LabelVisibility>(DEFAULT_LABEL_VISIBILITY);
-
 
   const startTimeRef = useRef<number>(Date.now());
   const baseElapsedRef = useRef<number>(0);
@@ -158,13 +174,18 @@ export default function BufferedCanvasLayer({
 
       const labelLines: string[] = [];
       if (lv.names) labelLines.push(v.vesselId);
-      if (lv.heading) labelLines.push(`${Math.round(v.currentPos.heading).toString().padStart(3, "0")}°`);
+      if (lv.heading)
+        labelLines.push(
+          `${Math.round(v.currentPos.heading).toString().padStart(3, "0")}°`,
+        );
       if (lv.speed) {
         const spd = v.points[v.index]?.speed ?? 0;
         labelLines.push(`${spd.toFixed(1)} kn`);
       }
       if (lv.latlon) {
-        labelLines.push(`${v.currentPos.lat.toFixed(2)} / ${v.currentPos.lng.toFixed(2)}`);
+        labelLines.push(
+          `${v.currentPos.lat.toFixed(2)} / ${v.currentPos.lng.toFixed(2)}`,
+        );
       }
 
       if (labelLines.length > 0) {
@@ -183,7 +204,6 @@ export default function BufferedCanvasLayer({
         ctx.restore();
       }
     });
-
   }, [map, theme]);
 
   useEffect(() => {
@@ -241,12 +261,26 @@ export default function BufferedCanvasLayer({
         cancelAnimationFrame(animationRef.current);
       }
     };
-  }, [visible, isPlaying, playbackSpeed, duration, draw, granularity, totalChunks]);
+  }, [
+    visible,
+    isPlaying,
+    playbackSpeed,
+    duration,
+    draw,
+    granularity,
+    totalChunks,
+  ]);
 
   useEffect(() => {
     if (!playbackRange.start || !geometry) return;
 
-    const manager = initializeBuffer(playbackRange.start, playbackRange.end, geometry, granularity, filters);
+    const manager = initializeBuffer(
+      playbackRange.start,
+      playbackRange.end,
+      geometry,
+      granularity,
+      filters,
+    );
 
     globalStartTsRef.current = new Date(playbackRange.start).getTime();
     const durationMs =
@@ -423,18 +457,22 @@ export default function BufferedCanvasLayer({
     onSliderDragStart: () => map.dragging.disable(),
   };
 
-  const handleLabelVisibilityChange = useCallback((v: LabelVisibility) => {
-    labelVisibilityRef.current = v;
-    setLabelVisibility(v);
-    draw();
-  }, [draw]);
+  const handleLabelVisibilityChange = useCallback(
+    (v: LabelVisibility) => {
+      labelVisibilityRef.current = v;
+      setLabelVisibility(v);
+      draw();
+    },
+    [draw],
+  );
 
   const stableHandlers = useRef({
     onPlayPause: () => handlersRef.current.onPlayPause(),
     onSeek: (t: number) => handlersRef.current.onSeek(t),
     onSpeedChange: (s: number) => handlersRef.current.onSpeedChange(s),
     onClose: () => handlersRef.current.onClose(),
-    onLabelVisibilityChange: (v: LabelVisibility) => handleLabelVisibilityChange(v),
+    onLabelVisibilityChange: (v: LabelVisibility) =>
+      handleLabelVisibilityChange(v),
     onSliderDragStart: () => handlersRef.current.onSliderDragStart(),
   });
   stableHandlers.current.onLabelVisibilityChange = handleLabelVisibilityChange;
@@ -473,10 +511,9 @@ export default function BufferedCanvasLayer({
     return () => controlsCtxRef.current?.unregisterSession(sessionId);
   }, [sessionId]);
 
-  const controlsStackHeight = Math.min(
-    controlsCtx?.sessions.filter((s) => s.visible).length ?? 1,
-    2,
-  ) * 68;
+  const controlsStackHeight =
+    Math.min(controlsCtx?.sessions.filter((s) => s.visible).length ?? 1, 2) *
+    68;
 
   return (
     <>
@@ -503,7 +540,10 @@ export default function BufferedCanvasLayer({
           }}
         >
           <CircularProgress size={16} thickness={4} color="primary" />
-          <Typography variant="body2" sx={{ color: "text.secondary", fontWeight: 600 }}>
+          <Typography
+            variant="body2"
+            sx={{ color: "text.secondary", fontWeight: 600 }}
+          >
             Loading vessel data…
           </Typography>
         </Paper>
@@ -528,7 +568,10 @@ export default function BufferedCanvasLayer({
             boxShadow: 8,
           }}
         >
-          <Typography variant="caption" sx={{ color: "text.secondary", fontWeight: 600 }}>
+          <Typography
+            variant="caption"
+            sx={{ color: "text.secondary", fontWeight: 600 }}
+          >
             Timeframe {displayChunk + 1} of {totalChunks}
           </Typography>
         </Paper>
@@ -540,8 +583,13 @@ export default function BufferedCanvasLayer({
         onClose={() => setErrorDismissed(true)}
         anchorOrigin={{ vertical: "top", horizontal: "center" }}
       >
-        <Alert severity="error" onClose={() => setErrorDismissed(true)} sx={{ width: "100%" }}>
-          {bufferError?.message || "Failed to load playback data. Close and try again."}
+        <Alert
+          severity="error"
+          onClose={() => setErrorDismissed(true)}
+          sx={{ width: "100%" }}
+        >
+          {bufferError?.message ||
+            "Failed to load playback data. Close and try again."}
         </Alert>
       </Snackbar>
     </>

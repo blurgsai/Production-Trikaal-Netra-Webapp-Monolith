@@ -1,11 +1,5 @@
 import { useRef, useEffect, useState } from "react";
-import {
-  Box,
-  IconButton,
-  Typography,
-  Chip,
-  alpha,
-} from "@mui/material";
+import { Box, IconButton, Typography, Chip, alpha } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import AddIcon from "@mui/icons-material/Add";
 import AnimationControls, { PlaybackTooltip } from "./AnimationControls";
@@ -211,7 +205,11 @@ export default function PlaybackControlsStack() {
       </Box>
 
       {canAddSession && onAddSession && (
-        <PlaybackTooltip dismissToken={tooltipDismissToken} title="Add another playback (up to 4)" arrow>
+        <PlaybackTooltip
+          dismissToken={tooltipDismissToken}
+          title="Add another playback (up to 4)"
+          arrow
+        >
           <IconButton
             onClick={onAddSession}
             onMouseDown={(e) => e.stopPropagation()}
