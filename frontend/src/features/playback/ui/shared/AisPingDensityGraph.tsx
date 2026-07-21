@@ -29,7 +29,9 @@ export interface AisPingDensityGraphProps {
   // Lets each event type keep its own visual identity (e.g. dark_ship's purple
   // vs signal_lost's neutral slate) while sharing the same graph mechanic.
   accentColor: string;
-  windowLabel: string;
+  // Shown next to the title, never inside the graph itself — see the note
+  // above the title Box below for why.
+  windowLabel?: string;
   title?: string;
 }
 
@@ -89,7 +91,21 @@ export function AisPingDensityGraph({
 
   return (
     <Paper elevation={1} sx={{ mt: 0.5, p: 1, bgcolor: 'background.input', border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
-      <Box sx={{ fontSize: '0.75rem', color: accentColor, mb: 0.5, ml: 1 }}>{title}</Box>
+      {/* windowLabel renders here (plain HTML), never inside the SVG below: a
+          vessel-row is only 18px tall, so any label centred inside the graph
+          shares the exact pixel space the ping ticks live in and clips into
+          them the moment there's a single vessel row or a narrow window —
+          not a per-event-type quirk, a guaranteed collision for that shape of
+          data. Keeping the label in normal document flow up here means no
+          future event type reusing this graph can hit that bug either. */}
+      <Box sx={{ fontSize: '0.75rem', color: accentColor, mb: 0.5, ml: 1, display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', gap: 1 }}>
+        <span>{title}</span>
+        {windowLabel && (
+          <Box component="span" sx={{ fontWeight: 700, letterSpacing: '1px', fontSize: '0.7rem', opacity: 0.85 }}>
+            · {windowLabel}
+          </Box>
+        )}
+      </Box>
 
       <svg
         width="100%"
@@ -123,16 +139,6 @@ export function AisPingDensityGraph({
           <rect x={evStartX} y={0} width={Math.max(1, evEndX - evStartX)} height={graphH} fill={hexToRgba(accentColor, 0.18)} />
           <line x1={evStartX} y1={0} x2={evStartX} y2={graphH} stroke={accentColor} strokeWidth={1.5} strokeDasharray="4,4" />
           <line x1={evEndX} y1={0} x2={evEndX} y2={graphH} stroke={accentColor} strokeWidth={1.5} strokeDasharray="4,4" />
-
-          {evEndX - evStartX > 30 && (
-            <text
-              x={(evStartX + evEndX) / 2} y={graphH / 2 + 4}
-              fill={hexToRgba(accentColor, 0.6)} fontSize="10" fontWeight="700"
-              textAnchor="middle" letterSpacing="2"
-            >
-              {windowLabel}
-            </text>
-          )}
 
           {/* Ping ticks — one per vessel row */}
           {vessels.map((id, rowIdx) => {

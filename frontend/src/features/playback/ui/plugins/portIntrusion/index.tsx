@@ -1,18 +1,15 @@
-import { PortIntrusionBadge } from './PortIntrusionBadge';
 import { PortIntrusionOverlay } from './PortIntrusionOverlay';
 import { PortIntrusionTimelineEnhancement } from './PortIntrusionTimelineEnhancement';
 import { usePortIntrusionEvent } from '../../../hooks/usePortIntrusionEvent';
 import type { EventPlugin } from '../../PluginRegistry';
-import type { EventOverlayProps, EventMarkerProps, EventTimelineProps } from '../../../model/types';
+import type { EventOverlayProps, EventTimelineProps } from '../../../model/types';
+
+// No marker badge — see darkShip/index.tsx for why (duplicates the overlay tooltip
+// and the timeline info bar).
 
 function PortIntrusionOverlaySlot({ eventDetails, extras }: EventOverlayProps) {
   const event = usePortIntrusionEvent(eventDetails, extras);
   return <PortIntrusionOverlay event={event} />;
-}
-
-function PortIntrusionMarkerSlot({ position, eventDetails }: EventMarkerProps) {
-  const event = usePortIntrusionEvent(eventDetails);
-  return <PortIntrusionBadge event={event} position={position} />;
 }
 
 function PortIntrusionTimelineSlot({ eventDetails }: EventTimelineProps) {
@@ -23,7 +20,6 @@ function PortIntrusionTimelineSlot({ eventDetails }: EventTimelineProps) {
 const PortIntrusionPlugin: EventPlugin = {
   eventType: 'port_intrusion',
   overlay: PortIntrusionOverlaySlot,
-  marker: PortIntrusionMarkerSlot,
   timeline: PortIntrusionTimelineSlot,
 };
 
