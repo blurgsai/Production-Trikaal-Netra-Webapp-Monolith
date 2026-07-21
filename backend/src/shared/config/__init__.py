@@ -26,6 +26,8 @@ class Settings(BaseSettings):
     CLICKHOUSE_PASSWORD: str = ""
     CLICKHOUSE_HOST: str = "localhost"
     CLICKHOUSE_PORT: str = "8123"
+    CLICKHOUSE_DB: str = "trikaal_v3"
+    CLICKHOUSE_AIS_TABLE: str = "ais_processed_flat"
 
     USER_ACTIVATION_TOKEN_SECRET: str = ""
     USER_ACTIVATION_SALT: str = ""

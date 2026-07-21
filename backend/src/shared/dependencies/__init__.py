@@ -11,6 +11,12 @@ async def get_http_client() -> AsyncGenerator[httpx.AsyncClient, None]:
         yield client
 
 
+async def get_clickhouse_client() -> AsyncGenerator[httpx.AsyncClient, None]:
+    """Per-request httpx client for ClickHouse HTTP interface queries."""
+    async with httpx.AsyncClient(timeout=30.0) as client:
+        yield client
+
+
 def get_db():
     client = motor.motor_asyncio.AsyncIOMotorClient(settings.MONGO_URI)
     return client[settings.MONGO_DB]
