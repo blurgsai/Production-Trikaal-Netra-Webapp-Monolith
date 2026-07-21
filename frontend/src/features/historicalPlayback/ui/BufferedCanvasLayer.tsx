@@ -2,9 +2,9 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { useMap } from "react-leaflet";
 import L from "leaflet";
 import { Paper, Typography, CircularProgress, alpha, Snackbar, Alert } from "@mui/material";
-import AnimationControls from "./AnimationControls";
+import { usePlaybackControlsOptional } from "./PlaybackControlsContext";
 import { usePlaybackBuffer } from "../hooks/usePlaybackBuffer";
-import type { PlaybackChunk, PlaybackPoint, PlaybackRange, AnimationVessel as Vessel, TimeGranularity, PlaybackFilter } from "../model/types";
+import type { PlaybackChunk, PlaybackPoint, PlaybackRange, AnimationVessel as Vessel, TimeGranularity, PlaybackFilter, LabelVisibility } from "../model/types";
 import {
   mergeMinuteData,
   advanceVessel,
@@ -12,7 +12,7 @@ import {
   computeEaseFactor,
   seekVessel,
 } from "../model/animationUtils";
-import { GRANULARITY_SECONDS } from "../model/types";
+import { GRANULARITY_SECONDS, DEFAULT_LABEL_VISIBILITY } from "../model/types";
 import { useTheme } from "@mui/material/styles";
 
 const GRANULARITY_TIME_MULTIPLIER: Record<TimeGranularity, number> = {
@@ -27,6 +27,9 @@ export type PlaybackGeometry = GeoJSON.Geometry;
 type VesselMap = Record<string, PlaybackPoint[]>;
 
 export interface BufferedCanvasLayerProps {
+  sessionId: string;
+  sessionColor: string;
+  sessionIndex: number;
   playbackRange: PlaybackRange;
   onClosePlayback: () => void;
   geometry: PlaybackGeometry;
@@ -40,6 +43,9 @@ interface CanvasOverlayLayer extends L.Layer {
 }
 
 export default function BufferedCanvasLayer({
+  sessionId,
+  sessionColor,
+  sessionIndex,
   playbackRange,
   onClosePlayback,
   geometry,
@@ -48,6 +54,7 @@ export default function BufferedCanvasLayer({
 }: BufferedCanvasLayerProps) {
   const map = useMap();
   const theme = useTheme();
+  const controlsCtx = usePlaybackControlsOptional();
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const layerRef = useRef<CanvasOverlayLayer | null>(null);
   const animationRef = useRef<number | null>(null);
@@ -60,7 +67,11 @@ export default function BufferedCanvasLayer({
   const [visible, setVisible] = useState<boolean>(false);
   const [playbackSpeed, setPlaybackSpeed] = useState<number>(1);
   const [totalChunks, setTotalChunks] = useState<number>(0);
+  const [displayChunk, setDisplayChunk] = useState<number>(0);
   const [errorDismissed, setErrorDismissed] = useState<boolean>(false);
+  const [labelVisibility, setLabelVisibility] = useState<LabelVisibility>(DEFAULT_LABEL_VISIBILITY);
+  const labelVisibilityRef = useRef<LabelVisibility>(DEFAULT_LABEL_VISIBILITY);
+
 
   const startTimeRef = useRef<number>(Date.now());
   const baseElapsedRef = useRef<number>(0);
@@ -68,7 +79,6 @@ export default function BufferedCanvasLayer({
 
   const {
     bufferManager,
-    currentChunk,
     isBuffering,
     bufferError,
     initializeBuffer,
@@ -85,6 +95,44 @@ export default function BufferedCanvasLayer({
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    const lv = labelVisibilityRef.current;
+
+    if (lv.tracks) {
+      ctx.save();
+      ctx.globalAlpha = 0.6;
+      ctx.lineWidth = 2;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      vesselsRef.current.forEach((v) => {
+        if (!v.currentPos?.lat || v.points.length < 1) return;
+
+        ctx.strokeStyle = v.color;
+        ctx.beginPath();
+
+        const firstPt = map.latLngToContainerPoint([
+          v.points[0].lat,
+          v.points[0].lng,
+        ]);
+        ctx.moveTo(firstPt.x, firstPt.y);
+
+        for (let i = 1; i <= v.index; i++) {
+          const pt = map.latLngToContainerPoint([
+            v.points[i].lat,
+            v.points[i].lng,
+          ]);
+          ctx.lineTo(pt.x, pt.y);
+        }
+
+        const currentPt = map.latLngToContainerPoint([
+          v.currentPos.lat,
+          v.currentPos.lng,
+        ]);
+        ctx.lineTo(currentPt.x, currentPt.y);
+        ctx.stroke();
+      });
+      ctx.restore();
+    }
 
     vesselsRef.current.forEach((v) => {
       if (!v.currentPos || !v.currentPos.lat) return;
@@ -108,20 +156,40 @@ export default function BufferedCanvasLayer({
       ctx.stroke();
       ctx.restore();
 
-      ctx.save();
-      ctx.font = "11px Arial";
-      ctx.textAlign = "center";
-      ctx.textBaseline = "top";
-      ctx.fillStyle = theme.palette.text.primary;
-      ctx.strokeStyle = alpha(theme.palette.background.paper, 0.45);
-      ctx.lineWidth = 3;
-      ctx.strokeText(v.vesselId, pt.x, pt.y + 10);
-      ctx.fillText(v.vesselId, pt.x, pt.y + 10);
-      ctx.restore();
+      const labelLines: string[] = [];
+      if (lv.names) labelLines.push(v.vesselId);
+      if (lv.heading) labelLines.push(`${Math.round(v.currentPos.heading).toString().padStart(3, "0")}°`);
+      if (lv.speed) {
+        const spd = v.points[v.index]?.speed ?? 0;
+        labelLines.push(`${spd.toFixed(1)} kn`);
+      }
+      if (lv.latlon) {
+        labelLines.push(`${v.currentPos.lat.toFixed(2)} / ${v.currentPos.lng.toFixed(2)}`);
+      }
+
+      if (labelLines.length > 0) {
+        ctx.save();
+        ctx.font = "11px Arial";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "top";
+        ctx.fillStyle = theme.palette.text.primary;
+        ctx.strokeStyle = alpha(theme.palette.background.paper, 0.45);
+        ctx.lineWidth = 3;
+        labelLines.forEach((line, i) => {
+          const y = pt.y + 10 + i * 13;
+          ctx.strokeText(line, pt.x, y);
+          ctx.fillText(line, pt.x, y);
+        });
+        ctx.restore();
+      }
     });
 
   }, [map, theme]);
 
+  useEffect(() => {
+    labelVisibilityRef.current = labelVisibility;
+    draw();
+  }, [labelVisibility, draw]);
 
   useEffect(() => {
     if (!visible) return;
@@ -145,6 +213,11 @@ export default function BufferedCanvasLayer({
         Math.abs(prev - timeSec) > 0.1 ? timeSec : prev,
       );
 
+      const chunkIdx = Math.min(
+        Math.floor(timeSec / GRANULARITY_SECONDS[granularity]),
+        Math.max(totalChunks - 1, 0),
+      );
+      setDisplayChunk((prev) => (prev !== chunkIdx ? chunkIdx : prev));
 
       if (timeSec >= duration) {
         setIsPlaying(false);
@@ -168,7 +241,7 @@ export default function BufferedCanvasLayer({
         cancelAnimationFrame(animationRef.current);
       }
     };
-  }, [visible, isPlaying, playbackSpeed, duration, draw, granularity]);
+  }, [visible, isPlaying, playbackSpeed, duration, draw, granularity, totalChunks]);
 
   useEffect(() => {
     if (!playbackRange.start || !geometry) return;
@@ -195,7 +268,7 @@ export default function BufferedCanvasLayer({
       for (const result of results) {
         if (result.status === "fulfilled") {
           const vesselData: VesselMap = result.value.vessels || {};
-          allVessels = mergeMinuteData(allVessels, vesselData);
+          allVessels = mergeMinuteData(allVessels, vesselData, sessionColor);
         }
       }
 
@@ -216,7 +289,7 @@ export default function BufferedCanvasLayer({
       cleanup();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [playbackRange, geometry, filters, granularity]);
+  }, [playbackRange, geometry, filters, granularity, sessionColor]);
 
   const setupCanvasLayer = useCallback(() => {
     if (layerRef.current) {
@@ -293,12 +366,19 @@ export default function BufferedCanvasLayer({
   };
 
   const handleSeek = async (t: number) => {
+    map.dragging.enable();
     const wasPlaying = isPlaying;
     setIsPlaying(false);
 
     baseElapsedRef.current = t * 1000;
     startTimeRef.current = Date.now();
     const logicalGlobalMs = globalStartTsRef.current + t * 1000;
+
+    const chunkIdx = Math.min(
+      Math.floor(t / GRANULARITY_SECONDS[granularity]),
+      Math.max(totalChunks - 1, 0),
+    );
+    setDisplayChunk(chunkIdx);
 
     // Preload chunks around the seek position
     if (bufferManager) {
@@ -322,26 +402,84 @@ export default function BufferedCanvasLayer({
     }
   };
 
+  const handleClose = useCallback(() => {
+    cleanup();
+    clearBuffer();
+    onClosePlayback();
+  }, [cleanup, clearBuffer, onClosePlayback]);
+
+  const handlersRef = useRef({
+    onPlayPause: handleTogglePlay,
+    onSeek: handleSeek,
+    onSpeedChange: handleSpeedChange,
+    onClose: handleClose,
+    onSliderDragStart: () => map.dragging.disable(),
+  });
+  handlersRef.current = {
+    onPlayPause: handleTogglePlay,
+    onSeek: handleSeek,
+    onSpeedChange: handleSpeedChange,
+    onClose: handleClose,
+    onSliderDragStart: () => map.dragging.disable(),
+  };
+
+  const handleLabelVisibilityChange = useCallback((v: LabelVisibility) => {
+    labelVisibilityRef.current = v;
+    setLabelVisibility(v);
+    draw();
+  }, [draw]);
+
+  const stableHandlers = useRef({
+    onPlayPause: () => handlersRef.current.onPlayPause(),
+    onSeek: (t: number) => handlersRef.current.onSeek(t),
+    onSpeedChange: (s: number) => handlersRef.current.onSpeedChange(s),
+    onClose: () => handlersRef.current.onClose(),
+    onLabelVisibilityChange: (v: LabelVisibility) => handleLabelVisibilityChange(v),
+    onSliderDragStart: () => handlersRef.current.onSliderDragStart(),
+  });
+  stableHandlers.current.onLabelVisibilityChange = handleLabelVisibilityChange;
+
+  const controlsCtxRef = useRef(controlsCtx);
+  controlsCtxRef.current = controlsCtx;
+
+  useEffect(() => {
+    controlsCtxRef.current?.registerSession({
+      sessionId,
+      sessionColor,
+      visible,
+      isPlaying,
+      currentTime,
+      duration,
+      playbackSpeed,
+      startTime: playbackRange.start,
+      isBuffering,
+      labelVisibility,
+      ...stableHandlers.current,
+    });
+  }, [
+    sessionId,
+    sessionColor,
+    visible,
+    isPlaying,
+    currentTime,
+    duration,
+    playbackSpeed,
+    isBuffering,
+    labelVisibility,
+    playbackRange.start,
+  ]);
+
+  useEffect(() => {
+    return () => controlsCtxRef.current?.unregisterSession(sessionId);
+  }, [sessionId]);
+
+  const controlsStackHeight = Math.min(
+    controlsCtx?.sessions.filter((s) => s.visible).length ?? 1,
+    2,
+  ) * 68;
+
   return (
     <>
-      <AnimationControls
-        visible={visible}
-        isPlaying={isPlaying}
-        currentTime={currentTime}
-        duration={duration}
-        playbackSpeed={playbackSpeed}
-        onSpeedChange={handleSpeedChange}
-        onPlayPause={handleTogglePlay}
-        onSeek={handleSeek}
-        onClose={() => {
-          cleanup();
-          clearBuffer();
-          onClosePlayback();
-        }}
-        startTime={playbackRange.start}
-        isBuffering={isBuffering}
-      />
-
       {isBuffering && (
         <Paper
           onMouseDown={(e) => e.stopPropagation()}
@@ -351,7 +489,7 @@ export default function BufferedCanvasLayer({
             position: "absolute",
             top: 16,
             left: 16,
-            zIndex: 3000,
+            zIndex: 1000,
             display: "flex",
             alignItems: "center",
             gap: 1,
@@ -371,16 +509,16 @@ export default function BufferedCanvasLayer({
         </Paper>
       )}
 
-      {visible && totalChunks > 0 && (
+      {visible && totalChunks > 0 && sessionIndex === 0 && (
         <Paper
           onMouseDown={(e) => e.stopPropagation()}
           onClick={(e) => e.stopPropagation()}
           onDoubleClick={(e) => e.stopPropagation()}
           sx={{
             position: "absolute",
-            bottom: 120,
+            bottom: controlsStackHeight + 16,
             left: 16,
-            zIndex: 3000,
+            zIndex: 1000,
             px: 1.5,
             py: 1,
             borderRadius: 2,
@@ -391,7 +529,7 @@ export default function BufferedCanvasLayer({
           }}
         >
           <Typography variant="caption" sx={{ color: "text.secondary", fontWeight: 600 }}>
-            Timeframe {currentChunk + 1} of {totalChunks}
+            Timeframe {displayChunk + 1} of {totalChunks}
           </Typography>
         </Paper>
       )}

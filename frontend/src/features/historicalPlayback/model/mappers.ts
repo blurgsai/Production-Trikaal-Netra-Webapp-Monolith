@@ -57,6 +57,7 @@ export function mapTrajectoryPoint(point: TrajectoryPointApi): PlaybackPoint {
     latitude: point.lat,
     longitude: point.lon,
     heading: point.heading,
+    speed: point.speed,
   };
 }
 

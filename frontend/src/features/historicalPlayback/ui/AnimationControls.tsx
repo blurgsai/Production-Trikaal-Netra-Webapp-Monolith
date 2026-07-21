@@ -7,6 +7,7 @@ import {
   MenuItem,
   Button,
   Tooltip,
+  type TooltipProps,
   LinearProgress,
   Stack,
   Popover,
@@ -18,6 +19,7 @@ import {
   Close,
   ArrowDropDown,
   KeyboardOutlined,
+  LayersOutlined,
 } from "@mui/icons-material";
 
 interface AnimationControlsProps {
@@ -28,11 +30,46 @@ interface AnimationControlsProps {
   playbackSpeed: number;
   startTime: string;
   isBuffering?: boolean;
+  sessionColor?: string;
+  isLayersActive?: boolean;
+  isKeyboardActive?: boolean;
+  stacked?: boolean;
 
   onPlayPause: () => void;
   onSeek: (time: number) => void;
   onSpeedChange: (speed: number) => void;
   onClose: () => void;
+  onSliderDragStart?: () => void;
+  onLayersToggle?: (e: React.MouseEvent) => void;
+  onActivate?: () => void;
+  tooltipDismissToken?: number;
+}
+
+export function PlaybackTooltip({
+  dismissToken,
+  ...props
+}: TooltipProps & { dismissToken?: number }) {
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    if (dismissToken) setOpen(false);
+  }, [dismissToken]);
+
+  return (
+    <Tooltip
+      {...props}
+      open={open}
+      onOpen={() => setOpen(true)}
+      onClose={() => setOpen(false)}
+      slotProps={{
+        ...props.slotProps,
+        popper: {
+          sx: { zIndex: 1200 },
+          ...props.slotProps?.popper,
+        },
+      }}
+    />
+  );
 }
 
 export default function AnimationControls({
@@ -42,35 +79,51 @@ export default function AnimationControls({
   duration,
   playbackSpeed,
   isBuffering = false,
+  sessionColor,
+  isLayersActive = false,
+  isKeyboardActive = true,
+  stacked = false,
   onPlayPause,
   onSeek,
   onSpeedChange,
   onClose,
+  onSliderDragStart,
+  onLayersToggle,
+  onActivate,
   startTime,
+  tooltipDismissToken,
 }: AnimationControlsProps) {
   const theme = useTheme();
+  const accentColor = sessionColor ?? theme.palette.primary.main;
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [seekValue, setSeekValue] = useState<number | null>(null);
   const PLAYBACK_SPEEDS = [0.25, 0.5, 1, 2, 4] as const;
   const SEEK_STEP = Math.max(duration / 50, 1);
 
-  const formatCompactTime = useCallback((seconds: number) => {
-    if (!startTime) return "--";
-    const startDate = new Date(startTime);
-    const localDate = new Date(startDate.getTime() + seconds * 1000);
-    const datePart = `${String(localDate.getMonth() + 1).padStart(2, "0")}/${String(localDate.getDate()).padStart(2, "0")}`;
-    const timePart = `${String(localDate.getHours()).padStart(2, "0")}:${String(localDate.getMinutes()).padStart(2, "0")}`;
+  const formatCompactTime = useCallback(
+    (seconds: number) => {
+      if (!startTime) return "--";
+      const startDate = new Date(startTime);
+      const localDate = new Date(startDate.getTime() + seconds * 1000);
+      const datePart = `${String(localDate.getMonth() + 1).padStart(2, "0")}/${String(localDate.getDate()).padStart(2, "0")}`;
+      const timePart = `${String(localDate.getHours()).padStart(2, "0")}:${String(localDate.getMinutes()).padStart(2, "0")}`;
 
-    if (duration < 3600) {
-      return `${datePart} ${timePart}:${String(localDate.getSeconds()).padStart(2, "0")}`;
-    }
-    return `${datePart} ${timePart}`;
-  }, [duration, startTime]);
+      if (duration < 3600) {
+        return `${datePart} ${timePart}:${String(localDate.getSeconds()).padStart(2, "0")}`;
+      }
+      return `${datePart} ${timePart}`;
+    },
+    [duration, startTime],
+  );
 
   useEffect(() => {
+    if (!isKeyboardActive) return;
+
     const handleKeyDown = (e: KeyboardEvent) => {
       const active = document.activeElement;
-      const isTyping = active instanceof HTMLInputElement || active instanceof HTMLTextAreaElement;
+      const isTyping =
+        active instanceof HTMLInputElement ||
+        active instanceof HTMLTextAreaElement;
       if (isTyping) return;
 
       switch (e.code) {
@@ -95,7 +148,15 @@ export default function AnimationControls({
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [onPlayPause, onSeek, onClose, currentTime, duration, SEEK_STEP]);
+  }, [
+    isKeyboardActive,
+    onPlayPause,
+    onSeek,
+    onClose,
+    currentTime,
+    duration,
+    SEEK_STEP,
+  ]);
 
   if (!visible) return null;
 
@@ -104,18 +165,20 @@ export default function AnimationControls({
 
   return (
     <Box
-      onMouseDown={(e) => e.stopPropagation()}
-      onClick={(e) => e.stopPropagation()}
+      onMouseDown={(e) => {
+        e.stopPropagation();
+        onActivate?.();
+      }}
       onDoubleClick={(e) => e.stopPropagation()}
       sx={{
-        position: "absolute",
-        bottom: 36,
-        left: "50%",
-        transform: "translateX(-50%)",
-        zIndex: 3000,
-        width: "fit-content",
-        minWidth: 520,
-        maxWidth: "90%",
+        position: stacked ? "relative" : "absolute",
+        bottom: stacked ? undefined : 0,
+        left: stacked ? undefined : 0,
+        right: stacked ? undefined : 0,
+        zIndex: stacked ? undefined : 1100,
+        width: "100%",
+        height: stacked ? "100%" : undefined,
+        flexShrink: 0,
       }}
     >
       <Box
@@ -123,62 +186,85 @@ export default function AnimationControls({
           bgcolor: alpha(theme.palette.background.default, 0.85),
           backdropFilter: "blur(8px)",
           color: theme.palette.text.primary,
-          borderRadius: 2,
+          borderRadius: 0,
           px: 2,
           py: 1.25,
+          height: "100%",
           display: "flex",
           alignItems: "center",
           gap: 1.5,
-          border: `1px solid ${alpha(theme.palette.divider, 0.5)}`,
+          borderTop: `1px solid ${alpha(theme.palette.divider, 0.5)}`,
           boxShadow: theme.shadows[8],
+          borderLeft: sessionColor ? `3px solid ${sessionColor}` : undefined,
         }}
       >
-        <Tooltip title={isPlaying ? "Pause (Space)" : "Play (Space)"} arrow>
+        <PlaybackTooltip dismissToken={tooltipDismissToken} title={isPlaying ? "Pause (Space)" : "Play (Space)"} arrow>
           <IconButton
             onClick={onPlayPause}
             sx={{
-              color: "primary.main",
-              bgcolor: alpha(theme.palette.primary.main, 0.12),
-              "&:hover": { bgcolor: alpha(theme.palette.primary.main, 0.2) },
+              color: accentColor,
+              bgcolor: alpha(accentColor, 0.12),
+              "&:hover": { bgcolor: alpha(accentColor, 0.2) },
             }}
           >
             {isPlaying ? <Pause /> : <PlayArrow />}
           </IconButton>
-        </Tooltip>
+        </PlaybackTooltip>
 
         <Stack spacing={0.25} sx={{ minWidth: 70 }}>
-          <Typography variant="body2" fontWeight={700} sx={{ color: "text.primary" }}>
+          <Typography
+            variant="body2"
+            fontWeight={700}
+            sx={{ color: "text.primary" }}
+          >
             {formatCompactTime(displayTime)}
           </Typography>
-          <Typography variant="caption" sx={{ color: "text.secondary", fontSize: "0.65rem" }}>
+          <Typography
+            variant="caption"
+            sx={{ color: "text.secondary", fontSize: "0.65rem" }}
+          >
             {progress.toFixed(0)}%
           </Typography>
         </Stack>
 
-        <Tooltip title="Seek (Arrow Left/Right)" arrow>
+        <PlaybackTooltip dismissToken={tooltipDismissToken} title="Seek (Arrow Left/Right)" arrow>
           <Slider
             min={0}
             max={duration || 1}
             value={displayTime}
+            onMouseDown={() => onSliderDragStart?.()}
             onChange={(_, value) => setSeekValue(value as number)}
             onChangeCommitted={(_, value) => {
               onSeek(value as number);
               setSeekValue(null);
             }}
-            sx={{ flex: 1, minWidth: 120 }}
+            sx={{
+              flex: 1,
+              minWidth: 120,
+              color: accentColor,
+              "& .MuiSlider-thumb": { bgcolor: accentColor },
+              "& .MuiSlider-track": { bgcolor: accentColor },
+            }}
           />
-        </Tooltip>
+        </PlaybackTooltip>
 
         <Stack spacing={0.25} sx={{ minWidth: 70, textAlign: "right" }}>
-          <Typography variant="body2" fontWeight={700} sx={{ color: "text.primary" }}>
+          <Typography
+            variant="body2"
+            fontWeight={700}
+            sx={{ color: "text.primary" }}
+          >
             {formatCompactTime(duration)}
           </Typography>
-          <Typography variant="caption" sx={{ color: "text.secondary", fontSize: "0.65rem" }}>
+          <Typography
+            variant="caption"
+            sx={{ color: "text.secondary", fontSize: "0.65rem" }}
+          >
             total
           </Typography>
         </Stack>
 
-        <Tooltip title="Playback speed" arrow>
+        <PlaybackTooltip dismissToken={tooltipDismissToken} title="Playback speed" arrow>
           <Button
             size="small"
             endIcon={<ArrowDropDown />}
@@ -193,7 +279,7 @@ export default function AnimationControls({
           >
             {playbackSpeed}x
           </Button>
-        </Tooltip>
+        </PlaybackTooltip>
 
         <Popover
           open={Boolean(anchorEl)}
@@ -204,7 +290,9 @@ export default function AnimationControls({
           hideBackdrop
           disableEnforceFocus
           disableAutoFocus
-          slotProps={{ paper: { sx: { minWidth: 90, zIndex: 10000, mt: -0.5 } } }}
+          slotProps={{
+            paper: { sx: { minWidth: 90, zIndex: 10000, mt: -0.5 } },
+          }}
         >
           <Box sx={{ py: 0.5 }}>
             {PLAYBACK_SPEEDS.map((speed) => (
@@ -223,33 +311,56 @@ export default function AnimationControls({
           </Box>
         </Popover>
 
-        <Tooltip title="Exit playback (Esc)" arrow>
+        {onLayersToggle && (
+          <PlaybackTooltip dismissToken={tooltipDismissToken} title="Toggle vessel labels" arrow>
+            <IconButton
+              size="small"
+              onMouseDown={(e) => e.stopPropagation()}
+              onClick={onLayersToggle}
+              sx={{
+                color: isLayersActive ? accentColor : "text.secondary",
+                bgcolor: isLayersActive
+                  ? alpha(accentColor, 0.12)
+                  : "transparent",
+                "&:hover": { bgcolor: alpha(accentColor, 0.1) },
+              }}
+            >
+              <LayersOutlined fontSize="small" />
+            </IconButton>
+          </PlaybackTooltip>
+        )}
+
+        <PlaybackTooltip dismissToken={tooltipDismissToken} title="Exit playback (Esc)" arrow>
           <IconButton
             onClick={onClose}
             sx={{ color: "text.secondary", "&:hover": { color: "error.main" } }}
           >
             <Close />
           </IconButton>
-        </Tooltip>
+        </PlaybackTooltip>
 
-        <Tooltip
+        <PlaybackTooltip
+          dismissToken={tooltipDismissToken}
           title={
             <Stack spacing={0.5} sx={{ p: 0.5 }}>
-              <Typography variant="caption"><strong>Space</strong> — Play / Pause</Typography>
-              <Typography variant="caption"><strong>← →</strong> — Seek</Typography>
-              <Typography variant="caption"><strong>Esc</strong> — Exit playback</Typography>
+              <Typography variant="caption">
+                <strong>Space</strong> — Play / Pause
+              </Typography>
+              <Typography variant="caption">
+                <strong>← →</strong> — Seek
+              </Typography>
+              <Typography variant="caption">
+                <strong>Esc</strong> — Exit playback
+              </Typography>
             </Stack>
           }
           arrow
           placement="top"
         >
-          <IconButton
-            size="small"
-            sx={{ color: "text.secondary", ml: -0.5 }}
-          >
+          <IconButton size="small" sx={{ color: "text.secondary", ml: -0.5 }}>
             <KeyboardOutlined fontSize="small" />
           </IconButton>
-        </Tooltip>
+        </PlaybackTooltip>
       </Box>
 
       {isBuffering && (
@@ -261,7 +372,8 @@ export default function AnimationControls({
             right: 12,
             height: 2,
             borderRadius: 1,
-            bgcolor: alpha(theme.palette.primary.main, 0.15),
+            bgcolor: alpha(accentColor, 0.15),
+            "& .MuiLinearProgress-bar": { bgcolor: accentColor },
           }}
         />
       )}

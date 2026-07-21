@@ -17,6 +17,7 @@ export interface PlaybackPoint {
   latitude: number;
   longitude: number;
   heading: number;
+  speed: number;
 }
 
 export type TimeGranularity = "minute" | "hour" | "day" | "week";
@@ -60,7 +61,33 @@ export interface VesselPoint {
   lng: number;
   ts: number;
   heading: number;
+  speed: number;
 }
+
+export interface LabelVisibility {
+  tracks: boolean;
+  names: boolean;
+  heading: boolean;
+  speed: boolean;
+  latlon: boolean;
+}
+
+export const DEFAULT_LABEL_VISIBILITY: LabelVisibility = {
+  tracks: true,
+  names: true,
+  heading: false,
+  speed: false,
+  latlon: false,
+};
+
+export const PLAYBACK_SESSION_COLORS = [
+  "#4fc3f7",
+  "#ffb74d",
+  "#aed581",
+  "#9575cd",
+] as const;
+
+export const MAX_PLAYBACK_SESSIONS = 4;
 
 export interface AnimationVessel {
   vesselId: string;

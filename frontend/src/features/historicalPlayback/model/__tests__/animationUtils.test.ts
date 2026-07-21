@@ -560,6 +560,11 @@ describe("animationUtils", () => {
       expect(result[5].color).toBe("#4fc3f7");
     });
 
+    it("uses session color for all vessels when provided", () => {
+      const result = normalizeVessels(mockVesselMap, "#ffb74d");
+      expect(result.every((v) => v.color === "#ffb74d")).toBe(true);
+    });
+
     it("handles undefined input", () => {
       expect(normalizeVessels(undefined)).toEqual([]);
     });
