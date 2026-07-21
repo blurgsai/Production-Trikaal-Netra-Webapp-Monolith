@@ -1,5 +1,6 @@
 import { Box, Tab, Tabs } from "@mui/material";
-import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { Outlet, useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import { useEffect } from "react";
 
 import { worldMonitorPalette } from "@/features/worldMonitoring";
 
@@ -9,13 +10,30 @@ const TABS = [
   { label: "Articles", path: "/world-monitoring/articles" },
 ];
 
+const TAB_MAP: Record<string, string> = {
+  dashboard: "/world-monitoring/dashboard",
+  threats: "/world-monitoring/threats",
+  articles: "/world-monitoring/articles",
+};
+
 export function WorldMonitoringPage() {
   const location = useLocation();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   const activeTab = TABS.findIndex((tab) =>
     location.pathname.startsWith(tab.path),
   );
+
+  useEffect(() => {
+    const tab = searchParams.get("tab");
+    if (tab && TAB_MAP[tab]) {
+      const targetPath = TAB_MAP[tab];
+      if (!location.pathname.startsWith(targetPath)) {
+        navigate(targetPath);
+      }
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <Box

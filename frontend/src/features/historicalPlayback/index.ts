@@ -1,4 +1,6 @@
 export { HistoricalPlayback } from "./ui";
+export { usePlaybackUrlParams } from "./hooks/usePlaybackUrlParams";
+export type { PlaybackUrlParams } from "./hooks/usePlaybackUrlParams";
 export type {
   PlaybackRange,
   PlaybackPoint,

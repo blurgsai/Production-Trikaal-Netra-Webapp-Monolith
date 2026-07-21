@@ -541,6 +541,29 @@ class TestMapArticleFromDoc:
         result = map_article_from_doc(doc, [], include_linked_events=True)
         assert result["raw_content"] == "Hello world"
 
+    def test_strips_html_from_summary_and_processed_content(self):
+        doc = {
+            "_id": ObjectId("65f1a2b3c4d5e6f7a8b9c0e2"),
+            "title": "Test",
+            "summary": '<div class="bbWrapper">Seems like Hisar-O is going to be bidding.</div>',
+            "processed_content": "<p>Full article <b>content</b> here.</p>",
+            "raw_content": "<p>Raw content</p>",
+        }
+        result = map_article_from_doc(doc, [], include_linked_events=True)
+        assert result["summary"] == "Seems like Hisar-O is going to be bidding."
+        assert result["processed_content"] == "Full article content here."
+
+    def test_strips_html_from_summary_in_preview(self):
+        doc = {
+            "_id": ObjectId("65f1a2b3c4d5e6f7a8b9c0e2"),
+            "title": "Test",
+            "summary": '<div class="bbWrapper">Some <b>HTML</b> summary.</div>',
+            "processed_content": "<p>Content</p>",
+        }
+        result = map_article_preview_from_doc(doc)
+        assert result["summary"] == "Some HTML summary."
+        assert result["processed_content"] == "Content"
+
 
 class TestSeverityOrder:
     def test_order_values(self):

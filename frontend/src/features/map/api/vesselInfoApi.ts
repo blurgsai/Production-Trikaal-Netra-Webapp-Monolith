@@ -1,8 +1,14 @@
 import L from "leaflet";
 
-const GEOSERVER_URL = `${import.meta.env.VITE_GEOSERVER_BASE_URL}/${
+const GEOSERVER_WMS_URL = `${import.meta.env.VITE_GEOSERVER_BASE_URL}/${
   import.meta.env.VITE_GEOSERVER_WORKSPACE
 }/wms`;
+
+const GEOSERVER_WFS_URL = `${import.meta.env.VITE_GEOSERVER_BASE_URL}/${
+  import.meta.env.VITE_GEOSERVER_WORKSPACE
+}/ows`;
+
+const LAYER_NAME = `${import.meta.env.VITE_GEOSERVER_WORKSPACE}:vessels`;
 
 export interface RawVesselFeature {
   id?: string | number;
@@ -25,7 +31,7 @@ export async function fetchVesselInfo(
   const clickTolerance = 15;
 
   const url =
-    `${GEOSERVER_URL}?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetFeatureInfo` +
+    `${GEOSERVER_WMS_URL}?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetFeatureInfo` +
     `&LAYERS=trikaalx:vessels&QUERY_LAYERS=trikaalx:vessels&STYLES=` +
     `&BBOX=${bounds.toBBoxString()}&WIDTH=${size.x}&HEIGHT=${size.y}` +
     `&X=${Math.floor(point.x)}&Y=${Math.floor(point.y)}` +
@@ -40,4 +46,21 @@ export async function fetchVesselInfo(
   );
 
   return data?.features?.[0]?.properties ?? null;
+}
+
+export async function fetchVesselByMmsi(mmsi: string): Promise<RawVesselFeature | null> {
+  const cql = `identification_mmsi=${mmsi}`;
+  const url =
+    `${GEOSERVER_WFS_URL}?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature` +
+    `&TYPENAMES=${LAYER_NAME}&OUTPUTFORMAT=application/json&CQL_FILTER=${encodeURIComponent(cql)}&MAXFEATURES=1`;
+
+  try {
+    const res = await fetch(url);
+    const data = await res.json();
+    const props = data?.features?.[0]?.properties;
+    if (!props) return null;
+    return props as RawVesselFeature;
+  } catch {
+    return null;
+  }
 }
