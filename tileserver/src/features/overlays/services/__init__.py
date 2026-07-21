@@ -5,8 +5,6 @@ import shutil
 import sqlite3
 import zipfile
 
-logger = logging.getLogger(__name__)
-
 from src.features.overlays.repository import (
     delete_overlay,
     get_overlay,
@@ -23,6 +21,8 @@ from src.shared.vector_converter import (
     convert_kml_to_gpkg,
     parse_enc_to_gpkg,
 )
+
+logger = logging.getLogger(__name__)
 
 _EXTENSION_TO_SOURCE_TYPE = {
     ".mbtiles": "mbtiles",

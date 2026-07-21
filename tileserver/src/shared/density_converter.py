@@ -16,10 +16,8 @@ import math
 import os
 import re
 import sqlite3
-import struct
 import time
 
-import numpy as np
 import pandas as pd
 from PIL import Image, ImageDraw
 from s2sphere import Cell, CellId, LatLng
