@@ -24,11 +24,11 @@ function makeVessel(
   return {
     vesselId: "V0001",
     points: [
-      { lat: 15.0, lng: 65.0, ts: BASE_TS, heading: 45 },
-      { lat: 15.5, lng: 65.5, ts: BASE_TS + 15000, heading: 50 },
-      { lat: 16.0, lng: 66.0, ts: BASE_TS + 30000, heading: 55 },
-      { lat: 16.5, lng: 66.5, ts: BASE_TS + 45000, heading: 60 },
-      { lat: 17.0, lng: 67.0, ts: BASE_TS + 60000, heading: 65 },
+      { lat: 15.0, lng: 65.0, ts: BASE_TS, heading: 45, speed: 0 },
+      { lat: 15.5, lng: 65.5, ts: BASE_TS + 15000, heading: 50, speed: 0 },
+      { lat: 16.0, lng: 66.0, ts: BASE_TS + 30000, heading: 55, speed: 0 },
+      { lat: 16.5, lng: 66.5, ts: BASE_TS + 45000, heading: 60, speed: 0 },
+      { lat: 17.0, lng: 67.0, ts: BASE_TS + 60000, heading: 65, speed: 0 },
     ],
     index: 0,
     color: "#4fc3f7",
@@ -43,11 +43,11 @@ function makeVessel(
 
 function makePoints(): VesselPoint[] {
   return [
-    { lat: 15.0, lng: 65.0, ts: BASE_TS, heading: 45 },
-    { lat: 15.5, lng: 65.5, ts: BASE_TS + 15000, heading: 50 },
-    { lat: 16.0, lng: 66.0, ts: BASE_TS + 30000, heading: 55 },
-    { lat: 16.5, lng: 66.5, ts: BASE_TS + 45000, heading: 60 },
-    { lat: 17.0, lng: 67.0, ts: BASE_TS + 60000, heading: 65 },
+    { lat: 15.0, lng: 65.0, ts: BASE_TS, heading: 45, speed: 0 },
+    { lat: 15.5, lng: 65.5, ts: BASE_TS + 15000, heading: 50, speed: 0 },
+    { lat: 16.0, lng: 66.0, ts: BASE_TS + 30000, heading: 55, speed: 0 },
+    { lat: 16.5, lng: 66.5, ts: BASE_TS + 45000, heading: 60, speed: 0 },
+    { lat: 17.0, lng: 67.0, ts: BASE_TS + 60000, heading: 65, speed: 0 },
   ];
 }
 
@@ -258,7 +258,7 @@ describe("animationUtils", () => {
 
     it("handles single point", () => {
       expect(
-        findIndexAtTime([{ lat: 15, lng: 65, ts: BASE_TS, heading: 0 }], BASE_TS, 0),
+        findIndexAtTime([{ lat: 15, lng: 65, ts: BASE_TS, heading: 0, speed: 0 }], BASE_TS, 0),
       ).toBe(0);
     });
   });
@@ -455,13 +455,13 @@ describe("animationUtils", () => {
           timestamp: "2024-12-04T16:00:00Z",
           latitude: 15.9,
           longitude: 65.2,
-          heading: 45,
+          heading: 45, speed: 0,
         },
         {
           timestamp: "2024-12-04T16:00:15Z",
           latitude: 15.91,
           longitude: 65.21,
-          heading: 46,
+          heading: 46, speed: 0,
         },
       ],
       V0002: [
@@ -469,7 +469,7 @@ describe("animationUtils", () => {
           timestamp: "2024-12-04T16:00:00Z",
           latitude: 16.1,
           longitude: 65.5,
-          heading: 90,
+          heading: 90, speed: 0,
         },
       ],
     };
@@ -507,13 +507,13 @@ describe("animationUtils", () => {
             timestamp: "2024-12-04T16:00:15Z",
             latitude: 15.91,
             longitude: 65.21,
-            heading: 46,
+            heading: 46, speed: 0,
           },
           {
             timestamp: "2024-12-04T16:00:00Z",
             latitude: 15.9,
             longitude: 65.2,
-            heading: 45,
+            heading: 45, speed: 0,
           },
         ],
       };
@@ -551,13 +551,18 @@ describe("animationUtils", () => {
             timestamp: "2024-12-04T16:00:00Z",
             latitude: 15,
             longitude: 65,
-            heading: 0,
+            heading: 0, speed: 0,
           },
         ];
       }
       const result = normalizeVessels(manyVessels);
       expect(result[0].color).toBe("#4fc3f7");
       expect(result[5].color).toBe("#4fc3f7");
+    });
+
+    it("uses session color for all vessels when provided", () => {
+      const result = normalizeVessels(mockVesselMap, "#ffb74d");
+      expect(result.every((v) => v.color === "#ffb74d")).toBe(true);
     });
 
     it("handles undefined input", () => {
@@ -575,7 +580,7 @@ describe("animationUtils", () => {
             timestamp: BASE_TS as unknown as string,
             latitude: 15,
             longitude: 65,
-            heading: 0,
+            heading: 0, speed: 0,
           },
         ],
       });
@@ -591,7 +596,7 @@ describe("animationUtils", () => {
           timestamp: "2024-12-04T16:00:00Z",
           latitude: 15.0,
           longitude: 65.0,
-          heading: 45,
+          heading: 45, speed: 0,
         },
       ],
     };
@@ -601,7 +606,7 @@ describe("animationUtils", () => {
           timestamp: "2024-12-04T16:01:00Z",
           latitude: 16.0,
           longitude: 66.0,
-          heading: 55,
+          heading: 55, speed: 0,
         },
       ],
       V0002: [
@@ -609,7 +614,7 @@ describe("animationUtils", () => {
           timestamp: "2024-12-04T16:01:00Z",
           latitude: 20.0,
           longitude: 70.0,
-          heading: 90,
+          heading: 90, speed: 0,
         },
       ],
     };
@@ -680,7 +685,7 @@ describe("animationUtils", () => {
             timestamp: "2024-12-04T16:02:00Z",
             latitude: 17.0,
             longitude: 67.0,
-            heading: 65,
+            heading: 65, speed: 0,
           },
         ],
       };
@@ -849,8 +854,8 @@ describe("animationUtils", () => {
       const v2 = makeVessel({
         vesselId: "V2",
         points: [
-          { lat: 25.0, lng: 75.0, ts: BASE_TS, heading: 10 },
-          { lat: 25.5, lng: 75.5, ts: BASE_TS + 15000, heading: 20 },
+          { lat: 25.0, lng: 75.0, ts: BASE_TS, heading: 10, speed: 0 },
+          { lat: 25.5, lng: 75.5, ts: BASE_TS + 15000, heading: 20, speed: 0 },
         ],
       });
       v1.currentPos = { lat: v1.points[0].lat, lng: v1.points[0].lng, heading: v1.points[0].heading };
@@ -933,13 +938,13 @@ describe("animationUtils", () => {
             timestamp: "2024-12-04T16:00:00Z",
             latitude: 15.0,
             longitude: 65.0,
-            heading: 45,
+            heading: 45, speed: 0,
           },
           {
             timestamp: "2024-12-04T16:00:30Z",
             latitude: 15.3,
             longitude: 65.3,
-            heading: 48,
+            heading: 48, speed: 0,
           },
         ],
       };
@@ -949,13 +954,13 @@ describe("animationUtils", () => {
             timestamp: "2024-12-04T16:01:00Z",
             latitude: 15.6,
             longitude: 65.6,
-            heading: 52,
+            heading: 52, speed: 0,
           },
           {
             timestamp: "2024-12-04T16:01:30Z",
             latitude: 16.0,
             longitude: 66.0,
-            heading: 55,
+            heading: 55, speed: 0,
           },
         ],
       };
@@ -976,7 +981,7 @@ describe("animationUtils", () => {
             timestamp: "2024-12-04T16:00:00Z",
             latitude: 15.0,
             longitude: 65.0,
-            heading: 45,
+            heading: 45, speed: 0,
           },
         ],
       };
@@ -986,7 +991,7 @@ describe("animationUtils", () => {
             timestamp: "2024-12-04T16:01:00Z",
             latitude: 16.0,
             longitude: 66.0,
-            heading: 55,
+            heading: 55, speed: 0,
           },
         ],
       };

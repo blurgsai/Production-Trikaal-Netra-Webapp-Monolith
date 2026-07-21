@@ -26,6 +26,7 @@ describe("historicalPlayback model mappers", () => {
         latitude: 15.9,
         longitude: 65.2,
         heading: 45,
+        speed: 12.5,
       });
     });
 
