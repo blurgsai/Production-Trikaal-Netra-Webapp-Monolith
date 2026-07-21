@@ -31,7 +31,6 @@ export default function PlaybackControlsStack() {
     sessions,
     activeSessionId,
     labelsPanelOpen,
-    setLabelsPanelOpen,
     toggleLabelsForSession,
     onAddSession,
     canAddSession,
