@@ -31,7 +31,7 @@ function createMockFetch(): FetchTrajectoriesFn & { calls: TrajectoryRequest[] }
       timestamps: [payload.startTime ?? ""],
       vessels: {
         V0001: [
-          { timestamp: payload.startTime ?? "", latitude: 15.9, longitude: 65.2, heading: 45 },
+          { timestamp: payload.startTime ?? "", latitude: 15.9, longitude: 65.2, heading: 45, speed: 0 },
         ],
       },
     };

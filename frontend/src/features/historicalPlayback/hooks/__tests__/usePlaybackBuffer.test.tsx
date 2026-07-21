@@ -30,7 +30,7 @@ const mockChunkData: PlaybackChunk = {
         timestamp: "2024-12-04T16:00:00Z",
         latitude: 15.9,
         longitude: 65.2,
-        heading: 45,
+        heading: 45, speed: 0,
       },
     ],
   },
