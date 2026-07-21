@@ -98,7 +98,7 @@ export function AisPingDensityGraph({
           not a per-event-type quirk, a guaranteed collision for that shape of
           data. Keeping the label in normal document flow up here means no
           future event type reusing this graph can hit that bug either. */}
-      <Box sx={{ fontSize: '0.75rem', color: accentColor, mb: 0.5, ml: 1, display: 'flex', alignItems: 'baseline', gap: 1 }}>
+      <Box sx={{ fontSize: '0.75rem', color: accentColor, mb: 0.5, ml: 1, display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', gap: 1 }}>
         <span>{title}</span>
         {windowLabel && (
           <Box component="span" sx={{ fontWeight: 700, letterSpacing: '1px', fontSize: '0.7rem', opacity: 0.85 }}>

@@ -34,9 +34,15 @@ export function SpeedBadge({ event, position, inverted = false }: Props) {
 
   const bdColor = !hasThreshold ? '#3a9fd4' : isAlert ? '#cc0000' : '#00cc00';
 
+  // 0×0-anchored icon, auto-width label — a fixed iconSize is unsafe here
+  // since nowrap content can exceed whatever width was assumed for it.
   const icon = L.divIcon({
     className: 'speed-badge-marker',
     html: `<div style="
+      position: absolute;
+      left: 0;
+      top: 0;
+      transform: translate(-50%, calc(-100% - 15px));
       background-color: ${bgColor};
       color: #000;
       border: 2px solid ${bdColor};
@@ -49,8 +55,8 @@ export function SpeedBadge({ event, position, inverted = false }: Props) {
       text-align: center;
       pointer-events: none;
     ">${currentSpeed.toFixed(2)} m/s</div>`,
-    iconSize: [80, 20],
-    iconAnchor: [40, 35],
+    iconSize: [0, 0],
+    iconAnchor: [0, 0],
   });
 
   return (

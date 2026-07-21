@@ -94,8 +94,8 @@ export interface PortIntrusionEvent {
 
 // ── kinematics family (sudden_stop / anomalous_acceleration / anomalous_jerk) ──
 // `value` / `thresholdPositive` / `thresholdNegative` are the shared kinematics
-// contract consumed structurally by KinematicsBadge + KinematicsTimelineEnhancement;
-// the rest is per-event context.
+// contract consumed structurally by KinematicsTimelineEnhancement; the rest is
+// per-event context.
 
 export interface SuddenStopEvent {
   value: number;              // deceleration (signed, m/s²)

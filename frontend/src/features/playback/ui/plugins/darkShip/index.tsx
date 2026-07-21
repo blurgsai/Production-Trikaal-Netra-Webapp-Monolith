@@ -1,18 +1,15 @@
-import { DarkShipBadge } from './DarkShipBadge';
 import { DarkShipOverlay } from './DarkShipOverlay';
 import { DarkShipTimelineEnhancement } from './DarkShipTimelineEnhancement';
 import { useDarkShipEvent } from '../../../hooks/useDarkShipEvent';
 import type { EventPlugin } from '../../PluginRegistry';
-import type { EventOverlayProps, EventMarkerProps, EventTimelineProps } from '../../../model/types';
+import type { EventOverlayProps, EventTimelineProps } from '../../../model/types';
+
+// No marker badge — the dark duration is a single static value already shown in the
+// hover overlay tooltip and the timeline info bar; a floating map pill only duplicated it.
 
 function DarkShipOverlaySlot({ eventDetails }: EventOverlayProps) {
   const event = useDarkShipEvent(eventDetails);
   return <DarkShipOverlay event={event} />;
-}
-
-function DarkShipMarkerSlot({ position, eventDetails }: EventMarkerProps) {
-  const event = useDarkShipEvent(eventDetails);
-  return <DarkShipBadge event={event} position={position} />;
 }
 
 function DarkShipTimelineSlot({ timeline, currentTimestampMs, eventDetails, timeWindow }: EventTimelineProps) {
@@ -30,7 +27,6 @@ function DarkShipTimelineSlot({ timeline, currentTimestampMs, eventDetails, time
 const DarkShipPlugin: EventPlugin = {
   eventType: 'dark_ship',
   overlay: DarkShipOverlaySlot,
-  marker: DarkShipMarkerSlot,
   timeline: DarkShipTimelineSlot,
 };
 
