@@ -3,7 +3,7 @@ import { Box, IconButton, Typography, Chip, alpha } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import AddIcon from "@mui/icons-material/Add";
 import AnimationControls, { PlaybackTooltip } from "./AnimationControls";
-import { usePlaybackControls } from "./PlaybackControlsContext";
+import { usePlaybackControls } from "./usePlaybackControls";
 import type { LabelVisibility } from "../model/types";
 
 const ROW_HEIGHT = 68;

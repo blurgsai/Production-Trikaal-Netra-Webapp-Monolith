@@ -9,7 +9,7 @@ import {
   Snackbar,
   Alert,
 } from "@mui/material";
-import { usePlaybackControlsOptional } from "./PlaybackControlsContext";
+import { usePlaybackControlsOptional } from "./usePlaybackControls";
 import { usePlaybackBuffer } from "../hooks/usePlaybackBuffer";
 import type {
   PlaybackChunk,
