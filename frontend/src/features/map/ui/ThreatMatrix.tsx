@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
 import {
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
   Box,
   Chip,
   CircularProgress,
@@ -8,6 +11,7 @@ import {
   Tooltip,
 } from "@mui/material";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import type { Theme } from "@mui/material/styles";
 
 export interface ThreatSource {
@@ -97,73 +101,52 @@ function ThreatMatrix({ vesselId }: ThreatMatrixProps) {
 
   if (loading) {
     return (
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: 1,
-          py: 2,
-        }}
-      >
-        <CircularProgress size={16} />
-        <Typography variant="caption" color="text.secondary">
-          Loading threat matrix...
-        </Typography>
-      </Box>
+      <Accordion disableGutters square elevation={0} defaultExpanded={false} sx={{ "&:before": { display: "none" } }}>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={{ px: 1.5, minHeight: 40, "&.Mui-expanded": { minHeight: 40 } }}>
+          <Typography variant="subtitle2" fontWeight={600}>Threat Matrix</Typography>
+        </AccordionSummary>
+        <AccordionDetails sx={{ px: 1.5, py: 1 }}>
+          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 1, py: 2 }}>
+            <CircularProgress size={16} />
+            <Typography variant="caption" color="text.secondary">Loading threat matrix...</Typography>
+          </Box>
+        </AccordionDetails>
+      </Accordion>
     );
   }
 
   if (error || !data) {
     return (
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          gap: 1,
-          py: 1.5,
-          px: 1,
-          borderRadius: 1,
-          bgcolor: (theme: Theme) => theme.palette.action.hover,
-        }}
-      >
-        <WarningAmberIcon fontSize="small" color="warning" />
-        <Typography variant="caption" color="text.secondary">
-          {error ?? "Threat matrix unavailable"}
-        </Typography>
-      </Box>
+      <Accordion disableGutters square elevation={0} defaultExpanded={false} sx={{ "&:before": { display: "none" } }}>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={{ px: 1.5, minHeight: 40, "&.Mui-expanded": { minHeight: 40 } }}>
+          <Typography variant="subtitle2" fontWeight={600}>Threat Matrix</Typography>
+        </AccordionSummary>
+        <AccordionDetails sx={{ px: 1.5, py: 1 }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1, py: 1.5, px: 1, borderRadius: 1, bgcolor: (theme: Theme) => theme.palette.action.hover }}>
+            <WarningAmberIcon fontSize="small" color="warning" />
+            <Typography variant="caption" color="text.secondary">{error ?? "Threat matrix unavailable"}</Typography>
+          </Box>
+        </AccordionDetails>
+      </Accordion>
     );
   }
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: 1,
-        }}
-      >
-        <Typography variant="subtitle2" fontWeight={600}>
-          Threat Matrix
-        </Typography>
-        <Chip
-          label={`${data.riskLevel} · ${data.overallScore}`}
-          color={getRiskChipColor(data.riskLevel)}
-          size="small"
-          sx={{ fontWeight: 600 }}
-        />
-      </Box>
-
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-          gap: 1.5,
-        }}
-      >
-        {data.sources.map((source) => (
+    <Accordion disableGutters square elevation={0} defaultExpanded={false} sx={{ "&:before": { display: "none" } }}>
+      <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={{ px: 1.5, minHeight: 40, "&.Mui-expanded": { minHeight: 40 } }}>
+        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1, width: "100%", pr: 1 }}>
+          <Typography variant="subtitle2" fontWeight={600}>Threat Matrix</Typography>
+          <Chip
+            label={`${data.riskLevel} · ${data.overallScore}`}
+            color={getRiskChipColor(data.riskLevel)}
+            size="small"
+            sx={{ fontWeight: 600 }}
+          />
+        </Box>
+      </AccordionSummary>
+      <AccordionDetails sx={{ px: 1.5, py: 1 }}>
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+          {data.sources.map((source) => (
           <Box key={source.id}>
             <Box
               sx={{
@@ -278,7 +261,8 @@ function ThreatMatrix({ vesselId }: ThreatMatrixProps) {
           </Box>
         ))}
       </Box>
-    </Box>
+    </AccordionDetails>
+  </Accordion>
   );
 }
 

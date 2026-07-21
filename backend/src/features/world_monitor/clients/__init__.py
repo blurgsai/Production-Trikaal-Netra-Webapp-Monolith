@@ -61,13 +61,15 @@ async def fetch_metadata(db) -> dict[str, list[str]]:
     event_types = await events.distinct("event_type")
     threat_levels = await events.distinct("threat_level")
     sources = await articles.distinct("source")
+    source_types = await articles.distinct("source_type")
     processing_statuses = await articles.distinct("processing_status")
 
     return {
-        "event_types": sorted([v for v in event_types if v]),
-        "threat_levels": sorted([v for v in threat_levels if v]),
-        "sources": sorted([v for v in sources if v]),
-        "processing_statuses": sorted([v for v in processing_statuses if v]),
+        "event_types": sorted([str(v) for v in event_types if v]),
+        "threat_levels": sorted([str(v) for v in threat_levels if v]),
+        "sources": sorted([str(v) for v in sources if v]),
+        "source_types": sorted([str(v) for v in source_types if v]),
+        "processing_statuses": sorted([str(v) for v in processing_statuses if v]),
     }
 
 
@@ -89,6 +91,15 @@ async def build_event_query(
     date_from: str | None = None,
     date_to: str | None = None,
     has_linked_article: bool | None = None,
+    relevance_score_from: float | None = None,
+    relevance_score_to: float | None = None,
+    extracted_data_location: str | None = None,
+    extracted_data_vessel_name: str | None = None,
+    extracted_data_threat_type: str | None = None,
+    extracted_data_origin: str | None = None,
+    extracted_data_damage: str | None = None,
+    extracted_data_countermeasures: str | None = None,
+    location_name: str | None = None,
 ) -> dict[str, Any]:
     query: dict[str, Any] = {}
     and_clauses: list[dict[str, Any]] = []
@@ -131,6 +142,43 @@ async def build_event_query(
             range_query["$lte"] = end_dt.isoformat()
         if range_query:
             and_clauses.append({"enriched_at": range_query})
+
+    if relevance_score_from is not None or relevance_score_to is not None:
+        range_query: dict[str, Any] = {}
+        if relevance_score_from is not None:
+            range_query["$gte"] = relevance_score_from
+        if relevance_score_to is not None:
+            range_query["$lte"] = relevance_score_to
+        if range_query:
+            and_clauses.append({"relevance_score": range_query})
+
+    if extracted_data_location and extracted_data_location.strip():
+        regex = {"$regex": _escape_keyword(extracted_data_location), "$options": "i"}
+        and_clauses.append({"extracted_data.extracted_data.location": regex})
+
+    if extracted_data_vessel_name and extracted_data_vessel_name.strip():
+        regex = {"$regex": _escape_keyword(extracted_data_vessel_name), "$options": "i"}
+        and_clauses.append({"extracted_data.extracted_data.vessel_name": regex})
+
+    if extracted_data_threat_type and extracted_data_threat_type.strip():
+        regex = {"$regex": _escape_keyword(extracted_data_threat_type), "$options": "i"}
+        and_clauses.append({"extracted_data.extracted_data.threat_type": regex})
+
+    if extracted_data_origin and extracted_data_origin.strip():
+        regex = {"$regex": _escape_keyword(extracted_data_origin), "$options": "i"}
+        and_clauses.append({"extracted_data.extracted_data.origin": regex})
+
+    if extracted_data_damage and extracted_data_damage.strip():
+        regex = {"$regex": _escape_keyword(extracted_data_damage), "$options": "i"}
+        and_clauses.append({"extracted_data.extracted_data.damage": regex})
+
+    if extracted_data_countermeasures and extracted_data_countermeasures.strip():
+        regex = {"$regex": _escape_keyword(extracted_data_countermeasures), "$options": "i"}
+        and_clauses.append({"extracted_data.extracted_data.countermeasures": regex})
+
+    if location_name and location_name.strip():
+        regex = {"$regex": _escape_keyword(location_name), "$options": "i"}
+        and_clauses.append({"location.name": regex})
 
     if parsed_sources:
         article_ids = await _resolve_source_article_ids(db, parsed_sources)
@@ -198,6 +246,17 @@ async def fetch_articles(
     search: str | None,
     source: str | None,
     processing_status: str | None,
+    title: str | None = None,
+    author: str | None = None,
+    source_type: str | None = None,
+    published_from: str | None = None,
+    published_to: str | None = None,
+    ingested_from: str | None = None,
+    ingested_to: str | None = None,
+    updated_from: str | None = None,
+    updated_to: str | None = None,
+    tags: str | None = None,
+    location_name: str | None = None,
     page: int,
     page_size: int,
     sort: str,
@@ -219,11 +278,63 @@ async def fetch_articles(
             }
         )
 
+    if title and title.strip():
+        regex = {"$regex": _escape_keyword(title), "$options": "i"}
+        and_clauses.append({"title": regex})
+
+    if author and author.strip():
+        regex = {"$regex": _escape_keyword(author), "$options": "i"}
+        and_clauses.append({"author": regex})
+
     if source:
         and_clauses.append({"source": source})
 
+    if source_type:
+        and_clauses.append({"source_type": source_type})
+
     if processing_status:
         and_clauses.append({"processing_status": processing_status})
+
+    if published_from or published_to:
+        range_query: dict[str, Any] = {}
+        start_dt = _parse_iso_datetime(published_from) if published_from else None
+        end_dt = _parse_iso_datetime(published_to) if published_to else None
+        if start_dt:
+            range_query["$gte"] = start_dt.isoformat()
+        if end_dt:
+            range_query["$lte"] = end_dt.isoformat()
+        if range_query:
+            and_clauses.append({"published": range_query})
+
+    if ingested_from or ingested_to:
+        range_query: dict[str, Any] = {}
+        start_dt = _parse_iso_datetime(ingested_from) if ingested_from else None
+        end_dt = _parse_iso_datetime(ingested_to) if ingested_to else None
+        if start_dt:
+            range_query["$gte"] = start_dt.isoformat()
+        if end_dt:
+            range_query["$lte"] = end_dt.isoformat()
+        if range_query:
+            and_clauses.append({"ingested_at": range_query})
+
+    if updated_from or updated_to:
+        range_query: dict[str, Any] = {}
+        start_dt = _parse_iso_datetime(updated_from) if updated_from else None
+        end_dt = _parse_iso_datetime(updated_to) if updated_to else None
+        if start_dt:
+            range_query["$gte"] = start_dt.isoformat()
+        if end_dt:
+            range_query["$lte"] = end_dt.isoformat()
+        if range_query:
+            and_clauses.append({"updated": range_query})
+
+    if tags and tags.strip():
+        regex = {"$regex": _escape_keyword(tags), "$options": "i"}
+        and_clauses.append({"tags": regex})
+
+    if location_name and location_name.strip():
+        regex = {"$regex": _escape_keyword(location_name), "$options": "i"}
+        and_clauses.append({"location.name": regex})
 
     if and_clauses:
         query["$and"] = and_clauses

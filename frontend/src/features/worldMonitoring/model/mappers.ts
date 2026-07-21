@@ -324,5 +324,6 @@ export const mapArticleMetadata = (
   raw: WorldMonitorMetadataApiResponse,
 ): ArticleMetadata => ({
   sources: raw.sources,
+  sourceTypes: raw.source_types,
   processingStatuses: raw.processing_statuses,
 });

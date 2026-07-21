@@ -44,6 +44,7 @@ const mockMetadata: WorldMonitorMetadataApiResponse = {
   threat_levels: ["LOW", "MEDIUM", "HIGH", "CRITICAL"],
   event_types: ["Conflict", "Piracy", "Sanctions"],
   sources: ["GNews", "Reuters"],
+  source_types: [],
   processing_statuses: ["processed", "pending", "failed"],
   sort_options: [
     { value: "newest", label: "Newest" },
@@ -500,7 +501,7 @@ describe("useThreats", () => {
 
     it("handles empty metadata arrays", async () => {
       vi.mocked(getThreatMetadata).mockResolvedValue({
-        success: true, threat_levels: [], event_types: [], sources: [], processing_statuses: [], sort_options: [],
+        success: true, threat_levels: [], event_types: [], sources: [], source_types: [], processing_statuses: [], sort_options: [],
       });
       vi.mocked(getThreatEvents).mockResolvedValue(mockEventsResponse);
       vi.mocked(getThreatMapEvents).mockResolvedValue(mockMapResponse);

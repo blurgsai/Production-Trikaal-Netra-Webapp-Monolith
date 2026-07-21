@@ -157,8 +157,102 @@ export interface ThreatFilters {
   eventTypes: string[];
   threatLevels: string[];
   sources: string[];
+  dateFrom?: string;
+  dateTo?: string;
+  hasLinkedArticle?: boolean;
   sort: string;
+  // Additional fields for progressive filtering
+  relevanceScoreFrom?: number;
+  relevanceScoreTo?: number;
+  extractedDataLocation?: string;
+  extractedDataVesselName?: string;
+  extractedDataThreatType?: string;
+  extractedDataOrigin?: string;
+  extractedDataDamage?: string;
+  extractedDataCountermeasures?: string;
+  locationName?: string;
 }
+
+export type ThreatFilterOperator =
+  | "="
+  | "!="
+  | "contains"
+  | ">="
+  | "<="
+  | "between";
+
+export type ThreatFilterCombinator = "AND" | "OR";
+
+export interface ThreatProgressiveFilter {
+  field: string;
+  operator: ThreatFilterOperator;
+  value: string;
+  value2?: string;
+  combinator?: ThreatFilterCombinator;
+}
+
+export interface SavedThreatFilterSet {
+  name: string;
+  filters: ThreatProgressiveFilter[];
+  createdAt: string;
+}
+
+// Article progressive filter types (alias for reuse)
+export type ArticleProgressiveFilter = ThreatProgressiveFilter;
+export type ArticleFilterOperator = ThreatFilterOperator;
+export type ArticleFilterCombinator = ThreatFilterCombinator;
+export interface SavedArticleFilterSet {
+  name: string;
+  filters: ArticleProgressiveFilter[];
+  createdAt: string;
+}
+
+// Field definitions for progressive filters
+export interface ThreatFilterField {
+  value: string;
+  label: string;
+  type: "text" | "date" | "boolean" | "number";
+  path?: string; // For nested fields like "extracted_data.vessel_name"
+}
+
+export const THREAT_FILTER_FIELDS: ThreatFilterField[] = [
+  // Top-level fields
+  { value: "keyword", label: "Keyword", type: "text" },
+  { value: "event_type", label: "Event Type", type: "text" },
+  { value: "threat_level", label: "Threat Level", type: "text" },
+  { value: "relevance_score", label: "Relevance Score", type: "number" },
+  { value: "enriched_at", label: "Date", type: "date" },
+  { value: "has_linked_article", label: "Has Linked Article", type: "boolean" },
+  
+  // Extracted data fields
+  { value: "extracted_data.location", label: "Location", type: "text", path: "extracted_data" },
+  { value: "extracted_data.vessel_name", label: "Vessel Name", type: "text", path: "extracted_data" },
+  { value: "extracted_data.threat_type", label: "Threat Type", type: "text", path: "extracted_data" },
+  { value: "extracted_data.origin", label: "Origin", type: "text", path: "extracted_data" },
+  { value: "extracted_data.damage", label: "Damage", type: "text", path: "extracted_data" },
+  { value: "extracted_data.countermeasures", label: "Countermeasures", type: "text", path: "extracted_data" },
+  
+  // Location fields
+  { value: "location.name", label: "Location Name", type: "text", path: "location" },
+];
+
+// Article filter fields
+export const ARTICLE_FILTER_FIELDS: ThreatFilterField[] = [
+  // Top-level fields
+  { value: "keyword", label: "Keyword", type: "text" },
+  { value: "title", label: "Title", type: "text" },
+  { value: "author", label: "Author", type: "text" },
+  { value: "source", label: "Source", type: "text" },
+  { value: "source_type", label: "Source Type", type: "text" },
+  { value: "processing_status", label: "Processing Status", type: "text" },
+  { value: "published", label: "Published Date", type: "date" },
+  { value: "ingested_at", label: "Ingested Date", type: "date" },
+  { value: "updated", label: "Updated Date", type: "date" },
+  { value: "tags", label: "Tags", type: "text" },
+  
+  // Location fields
+  { value: "location.name", label: "Location Name", type: "text", path: "location" },
+];
 
 export interface ThreatEvent {
   id: string;
@@ -205,6 +299,7 @@ export interface ThreatMetadata {
 
 export interface ArticleMetadata {
   sources: string[];
+  sourceTypes: string[];
   processingStatuses: string[];
 }
 

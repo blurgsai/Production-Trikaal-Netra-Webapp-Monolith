@@ -2,7 +2,8 @@ import { baseMaps, defaultBaseMap } from "../model/config";
 import type { MapConfigApiResponse, MapControlSettingsApi, CountryPrefixApi, VesselDetailsApi, VesselImageApiResponse, EezRegionApi, CustomShapeApi, StyleDefinitionApi, StyleRuleApi, StyleConditionApi, ClusterConfigApi, TrajectoryConfigApi, DeadReckoningConfigApi, PopupFieldConfigApi } from "../api/types";
 import type { VesselTableResponseApi, VesselTableFeatureApi } from "../api/vesselTableApi";
 import type { VesselFlagApi, VesselFlagTypeApi } from "../api/types";
-import type { BaseMap, VesselConfig, VesselInfo, CountryPrefix, VesselDetails, VesselImage, EezRegion, CustomShape, StyleDefinition, StyleRule, VesselTableFilter, FilterCombinator, ClusterConfig, TrajectoryConfig, DeadReckoningConfig, PopupFieldConfig, MapControlSettings, VesselTableRow, VesselFlag, VesselFlagStatus } from "./types";
+import type { VesselDataUploadApi, LloydsVesselDataApi } from "../api/vesselDataApi";
+import type { BaseMap, VesselConfig, VesselInfo, CountryPrefix, VesselDetails, VesselImage, EezRegion, CustomShape, StyleDefinition, StyleRule, VesselTableFilter, FilterCombinator, ClusterConfig, TrajectoryConfig, DeadReckoningConfig, PopupFieldConfig, MapControlSettings, VesselTableRow, VesselFlag, VesselFlagStatus, VesselDataUpload, LloydsVesselData } from "./types";
 
 export interface MapConfigDomain {
   selectedBaseMap: BaseMap;
@@ -284,7 +285,7 @@ export function mapRawVesselToInfo(raw: Record<string, unknown>): VesselInfo | n
     locationCurrentLon: lon,
     headingCurrentConsensusValue: heading,
     speedCurrentConsensusValue: speed,
-    name: (raw.name ?? raw.vessel_name) as string | undefined,
+    name: (raw.identification_shipname ?? raw.name ?? raw.vessel_name) as string | undefined,
     mmsi: (raw.identification_mmsi ?? raw.mmsi) as string | undefined,
     imo: (raw.identification_imo ?? raw.imo) as string | undefined,
     rawProperties: raw,
@@ -403,4 +404,55 @@ export function mapVesselFlagsFromApi(raw: VesselFlagApi[]): VesselFlag[] {
 
 export function mapVesselFlagStatusToApi(status: VesselFlagStatus): VesselFlagTypeApi {
   return status as VesselFlagTypeApi;
+}
+
+export function mapVesselDataUploadFromApi(raw: VesselDataUploadApi): VesselDataUpload {
+  return {
+    id: raw._id,
+    databaseName: raw.database_name,
+    mmsi: raw.mmsi,
+    data: raw.data,
+    createdAt: raw.created_at,
+    updatedAt: raw.updated_at,
+  };
+}
+
+export function mapVesselDataUploadsFromApi(raw: VesselDataUploadApi[]): VesselDataUpload[] {
+  return raw.map(mapVesselDataUploadFromApi);
+}
+
+export function mapLloydsDataFromApi(raw: LloydsVesselDataApi): LloydsVesselData {
+  return {
+    vesselId: raw.vessel_id,
+    snapshotId: raw.snapshot_id,
+    timestamp: raw.timestamp,
+    vessel: {
+      imo: raw.vessel.imo,
+      vesselName: raw.vessel.vessel_name,
+      yearOfBuild: raw.vessel.year_of_build,
+      flag: raw.vessel.flag,
+      callSign: raw.vessel.call_sign,
+      mmsi: raw.vessel.mmsi,
+      portOfRegistry: raw.vessel.port_of_registry,
+      gross: raw.vessel.gross,
+      net: raw.vessel.net,
+      dwt: raw.vessel.dwt,
+      genType: raw.vessel.gen_type,
+      subType: raw.vessel.sub_type,
+      vesselType: raw.vessel.vessel_type,
+      status: raw.vessel.status,
+      recordLastUpdated: raw.vessel.record_last_updated,
+    },
+    ownership: raw.ownership as LloydsVesselData["ownership"],
+    inmarsat: raw.inmarsat,
+    engines: raw.engines,
+    design: raw.design,
+    propulsionAndDimensions: raw.propulsion_and_dimensions,
+    capacities: raw.capacities,
+    casualties: raw.casualties,
+    vigilanceScore: raw.vigilance_score,
+    buildAndHistory: raw.build_and_history,
+    flagHistory: raw.flag_history,
+    nameHistory: raw.name_history,
+  };
 }

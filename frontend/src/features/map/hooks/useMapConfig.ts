@@ -61,7 +61,18 @@ const DEFAULT_MAP_CONTROL_SETTINGS: MapControlSettings = {
   statusbar: true,
 };
 
-export function useMapConfig() {
+export interface UseMapConfigOptions {
+  urlOverrides?: {
+    basemap?: string;
+    layers?: string[];
+    briefing?: boolean;
+    flyto?: [number, number, number, number];
+    trackSeconds?: number;
+  };
+}
+
+export function useMapConfig(options: UseMapConfigOptions = {}) {
+  const { urlOverrides } = options;
   const [customBaseMaps, setCustomBaseMaps] = useState<BaseMap[]>([]);
   const [dynamicOverlays, setDynamicOverlays] = useState<OverlayLayerConfig[]>([]);
   const [selectedBaseMap, setSelectedBaseMap] = useState<BaseMap>(() => defaultBaseMap);
@@ -77,6 +88,8 @@ export function useMapConfig() {
   const styleRequestIdRef = useRef(0);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const skipSaveRef = useRef(true);
+  const urlOverridesRef = useRef(urlOverrides);
+  urlOverridesRef.current = urlOverrides;
 
   const allBaseMaps = useMemo(() => [...defaultBaseMaps, ...customBaseMaps], [customBaseMaps]);
   const allOverlayLayers = useMemo(() => [...overlayLayers, ...dynamicOverlays], [dynamicOverlays]);
@@ -105,6 +118,32 @@ export function useMapConfig() {
         });
         setVesselConfig(domain.vesselConfig ?? DEFAULT_VESSEL_CONFIG);
         setMapControlSettings(domain.mapControlSettings ?? DEFAULT_MAP_CONTROL_SETTINGS);
+
+        const overrides = urlOverridesRef.current;
+        if (overrides) {
+          if (overrides.basemap) {
+            const map = mergedBaseMaps.find((m) => m.id === overrides.basemap);
+            if (map) setSelectedBaseMap(map);
+          }
+          if (overrides.layers && overrides.layers.length > 0) {
+            const newActive: Record<string, boolean> = {};
+            overrides.layers.forEach((id) => { newActive[id] = true; });
+            setActiveLayers(newActive);
+          }
+          if (overrides.briefing) {
+            setMapControlSettings({ toolbar: false, zoombar: true, minimap: false, statusbar: false });
+          }
+          if (overrides.flyto) {
+            setFlyToBounds(overrides.flyto);
+          }
+          if (overrides.trackSeconds) {
+            setVesselConfig((prev) => ({
+              ...prev,
+              trajectory: { ...prev.trajectory, timeSeconds: overrides.trackSeconds! },
+            }));
+          }
+        }
+
         skipSaveRef.current = false;
       });
     });

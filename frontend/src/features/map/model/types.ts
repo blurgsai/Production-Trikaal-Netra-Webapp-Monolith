@@ -197,3 +197,69 @@ export interface VesselFlag {
   comment: string;
   createdAt: string;
 }
+
+export interface VesselDataUpload {
+  id: string;
+  databaseName: string;
+  mmsi: string;
+  data: Record<string, unknown>;
+  createdAt: string | null;
+  updatedAt: string | null;
+}
+
+export interface LloydsVesselData {
+  vesselId: number;
+  snapshotId: string;
+  timestamp: string;
+  vessel: {
+    imo: number;
+    vesselName: string;
+    yearOfBuild: number | null;
+    flag: string | null;
+    callSign: string | null;
+    mmsi: number | null;
+    portOfRegistry: string | null;
+    gross: number | null;
+    net: number | null;
+    dwt: number | null;
+    genType: string | null;
+    subType: string | null;
+    vesselType: string | null;
+    status: string | null;
+    recordLastUpdated: string | null;
+  };
+  ownership: {
+    current: Record<string, Array<{
+      startDate: string | null;
+      startQualifier: string | null;
+      recordLastUpdated: string | null;
+      companyInfo: {
+        companyId: number;
+        companyName: string;
+        companyFirstYear: number | null;
+        companyFirstYearQualifier: string | null;
+        companyStatus: string | null;
+      };
+    }>>;
+    history: Array<{
+      relationshipType: string;
+      currentInd: string;
+      startDate: string | null;
+      startQualifier: string | null;
+      endDate: string | null;
+      endQualifier: string | null;
+      recordLastUpdated: string | null;
+      companyInfo: Record<string, unknown>;
+    }>;
+  };
+  inmarsat: Record<string, unknown>;
+  engines: Record<string, unknown>;
+  design: Record<string, unknown>;
+  propulsionAndDimensions: Record<string, unknown>;
+  capacities: Record<string, unknown>;
+  casualties: Array<Record<string, unknown>>;
+  vigilanceScore: number | null;
+  buildAndHistory: Record<string, unknown> | null;
+  flagHistory: Array<Record<string, unknown>>;
+  nameHistory: Array<Record<string, unknown>>;
+}

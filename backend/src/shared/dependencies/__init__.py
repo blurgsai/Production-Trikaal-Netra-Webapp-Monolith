@@ -20,3 +20,9 @@ async def get_clickhouse_client() -> AsyncGenerator[httpx.AsyncClient, None]:
 def get_db():
     client = motor.motor_asyncio.AsyncIOMotorClient(settings.MONGO_URI)
     return client[settings.MONGO_DB]
+
+
+async def get_gridfs():
+    client = motor.motor_asyncio.AsyncIOMotorClient(settings.MONGO_URI)
+    db = client[settings.MONGO_DB]
+    return motor.motor_asyncio.AsyncIOMotorGridFSBucket(db)
