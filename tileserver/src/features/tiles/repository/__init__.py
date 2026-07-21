@@ -1,5 +1,8 @@
+import io
 import os
 import sqlite3
+
+from PIL import Image
 
 from src.shared.config import METADATA_DB_PATH
 
@@ -14,7 +17,7 @@ def _get_basemap(basemap_id: str) -> dict | None:
     return dict(row) if row else None
 
 
-def _read_mbtiles_tile(file_path: str, z: int, x: int, y: int) -> bytes | None:
+def _read_mbtiles_tile_exact(file_path: str, z: int, x: int, y: int) -> bytes | None:
     conn = sqlite3.connect(file_path)
     tms_y = (2 ** z - 1) - y
     row = conn.execute(
@@ -23,6 +26,49 @@ def _read_mbtiles_tile(file_path: str, z: int, x: int, y: int) -> bytes | None:
     ).fetchone()
     conn.close()
     return row[0] if row else None
+
+
+def _crop_and_upsample(
+    parent_png: bytes, z: int, x: int, y: int, pz: int, px: int, py: int, levels_up: int,
+) -> bytes:
+    """Crop the matching quadrant from a parent tile and upsample to 256×256."""
+    img = Image.open(io.BytesIO(parent_png))
+    if img.mode != "RGBA":
+        img = img.convert("RGBA")
+    sub_size = 256 // (2 ** levels_up)
+    if sub_size < 1:
+        sub_size = 1
+    ox = (x - (px << levels_up)) * sub_size
+    oy = (y - (py << levels_up)) * sub_size
+    cropped = img.crop((ox, oy, ox + sub_size, oy + sub_size))
+    upsampled = cropped.resize((256, 256), Image.NEAREST)
+    buf = io.BytesIO()
+    upsampled.save(buf, format="PNG")
+    return buf.getvalue()
+
+
+def _overzoom(
+    file_path: str, z: int, x: int, y: int, exact_reader, max_backtrack: int = 6,
+) -> bytes | None:
+    """If (z,x,y) isn't stored, walk up to the ancestor tile that IS stored and
+    crop+nearest-upsample the matching quadrant."""
+    for levels_up in range(1, max_backtrack + 1):
+        pz = z - levels_up
+        if pz < 0:
+            return None
+        px, py = x >> levels_up, y >> levels_up
+        parent_png = exact_reader(file_path, pz, px, py)
+        if parent_png is None:
+            continue
+        return _crop_and_upsample(parent_png, z, x, y, pz, px, py, levels_up)
+    return None
+
+
+def _read_mbtiles_tile(file_path: str, z: int, x: int, y: int) -> bytes | None:
+    tile = _read_mbtiles_tile_exact(file_path, z, x, y)
+    if tile is not None:
+        return tile
+    return _overzoom(file_path, z, x, y, _read_mbtiles_tile_exact)
 
 
 def _read_directory_tile(file_path: str, z: int, x: int, y: int) -> bytes | None:
@@ -33,7 +79,7 @@ def _read_directory_tile(file_path: str, z: int, x: int, y: int) -> bytes | None
         return f.read()
 
 
-def _read_sqlite_tile(file_path: str, z: int, x: int, y: int) -> bytes | None:
+def _read_sqlite_tile_exact(file_path: str, z: int, x: int, y: int) -> bytes | None:
     conn = sqlite3.connect(file_path)
     tms_y = (2 ** z - 1) - y
     row = conn.execute(
@@ -42,6 +88,13 @@ def _read_sqlite_tile(file_path: str, z: int, x: int, y: int) -> bytes | None:
     ).fetchone()
     conn.close()
     return row[0] if row else None
+
+
+def _read_sqlite_tile(file_path: str, z: int, x: int, y: int) -> bytes | None:
+    tile = _read_sqlite_tile_exact(file_path, z, x, y)
+    if tile is not None:
+        return tile
+    return _overzoom(file_path, z, x, y, _read_sqlite_tile_exact)
 
 
 _TILE_READERS = {

@@ -34,6 +34,7 @@ def init_overlays_db() -> None:
     conn.commit()
     conn.close()
     _migrate_add_bounds_column()
+    _migrate_add_max_zoom_column()
 
 
 def _migrate_add_bounds_column() -> None:
@@ -42,6 +43,16 @@ def _migrate_add_bounds_column() -> None:
     cols = {row[1] for row in conn.execute("PRAGMA table_info(overlays)")}
     if "bounds" not in cols:
         conn.execute("ALTER TABLE overlays ADD COLUMN bounds TEXT")
+        conn.commit()
+    conn.close()
+
+
+def _migrate_add_max_zoom_column() -> None:
+    """Add max_zoom column if it doesn't exist (idempotent migration)."""
+    conn = _get_db()
+    cols = {row[1] for row in conn.execute("PRAGMA table_info(overlays)")}
+    if "max_zoom" not in cols:
+        conn.execute("ALTER TABLE overlays ADD COLUMN max_zoom INTEGER")
         conn.commit()
     conn.close()
 
@@ -72,7 +83,7 @@ def _parse_bounds(row: dict) -> dict:
 def list_overlays() -> list[dict]:
     conn = _get_db()
     rows = conn.execute(
-        "SELECT id, name, type, source_type, tile_url, attribution, color, opacity, bounds, created_at "
+        "SELECT id, name, type, source_type, tile_url, attribution, color, opacity, bounds, max_zoom, created_at "
         "FROM overlays ORDER BY created_at DESC"
     ).fetchall()
     conn.close()
@@ -90,7 +101,7 @@ def get_overlay(overlay_id: str) -> dict | None:
 
 def insert_file_overlay(
     name: str, source_type: str, file_path: str, attribution: str, color: str, opacity: float, tile_url: str | None = None,
-    overlay_id: str | None = None, bounds: list[float] | None = None,
+    overlay_id: str | None = None, bounds: list[float] | None = None, max_zoom: int | None = None,
 ) -> dict:
     if overlay_id is None:
         overlay_id = uuid.uuid4().hex[:12]
@@ -106,9 +117,9 @@ def insert_file_overlay(
 
     conn = _get_db()
     conn.execute(
-        "INSERT INTO overlays (id, name, type, source_type, file_path, tile_url, attribution, color, opacity, bounds, created_at) "
-        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-        (overlay_id, name, "file", source_type, file_path, tile_url, attribution, color, opacity, bounds_json, created_at),
+        "INSERT INTO overlays (id, name, type, source_type, file_path, tile_url, attribution, color, opacity, bounds, max_zoom, created_at) "
+        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        (overlay_id, name, "file", source_type, file_path, tile_url, attribution, color, opacity, bounds_json, max_zoom, created_at),
     )
     conn.commit()
     conn.close()
@@ -124,6 +135,7 @@ def insert_file_overlay(
         "color": color,
         "opacity": opacity,
         "bounds": bounds,
+        "max_zoom": max_zoom,
         "created_at": created_at,
     }
 

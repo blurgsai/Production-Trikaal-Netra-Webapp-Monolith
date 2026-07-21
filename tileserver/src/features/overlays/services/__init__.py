@@ -1,8 +1,11 @@
 import json
+import logging
 import os
 import shutil
 import sqlite3
 import zipfile
+
+logger = logging.getLogger(__name__)
 
 from src.features.overlays.repository import (
     delete_overlay,
@@ -12,6 +15,7 @@ from src.features.overlays.repository import (
     list_overlays,
 )
 from src.shared.config import DATA_DIR
+from src.shared.density_converter import convert_parquet_to_mbtiles
 from src.shared.errors import NotFoundError, ValidationError
 from src.shared.geoserver_client import GeoServerClient
 from src.shared.vector_converter import (
@@ -30,6 +34,7 @@ _EXTENSION_TO_SOURCE_TYPE = {
     ".kmz": "kml",
     ".zip": "zip",
     ".000": "enc",
+    ".parquet": "parquet",
 }
 
 VALID_OVERLAY_TYPES = frozenset({"tile", "wms", "mvt"})
@@ -172,8 +177,43 @@ def _convert_and_publish_to_geoserver(
     )
 
 
+def _convert_and_publish_density(
+    overlay_id: str,
+    name: str,
+    source_path: str,
+    attribution: str,
+    color: str,
+    opacity: float,
+    weight_col: str,
+    max_zoom: int,
+    color_ramp: str,
+) -> dict:
+    """Convert a parquet S2-cell density file to MBTiles and register as an overlay."""
+    mbtiles_path = os.path.join(DATA_DIR, f"{overlay_id}.mbtiles")
+    logger.info("Density upload started: overlay_id=%s file=%s", overlay_id, source_path)
+    result = convert_parquet_to_mbtiles(
+        source_path, mbtiles_path,
+        weight_col=weight_col,
+        max_zoom=max_zoom,
+        color_ramp=color_ramp,
+        base_color=color,
+        layer_name=name,
+    )
+    logger.info("Density upload finished: overlay_id=%s tiles=%s cells=%s", overlay_id, result.get("tiles_written", "?"), result.get("cell_count", "?"))
+    if os.path.isfile(source_path) and source_path != mbtiles_path:
+        os.remove(source_path)
+    return insert_file_overlay(
+        name, "mbtiles", mbtiles_path, attribution, color, opacity,
+        overlay_id=overlay_id, bounds=result["bounds"],
+        max_zoom=result["max_zoom"],
+    )
+
+
 def upload_overlay(
-    name: str, filename: str, file_obj, attribution: str, color: str, opacity: float
+    name: str, filename: str, file_obj, attribution: str, color: str, opacity: float,
+    weight_col: str = "unique_mmsi_count",
+    max_zoom: int = 18,
+    color_ramp: str = "heat",
 ) -> dict:
     if not name.strip():
         raise ValidationError("Overlay name is required")
@@ -193,6 +233,12 @@ def upload_overlay(
     if source_type in ("enc", "geojson", "kml"):
         return _convert_and_publish_to_geoserver(
             overlay_id, name, dest_path, source_type, attribution, color, opacity
+        )
+
+    if source_type == "parquet":
+        return _convert_and_publish_density(
+            overlay_id, name, dest_path, attribution, color, opacity,
+            weight_col, max_zoom, color_ramp,
         )
 
     if source_type == "zip":
