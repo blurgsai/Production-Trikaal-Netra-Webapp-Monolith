@@ -80,28 +80,9 @@ export const getVesselsByMmsi = async (
 
 export const getVesselEvents = async (
   vesselId: string,
-  startTime?: number,
-  endTime?: number,
 ): Promise<EventsApiResponse> => {
   const data = await fetchMockData(vesselId)
   const event = data.event_details
-  const vesselsInvolved = event.vessels_involved.map(String)
-
-  if (!vesselsInvolved.includes(vesselId)) {
-    return { events: [] }
-  }
-
-  const eventTimestampSec = event.timestamp
-    ? Math.floor(new Date(event.timestamp).getTime() / 1000)
-    : null
-
-  if (startTime && eventTimestampSec !== null && eventTimestampSec < startTime) {
-    return { events: [] }
-  }
-  if (endTime && eventTimestampSec !== null && eventTimestampSec > endTime) {
-    return { events: [] }
-  }
-
   return {
     events: [
       {
