@@ -32,7 +32,6 @@
     "@tanstack/react-query": "^5.74.0",
     "@types/leaflet.vectorgrid": "^1.3.10",
     "axios": "^1.12.2",
-    "cesium": "^1.143.0",
     "dayjs": "^1.11.21",
     "leaflet": "^1.9.4",
     "leaflet-draw": "^1.0.4",
@@ -72,7 +71,6 @@
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.61.1",
     "vite": "^7.1.7",
-    "vite-plugin-cesium-build": "^0.7.4",
     "vitest": "^4.1.9"
   }
 }

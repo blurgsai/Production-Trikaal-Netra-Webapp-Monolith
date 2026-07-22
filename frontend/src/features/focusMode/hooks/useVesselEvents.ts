@@ -10,7 +10,7 @@ export const useVesselEvents = (
 ) =>
   useQuery({
     queryKey: ['focus-events', vesselId, startTime, endTime],
-    queryFn: () => getVesselEvents(vesselId!, startTime ?? undefined, endTime ?? undefined),
+    queryFn: () => getVesselEvents(vesselId!),
     enabled: vesselId !== null,
     staleTime: 5 * 60 * 1000,
     select: (data): FocusEvent[] => data.events.map(mapEvent),
