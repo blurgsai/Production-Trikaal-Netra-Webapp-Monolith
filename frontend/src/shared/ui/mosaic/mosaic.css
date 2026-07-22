@@ -1,0 +1,83 @@
+.mosaic-blueprint-theme {
+  height: 100%;
+  width: 100%;
+  background: #0f1419;
+}
+
+.mosaic-blueprint-theme .mosaic {
+  height: 100%;
+  background: #0f1419;
+}
+
+/* Override vendor's #f6f7f9 and white with matching specificity */
+.mosaic.mosaic-blueprint-theme .mosaic-window .mosaic-window-body,
+.mosaic.mosaic-blueprint-theme .mosaic-preview .mosaic-window-body {
+  background: #1c2333;
+  border-top-width: 0;
+  overflow: hidden;
+}
+
+.mosaic.mosaic-blueprint-theme .mosaic-window .mosaic-window-additional-actions-bar,
+.mosaic.mosaic-blueprint-theme .mosaic-preview .mosaic-window-additional-actions-bar {
+  background: #242b3a;
+}
+
+.mosaic.mosaic-blueprint-theme .mosaic-window .mosaic-window-body-overlay,
+.mosaic.mosaic-blueprint-theme .mosaic-preview .mosaic-window-body-overlay {
+  background: #1c2333;
+}
+
+/* Tile toolbar — distinct from both navbars */
+.mosaic-blueprint-theme .mosaic-window-toolbar {
+  background: #2d3648 !important;
+  color: #e6edf3;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  font-size: 13px;
+  font-weight: 600;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  box-shadow: none !important;
+}
+
+/* Fix title color — vendor sets #404854 which blends into dark toolbar */
+.mosaic.mosaic-blueprint-theme .mosaic-window .mosaic-window-title,
+.mosaic.mosaic-blueprint-theme .mosaic-preview .mosaic-window-title {
+  color: #e6edf3;
+}
+
+/* Remove hover gradient effect on toolbar */
+.mosaic.mosaic-blueprint-theme .mosaic-window .mosaic-window-toolbar.draggable:hover,
+.mosaic.mosaic-blueprint-theme .mosaic-preview .mosaic-window-toolbar.draggable:hover {
+  background: #2d3648 !important;
+}
+
+.mosaic.mosaic-blueprint-theme .mosaic-window .mosaic-window-toolbar.draggable:hover .mosaic-window-title,
+.mosaic.mosaic-blueprint-theme .mosaic-preview .mosaic-window-toolbar.draggable:hover .mosaic-window-title {
+  color: #e6edf3;
+}
+
+.mosaic-blueprint-theme .mosaic-window-controls .bp5-button,
+.mosaic-blueprint-theme .mosaic-window-controls .bp5-button::before {
+  color: #8b949e;
+}
+
+.mosaic-blueprint-theme .mosaic-window-controls .bp5-button:hover,
+.mosaic-blueprint-theme .mosaic-window-controls .bp5-button:hover::before {
+  color: #e6edf3;
+}
+
+.mosaic-blueprint-theme .mosaic-split:hover {
+  background: #4cc9f0;
+}
+
+.mosaic-blueprint-theme .mosaic-split.-row {
+  width: 4px;
+  cursor: col-resize;
+}
+
+.mosaic-blueprint-theme .mosaic-split.-column {
+  height: 4px;
+  cursor: row-resize;
+}
