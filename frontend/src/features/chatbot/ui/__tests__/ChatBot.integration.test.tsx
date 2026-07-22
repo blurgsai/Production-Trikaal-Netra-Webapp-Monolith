@@ -84,7 +84,13 @@ describe("ChatBot integration", () => {
       mockApi.use(
         http.post(`${CHATBOT_BASE_URL}/sessions`, () => {
           sessionCreated = true;
-          return HttpResponse.json({ session_id: "new-session-123" });
+          return HttpResponse.json({
+            session_id: "new-session-123",
+            title: "New Session",
+            summary: null,
+            user_id: "user-1",
+            created_at: "2026-07-21T07:45:00.000Z",
+          });
         })
       );
 
@@ -129,10 +135,12 @@ describe("ChatBot integration", () => {
             }
             return HttpResponse.json([
               {
-                message_id: 1,
+                message_id: "msg-1",
+                session_id: "test-session-id",
                 role: "user",
-                navigation_link: null,
                 content: "Hello after retry",
+                created_at: "2026-07-21T07:45:00.000Z",
+                navigation_link: null,
               },
             ]);
           }
@@ -348,6 +356,10 @@ describe("ChatBot integration", () => {
           createCount++;
           return HttpResponse.json({
             session_id: `new-session-${createCount}`,
+            title: `New Session ${createCount}`,
+            summary: null,
+            user_id: "user-1",
+            created_at: "2026-07-21T07:45:00.000Z",
           });
         })
       );

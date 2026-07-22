@@ -58,8 +58,13 @@ export function OverlayManagement() {
   const [uploadColor, setUploadColor] = useState("#3388ff");
   const [uploadOpacity, setUploadOpacity] = useState("1");
   const [uploadAttribution, setUploadAttribution] = useState("");
+  const [uploadWeightCol, setUploadWeightCol] = useState("unique_mmsi_count");
+  const [uploadMaxZoom, setUploadMaxZoom] = useState("18");
+  const [uploadColorRamp, setUploadColorRamp] = useState<"heat" | "mono">("heat");
   const [uploadError, setUploadError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const isParquetFile = uploadFile?.name.toLowerCase().endsWith(".parquet") ?? false;
 
   const [urlName, setUrlName] = useState("");
   const [urlTileUrl, setUrlTileUrl] = useState("");
@@ -81,6 +86,9 @@ export function OverlayManagement() {
     setUploadColor("#3388ff");
     setUploadOpacity("1");
     setUploadAttribution("");
+    setUploadWeightCol("unique_mmsi_count");
+    setUploadMaxZoom("18");
+    setUploadColorRamp("heat");
     setUploadError(null);
     setUploadOpen(true);
   };
@@ -110,9 +118,16 @@ export function OverlayManagement() {
       setUploadError("Opacity must be between 0 and 1");
       return;
     }
+    const density = isParquetFile
+      ? {
+          weightCol: uploadWeightCol.trim() || undefined,
+          maxZoom: parseInt(uploadMaxZoom, 10) || undefined,
+          colorRamp: uploadColorRamp,
+        }
+      : undefined;
     setUploadError(null);
     uploadMutation.mutate(
-      { name: uploadName, file: uploadFile, attribution: uploadAttribution, color: uploadColor, opacity: opacityNum },
+      { name: uploadName, file: uploadFile, attribution: uploadAttribution, color: uploadColor, opacity: opacityNum, density },
       {
         onSuccess: () => {
           setUploadOpen(false);
@@ -343,13 +358,13 @@ export function OverlayManagement() {
               <input
                 ref={fileInputRef}
                 type="file"
-                accept=".mbtiles,.db,.sqlite,.geojson,.json,.kml,.kmz,.zip,.000"
+                accept=".mbtiles,.db,.sqlite,.geojson,.json,.kml,.kmz,.zip,.000,.parquet"
                 style={{ display: "none" }}
                 onChange={(e) => {
                   const f = e.target.files?.[0] ?? null;
                   setUploadFile(f);
                   if (f && !uploadName.trim()) {
-                    setUploadName(f.name.replace(/\.(mbtiles|db|sqlite|geojson|json|kml|kmz|zip|000)$/i, ""));
+                    setUploadName(f.name.replace(/\.(mbtiles|db|sqlite|geojson|json|kml|kmz|zip|000|parquet)$/i, ""));
                   }
                 }}
               />
@@ -363,42 +378,102 @@ export function OverlayManagement() {
                 {uploadFile ? uploadFile.name : "Choose File"}
               </Button>
               <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: "block" }}>
-                Supported: .mbtiles, .db, .sqlite, .geojson, .json, .kml, .kmz, .zip, .000 (ENC)
+                Supported: .mbtiles, .db, .sqlite, .geojson, .json, .kml, .kmz, .zip, .000 (ENC), .parquet (density)
               </Typography>
             </Box>
             <Box sx={{ display: "flex", gap: 2 }}>
-              <TextField
-                label="Color"
-                value={uploadColor}
-                onChange={(e) => setUploadColor(e.target.value)}
-                size="small"
-                sx={{ flex: 1 }}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Box
-                        sx={{
-                          width: 16,
-                          height: 16,
-                          borderRadius: "3px",
-                          bgcolor: uploadColor,
-                          border: "1px solid",
-                          borderColor: "divider",
-                        }}
-                      />
-                    </InputAdornment>
-                  ),
-                }}
-              />
+              {!isParquetFile && (
+                <TextField
+                  label="Color"
+                  value={uploadColor}
+                  onChange={(e) => setUploadColor(e.target.value)}
+                  size="small"
+                  sx={{ flex: 1 }}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Box
+                          sx={{
+                            width: 16,
+                            height: 16,
+                            borderRadius: "3px",
+                            bgcolor: uploadColor,
+                            border: "1px solid",
+                            borderColor: "divider",
+                          }}
+                        />
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              )}
               <TextField
                 label="Opacity"
                 value={uploadOpacity}
                 onChange={(e) => setUploadOpacity(e.target.value)}
                 size="small"
-                sx={{ width: 100 }}
+                sx={{ flex: isParquetFile ? 1 : undefined, width: isParquetFile ? undefined : 100 }}
                 placeholder="0-1"
               />
             </Box>
+            {isParquetFile && (
+              <>
+                <TextField
+                  label="Weight Column"
+                  value={uploadWeightCol}
+                  onChange={(e) => setUploadWeightCol(e.target.value)}
+                  size="small"
+                  fullWidth
+                  placeholder="unique_mmsi_count"
+                />
+                <Box sx={{ display: "flex", gap: 2 }}>
+                  <TextField
+                    label="Max Zoom"
+                    value={uploadMaxZoom}
+                    onChange={(e) => setUploadMaxZoom(e.target.value)}
+                    size="small"
+                    sx={{ width: 100 }}
+                    placeholder="18"
+                    type="number"
+                    inputProps={{ min: 1, max: 18 }}
+                  />
+                  <Select
+                    value={uploadColorRamp}
+                    size="small"
+                    fullWidth
+                    onChange={(e) => setUploadColorRamp(e.target.value as "heat" | "mono")}
+                  >
+                    <MenuItem value="heat">Heat</MenuItem>
+                    <MenuItem value="mono">Mono</MenuItem>
+                  </Select>
+                </Box>
+                {uploadColorRamp === "mono" && (
+                  <TextField
+                    label="Cell Fill Color"
+                    value={uploadColor}
+                    onChange={(e) => setUploadColor(e.target.value)}
+                    size="small"
+                    fullWidth
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <Box
+                            sx={{
+                              width: 16,
+                              height: 16,
+                              borderRadius: "3px",
+                              bgcolor: uploadColor,
+                              border: "1px solid",
+                              borderColor: "divider",
+                            }}
+                          />
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                )}
+              </>
+            )}
             <TextField
               label="Attribution (optional)"
               value={uploadAttribution}

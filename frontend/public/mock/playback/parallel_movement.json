@@ -1,0 +1,83 @@
+{
+  "event_details": {
+    "type": "parallel_movement",
+    "location": {
+      "type": "Point",
+      "coordinates": [66.91, 15.88]
+    },
+    "timestamp": "2024-06-15T14:00:00Z",
+    "start_time": "2024-06-15T12:50:00Z",
+    "end_time": "2024-06-15T14:00:00Z",
+    "duration": {
+      "value": 4200,
+      "unit": "seconds"
+    },
+    "vessels_involved": ["366168522", "366500659"],
+    "severity": "high",
+    "model": "heuristic",
+    "status": "detected",
+    "s2_cell_id": "89c259c00000000",
+    "temporality": "bounded",
+    "event_source": "spark",
+    "information": {
+      "distance_m": 408,
+      "heading_difference_degrees": 7.0,
+      "speed_difference_mps": 0.6,
+      "parallelity_score": 0.9,
+      "sustained_duration_seconds": 4200,
+      "thresholds": {
+        "distance_threshold_m": 500,
+        "duration_threshold_seconds": 1800
+      }
+    }
+  },
+  "trajectories": {
+    "1718445000000": {
+      "366168522": { "latitude": 15.70000, "longitude": 66.75000, "speed_mps": 2.6, "heading": 47, "course": 47 },
+      "366500659": { "latitude": 15.70350, "longitude": 66.75120, "speed_mps": 2.0, "heading": 54, "course": 54 }
+    },
+    "1718448000000": {
+      "366168522": { "latitude": 15.74444, "longitude": 66.80000, "speed_mps": 2.6, "heading": 47, "course": 47 },
+      "366500659": { "latitude": 15.74794, "longitude": 66.80120, "speed_mps": 2.0, "heading": 54, "course": 54 }
+    },
+    "1718451000000": {
+      "366168522": { "latitude": 15.78889, "longitude": 66.85000, "speed_mps": 2.6, "heading": 47, "course": 47 },
+      "366500659": { "latitude": 15.79239, "longitude": 66.85120, "speed_mps": 2.0, "heading": 54, "course": 54 }
+    },
+    "1718454000000": {
+      "366168522": { "latitude": 15.83333, "longitude": 66.90000, "speed_mps": 2.6, "heading": 47, "course": 47 },
+      "366500659": { "latitude": 15.83683, "longitude": 66.90120, "speed_mps": 2.0, "heading": 54, "course": 54 }
+    },
+    "1718455800000": {
+      "366168522": { "latitude": 15.87778, "longitude": 66.95000, "speed_mps": 2.6, "heading": 47, "course": 47 },
+      "366500659": { "latitude": 15.88128, "longitude": 66.95120, "speed_mps": 2.0, "heading": 54, "course": 54 }
+    },
+    "1718457600000": {
+      "366168522": { "latitude": 15.92222, "longitude": 67.00000, "speed_mps": 2.6, "heading": 47, "course": 47 },
+      "366500659": { "latitude": 15.92572, "longitude": 67.00120, "speed_mps": 2.0, "heading": 54, "course": 54 }
+    },
+    "1718460000000": {
+      "366168522": { "latitude": 15.96667, "longitude": 67.05000, "speed_mps": 2.6, "heading": 47, "course": 47 },
+      "366500659": { "latitude": 15.97017, "longitude": 67.05120, "speed_mps": 2.0, "heading": 54, "course": 54 }
+    },
+    "1718463600000": {
+      "366168522": { "latitude": 16.01111, "longitude": 67.10000, "speed_mps": 2.6, "heading": 47, "course": 47 },
+      "366500659": { "latitude": 16.01461, "longitude": 67.10120, "speed_mps": 2.0, "heading": 54, "course": 54 }
+    },
+    "1718467200000": {
+      "366168522": { "latitude": 16.05556, "longitude": 67.15000, "speed_mps": 2.6, "heading": 47, "course": 47 },
+      "366500659": { "latitude": 16.05906, "longitude": 67.15120, "speed_mps": 2.0, "heading": 54, "course": 54 }
+    },
+    "1718470800000": {
+      "366168522": { "latitude": 16.10000, "longitude": 67.20000, "speed_mps": 2.6, "heading": 47, "course": 47 },
+      "366500659": { "latitude": 16.10350, "longitude": 67.20120, "speed_mps": 2.0, "heading": 54, "course": 54 }
+    }
+  },
+  "time_window": {
+    "query_start": 1718445000000,
+    "query_end": 1718470800000,
+    "event_start": 1718455800000,
+    "event_end": 1718460000000,
+    "buffer_hours": 3
+  }
+}

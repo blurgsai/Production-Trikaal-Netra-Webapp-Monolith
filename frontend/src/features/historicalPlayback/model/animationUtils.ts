@@ -93,6 +93,7 @@ export function tickVessel(vessel: AnimationVessel, easeFactor: number): void {
 
 export function normalizeVessels(
   vesselMap: Record<string, PlaybackPoint[]> | undefined,
+  sessionColor?: string,
 ): AnimationVessel[] {
   const vessels: AnimationVessel[] = [];
   Object.entries(vesselMap || {}).forEach(([vesselId, points], idx) => {
@@ -108,11 +109,12 @@ export function normalizeVessels(
                 ? new Date(p.timestamp).getTime()
                 : p.timestamp,
             heading: p.heading,
+            speed: p.speed,
           }),
         )
         .sort((a, b) => a.ts - b.ts),
       index: 0,
-      color: getVesselColor(idx),
+      color: sessionColor ?? getVesselColor(idx),
       currentPos: { lat: 0, lng: 0, heading: 0 },
       fromPos: { lat: 0, lng: 0, heading: 0 },
       toPos: { lat: 0, lng: 0, heading: 0 },
@@ -126,9 +128,10 @@ export function normalizeVessels(
 export function mergeMinuteData(
   existing: AnimationVessel[],
   newVesselMap: Record<string, PlaybackPoint[]> | undefined,
+  sessionColor?: string,
 ): AnimationVessel[] {
   if (!newVesselMap) return existing;
-  const newVessels = normalizeVessels(newVesselMap);
+  const newVessels = normalizeVessels(newVesselMap, sessionColor);
   const vesselMap = new Map(existing.map((v) => [v.vesselId, v]));
 
   for (const nv of newVessels) {

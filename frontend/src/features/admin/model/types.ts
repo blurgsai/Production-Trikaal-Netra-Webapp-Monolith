@@ -35,5 +35,6 @@ export interface Overlay {
   attribution: string;
   color: string;
   opacity: number;
+  maxZoom?: number | null;
   createdAt?: string;
 }

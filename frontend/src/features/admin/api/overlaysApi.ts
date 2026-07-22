@@ -9,6 +9,7 @@ export interface OverlayAdminApiResponse {
   attribution: string;
   color: string;
   opacity: number;
+  max_zoom?: number | null;
   created_at: string;
 }
 
@@ -17,12 +18,19 @@ export async function fetchAdminOverlays(): Promise<OverlayAdminApiResponse[]> {
   return res.data;
 }
 
+export interface DensityUploadOptions {
+  weightCol?: string;
+  maxZoom?: number;
+  colorRamp?: "heat" | "mono";
+}
+
 export async function uploadOverlayFile(
   name: string,
   file: File,
   attribution: string,
   color: string,
   opacity: number,
+  density?: DensityUploadOptions,
 ): Promise<OverlayAdminApiResponse> {
   const formData = new FormData();
   formData.append("name", name);
@@ -30,6 +38,9 @@ export async function uploadOverlayFile(
   formData.append("attribution", attribution);
   formData.append("color", color);
   formData.append("opacity", String(opacity));
+  if (density?.weightCol) formData.append("weight_col", density.weightCol);
+  if (density?.maxZoom) formData.append("max_zoom", String(density.maxZoom));
+  if (density?.colorRamp) formData.append("color_ramp", density.colorRamp);
   const res = await tileserverInstance.post<OverlayAdminApiResponse>("/overlays/upload", formData, {
     headers: { "Content-Type": "multipart/form-data" },
   });

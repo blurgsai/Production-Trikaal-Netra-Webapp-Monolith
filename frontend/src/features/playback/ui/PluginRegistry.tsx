@@ -28,9 +28,39 @@ export interface EventPlugin {
 // in plugins/<eventType>/index.tsx, import it here, add one line below.
 
 import GeofenceIntrusionPlugin from './plugins/geofenceIntrusion';
+import DarkShipPlugin from './plugins/darkShip';
+import SignalLostPlugin from './plugins/signalLost';
+import DarkAfterDeparturePlugin from './plugins/darkAfterDeparture';
+import PortIntrusionPlugin from './plugins/portIntrusion';
+import SuddenStopPlugin from './plugins/suddenStop';
+import AnomalousAccelerationPlugin from './plugins/anomalousAcceleration';
+import AnomalousJerkPlugin from './plugins/anomalousJerk';
+import HighSpeedPlugin from './plugins/highSpeed';
+import ProlongedLowSpeedPlugin from './plugins/prolongedLowSpeed';
+import ProlongedStationaryPlugin from './plugins/prolongedStationary';
+import UneconomicalTransitPlugin from './plugins/uneconomicalTransit';
+import VesselRendezvousPlugin from './plugins/vesselRendezvous';
+import ParallelMovementPlugin from './plugins/parallelMovement';
+import DuplicateMmsiPlugin from './plugins/duplicateMmsi';
+import CoordinatedDarkActivityPlugin from './plugins/coordinatedDarkActivity';
 
 export const EVENT_TYPE_REGISTRY: Record<string, EventPlugin> = {
   geofence_intrusion: GeofenceIntrusionPlugin,
+  dark_ship: DarkShipPlugin,
+  signal_lost: SignalLostPlugin,
+  dark_after_departure: DarkAfterDeparturePlugin,
+  port_intrusion: PortIntrusionPlugin,
+  sudden_stop: SuddenStopPlugin,
+  anomalous_acceleration: AnomalousAccelerationPlugin,
+  anomalous_jerk: AnomalousJerkPlugin,
+  high_speed: HighSpeedPlugin,
+  prolonged_low_speed: ProlongedLowSpeedPlugin,
+  prolonged_stationary: ProlongedStationaryPlugin,
+  uneconomical_transit: UneconomicalTransitPlugin,
+  vessel_rendezvous: VesselRendezvousPlugin,
+  parallel_movement: ParallelMovementPlugin,
+  duplicate_mmsi: DuplicateMmsiPlugin,
+  coordinated_dark_activity: CoordinatedDarkActivityPlugin,
 };
 
 // ── Accessors ─────────────────────────────────────────────────────────────────

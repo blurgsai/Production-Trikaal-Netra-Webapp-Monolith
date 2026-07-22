@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -6,6 +8,11 @@ from src.features.basemaps.router import router as basemaps_router
 from src.features.overlays.repository import init_overlays_db
 from src.features.overlays.router import router as overlays_router
 from src.features.tiles.router import router as tiles_router
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+)
 
 app = FastAPI(title="Trikaal Tileserver", version="1.0.0")
 

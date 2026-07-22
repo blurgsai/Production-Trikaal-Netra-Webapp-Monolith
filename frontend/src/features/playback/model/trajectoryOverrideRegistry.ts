@@ -1,4 +1,13 @@
-import { getGeofenceTrajectoryOverrides } from './eventTypeMappers';
+import {
+  getGeofenceTrajectoryOverrides,
+  getDarkShipTrajectoryOverrides,
+  getSignalLostTrajectoryOverrides,
+  getDarkAfterDepartureTrajectoryOverrides,
+  getPortIntrusionTrajectoryOverrides,
+  getHighSpeedTrajectoryOverrides,
+} from './eventTypeMappers';
+import { getKinematicsTrajectoryOverrides } from './kinematicsTrajectory';
+import { getProximityTrajectoryOverrides } from './proximityTrajectory';
 import type { EventDetailsBase, TimeWindow, TrajectoryOverrideFn, TrajectoryOverrideRule } from './types';
 
 // Separate from ui/PluginRegistry.tsx on purpose: trajectoryFn returns plain data
@@ -8,6 +17,22 @@ import type { EventDetailsBase, TimeWindow, TrajectoryOverrideFn, TrajectoryOver
 // contributes a trajectory override — most types won't.
 const TRAJECTORY_OVERRIDE_REGISTRY: Record<string, TrajectoryOverrideFn> = {
   geofence_intrusion: getGeofenceTrajectoryOverrides,
+  dark_ship: getDarkShipTrajectoryOverrides,
+  signal_lost: getSignalLostTrajectoryOverrides,
+  dark_after_departure: getDarkAfterDepartureTrajectoryOverrides,
+  port_intrusion: getPortIntrusionTrajectoryOverrides,
+  // Kinematics family — all three share the same min-span-centred override.
+  sudden_stop: getKinematicsTrajectoryOverrides,
+  anomalous_acceleration: getKinematicsTrajectoryOverrides,
+  anomalous_jerk: getKinematicsTrajectoryOverrides,
+  // Speed family — only high_speed highlights its event window; the other three
+  // (prolonged_low_speed / prolonged_stationary / uneconomical_transit) have none.
+  high_speed: getHighSpeedTrajectoryOverrides,
+  // Proximity family — all four share the same min-span-centred, all-vessel override.
+  vessel_rendezvous: getProximityTrajectoryOverrides,
+  parallel_movement: getProximityTrajectoryOverrides,
+  duplicate_mmsi: getProximityTrajectoryOverrides,
+  coordinated_dark_activity: getProximityTrajectoryOverrides,
 };
 
 export function getTrajectoryOverridesForType(

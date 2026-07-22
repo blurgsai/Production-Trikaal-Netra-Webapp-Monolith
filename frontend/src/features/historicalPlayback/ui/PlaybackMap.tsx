@@ -9,12 +9,26 @@ import {
 } from "react";
 import { MapContainer, TileLayer, FeatureGroup, useMap } from "react-leaflet";
 import { EditControl } from "react-leaflet-draw";
-import type { FeatureGroup as LeafletFeatureGroup } from "leaflet";
+import type { FeatureGroup as LeafletFeatureGroup, PathOptions } from "leaflet";
+import L from "leaflet";
 import { Box, Fade, Skeleton, Typography } from "@mui/material";
 
 import "leaflet/dist/leaflet.css";
 import "leaflet-draw/dist/leaflet.draw.css";
 import { PlaybackDrawStyles } from "./PlaybackDrawStyles";
+import { PLAYBACK_SESSION_COLORS } from "../model/types";
+
+const DEFAULT_DRAW_COLOR = PLAYBACK_SESSION_COLORS[0];
+
+function polygonShapeOptions(color: string): PathOptions {
+  return {
+    color,
+    fillColor: color,
+    fillOpacity: 0.2,
+    weight: 2,
+    opacity: 0.9,
+  };
+}
 
 interface PlaybackMapProps {
   onPolygonComplete: (geoJson: GeoJSON.Feature) => void;
@@ -24,6 +38,7 @@ interface PlaybackMapProps {
   onDrawPolygonRequest?: MutableRefObject<(() => void) | null>;
   hideToolbar?: boolean;
   onDrawingActive?: (active: boolean) => void;
+  drawColor?: string;
   children?: ReactNode;
 }
 
@@ -55,17 +70,39 @@ const PlaybackMap = memo(function PlaybackMap({
   onDrawPolygonRequest,
   hideToolbar,
   onDrawingActive,
+  drawColor = DEFAULT_DRAW_COLOR,
   children,
 }: PlaybackMapProps) {
   const featureGroupRef = useRef<LeafletFeatureGroup | null>(null);
   const [mapReady, setMapReady] = useState(false);
+  const drawColorRef = useRef(drawColor);
+  drawColorRef.current = drawColor;
+
+  useEffect(() => {
+    const opts = polygonShapeOptions(drawColor);
+    // Keep leaflet-draw defaults in sync for the in-progress sketch
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const Draw = (L as any).Draw;
+    if (Draw?.Polygon?.prototype?.options) {
+      Draw.Polygon.prototype.options.shapeOptions = {
+        ...Draw.Polygon.prototype.options.shapeOptions,
+        ...opts,
+      };
+    }
+    featureGroupRef.current?.eachLayer((layer) => {
+      if ("setStyle" in layer && typeof layer.setStyle === "function") {
+        (layer as L.Path).setStyle(opts);
+      }
+    });
+  }, [drawColor]);
 
   const handleDrawStart = useCallback(
     () => onDrawingActive?.(true),
     [onDrawingActive]
   );
   const handleCreated = useCallback(
-    (e: { layer: { toGeoJSON: () => GeoJSON.GeoJSON } }) => {
+    (e: { layer: L.Layer & { toGeoJSON: () => GeoJSON.GeoJSON; setStyle?: (s: PathOptions) => void } }) => {
+      e.layer.setStyle?.(polygonShapeOptions(drawColorRef.current));
       const geoJson = e.layer.toGeoJSON() as GeoJSON.Feature;
       onDrawingActive?.(false);
       onPolygonComplete(geoJson);
@@ -165,7 +202,11 @@ const PlaybackMap = memo(function PlaybackMap({
               circle: false,
               circlemarker: false,
               marker: false,
-              polygon: true,
+              polygon: {
+                allowIntersection: false,
+                showArea: false,
+                shapeOptions: polygonShapeOptions(drawColor),
+              },
             }}
             onDrawStart={handleDrawStart}
             onCreated={handleCreated}

@@ -28,9 +28,11 @@ export function PlaybackPanel({ eventId, eventType, isCompound }: PlaybackPanelP
     currentTimestampMs,
     currentPositions,
     isPlaying,
+    speed,
     play,
     pause,
     seek,
+    setSpeed,
   } = usePlayback({ eventId, eventType, isCompound });
 
   // Compound resolution: each constituent type is dispatched to the plugin registry separately
@@ -91,6 +93,7 @@ export function PlaybackPanel({ eventId, eventType, isCompound }: PlaybackPanelP
                 eventDetails: details,
                 extras: data.extras,
                 currentTimestampMs,
+                currentPositions,
                 timeWindow: data.timeWindow,
               })}
             </Fragment>
@@ -132,9 +135,12 @@ export function PlaybackPanel({ eventId, eventType, isCompound }: PlaybackPanelP
         currentTimestampMs={currentTimestampMs}
         isPlaying={isPlaying}
         timeWindow={data.timeWindow}
+        speed={speed}
+        hasData={data.timeline.length > 0}
         onPlay={play}
         onPause={pause}
         onSeek={seek}
+        onSpeedChange={setSpeed}
       >
         {/* Event-type timeline enhancements */}
         {resolvedTypes.map(t => {

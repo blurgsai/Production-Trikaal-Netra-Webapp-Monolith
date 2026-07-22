@@ -3,6 +3,13 @@ import type { TimelineFrame, VesselPosition } from './types';
 export const PLAYBACK_STEP_MS = 30_000;   // 30 s of maritime time per UI tick
 export const TICK_INTERVAL_MS = 1_200;    // 1.2 s of real time per tick
 
+// Trajectory speeds and shared speed components work in m/s; some event schemas
+// report speed in knots. Convert in the mapper so units stay consistent downstream.
+export const KNOTS_TO_MPS = 0.514444;
+export function knotsToMps(knots: number): number {
+  return knots * KNOTS_TO_MPS;
+}
+
 export function parseEventDate(val: string | number | null | undefined): number | null {
   if (val === null || val === undefined) return null;
   if (typeof val === 'number') return val;

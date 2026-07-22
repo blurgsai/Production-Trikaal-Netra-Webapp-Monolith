@@ -53,9 +53,15 @@ def upload_overlay_route(
     attribution: str = Form(""),
     color: str = Form("#3388ff"),
     opacity: float = Form(1.0),
+    weight_col: str = Form("unique_mmsi_count"),
+    max_zoom: int = Form(18),
+    color_ramp: str = Form("heat"),
     _admin: dict = Depends(require_admin),
 ) -> dict:
-    return upload_overlay(name, file.filename, file.file, attribution, color, opacity)
+    return upload_overlay(
+        name, file.filename, file.file, attribution, color, opacity,
+        weight_col=weight_col, max_zoom=max_zoom, color_ramp=color_ramp,
+    )
 
 
 @router.post("/url", response_model=OverlayResponse, status_code=status.HTTP_201_CREATED)

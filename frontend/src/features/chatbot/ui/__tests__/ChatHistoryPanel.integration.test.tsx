@@ -62,8 +62,8 @@ describe("ChatHistoryPanel integration", () => {
     it("I-03: renders mapped session titles in DOM", () => {
       renderHistoryPanel({
         chatHistory: [
-          { sessionId: "s1", title: "Session Alpha" },
-          { sessionId: "s2", title: "Session Beta" },
+          { sessionId: "s1", title: "Session Alpha", summary: null, updatedAt: "2026-07-21T07:45:00.000Z", createdAt: "2026-07-21T07:45:00.000Z" },
+          { sessionId: "s2", title: "Session Beta", summary: null, updatedAt: "2026-07-21T07:45:00.000Z", createdAt: "2026-07-21T07:45:00.000Z" },
         ],
       });
 
@@ -74,8 +74,8 @@ describe("ChatHistoryPanel integration", () => {
     it("I-04: shows conversation count from mapped data", () => {
       renderHistoryPanel({
         chatHistory: [
-          { sessionId: "s1", title: "Session Alpha" },
-          { sessionId: "s2", title: "Session Beta" },
+          { sessionId: "s1", title: "Session Alpha", summary: null, updatedAt: "2026-07-21T07:45:00.000Z", createdAt: "2026-07-21T07:45:00.000Z" },
+          { sessionId: "s2", title: "Session Beta", summary: null, updatedAt: "2026-07-21T07:45:00.000Z", createdAt: "2026-07-21T07:45:00.000Z" },
         ],
       });
 
@@ -84,7 +84,7 @@ describe("ChatHistoryPanel integration", () => {
 
     it("I-05: displays domain field names, not raw API field names", () => {
       renderHistoryPanel({
-        chatHistory: [{ sessionId: "s1", title: "My Chat" }],
+        chatHistory: [{ sessionId: "s1", title: "My Chat", summary: null, updatedAt: "2026-07-21T07:45:00.000Z", createdAt: "2026-07-21T07:45:00.000Z" }],
       });
 
       expect(screen.queryByText("session_id")).not.toBeInTheDocument();
@@ -130,7 +130,7 @@ describe("ChatHistoryPanel integration", () => {
       renderHistoryPanel({
         setSessionId,
         chatHistory: [
-          { sessionId: "session-abc", title: "Test Chat" },
+          { sessionId: "session-abc", title: "Test Chat", summary: null, updatedAt: "2026-07-21T07:45:00.000Z", createdAt: "2026-07-21T07:45:00.000Z" },
         ],
       });
 
@@ -144,8 +144,8 @@ describe("ChatHistoryPanel integration", () => {
       renderHistoryPanel({
         sessionId: "s2",
         chatHistory: [
-          { sessionId: "s1", title: "Session 1" },
-          { sessionId: "s2", title: "Session 2" },
+          { sessionId: "s1", title: "Session 1", summary: null, updatedAt: "2026-07-21T07:45:00.000Z", createdAt: "2026-07-21T07:45:00.000Z" },
+          { sessionId: "s2", title: "Session 2", summary: null, updatedAt: "2026-07-21T07:45:00.000Z", createdAt: "2026-07-21T07:45:00.000Z" },
         ],
       });
 
@@ -188,7 +188,13 @@ describe("ChatHistoryPanel integration", () => {
       mockApi.use(
         http.post(`${CHATBOT_BASE_URL}/sessions`, () => {
           createCalled = true;
-          return HttpResponse.json({ session_id: "new-real-session" });
+          return HttpResponse.json({
+            session_id: "new-real-session",
+            title: "New Real Session",
+            summary: null,
+            user_id: "user-1",
+            created_at: "2026-07-21T07:45:00.000Z",
+          });
         })
       );
 

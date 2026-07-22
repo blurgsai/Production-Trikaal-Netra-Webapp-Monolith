@@ -11,6 +11,8 @@ export { Dashboard } from "./ui/Dashboard";
 export { Threats } from "./ui/Threats";
 export { Articles } from "./ui/Articles";
 export { ArticleDetailDialog } from "./ui/ArticleDetailDialog";
+export { useWorldMonitoringUrlParams } from "./hooks/useWorldMonitoringUrlParams";
+export type { WorldMonitoringUrlParams } from "./hooks/useWorldMonitoringUrlParams";
 
 export type {
   ThreatFilters,

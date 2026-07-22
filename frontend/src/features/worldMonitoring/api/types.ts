@@ -44,6 +44,7 @@ export interface WorldMonitorMetadataApiResponse {
   event_types: string[];
   threat_levels: string[];
   sources: string[];
+  source_types: string[];
   processing_statuses: string[];
   sort_options: {
     value: string;
