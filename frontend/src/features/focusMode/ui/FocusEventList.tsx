@@ -28,6 +28,10 @@ function formatLocation(event: FocusEvent): string {
   return `${event.location.lat.toFixed(4)}°, ${event.location.lon.toFixed(4)}°`
 }
 
+
+
+
+
 interface Props {
   events: FocusEvent[]
   vesselLabel: string
