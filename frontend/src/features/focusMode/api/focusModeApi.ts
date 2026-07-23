@@ -80,8 +80,6 @@ export const getVesselsByMmsi = async (
 
 export const getVesselEvents = async (
   vesselId: string,
-  startTime?: number,
-  endTime?: number,
 ): Promise<EventsApiResponse> => {
   const data = await fetchMockData(vesselId);
   const event = data.event_details;
