@@ -2,13 +2,13 @@ import { Box, Card, CardContent, Typography } from "@mui/material";
 
 import { defenseColors } from "@/shared/theme";
 
-interface InsightCardProps {
-  label: string;
-  value: number;
-  helper: string;
+import type { InsightsKpi } from "../model/types";
+
+interface InsightKpiCardProps {
+  kpi: InsightsKpi;
 }
 
-export function InsightCard({ label, value, helper }: InsightCardProps) {
+export function InsightKpiCard({ kpi }: InsightKpiCardProps) {
   return (
     <Card
       sx={{
@@ -17,6 +17,7 @@ export function InsightCard({ label, value, helper }: InsightCardProps) {
         background: `linear-gradient(180deg, ${defenseColors.background.surfaceAlt}, ${defenseColors.background.surface})`,
         position: "relative",
         overflow: "hidden",
+        height: "100%",
       }}
     >
       <Box
@@ -26,28 +27,27 @@ export function InsightCard({ label, value, helper }: InsightCardProps) {
           left: 0,
           right: 0,
           height: 3,
-          background: `linear-gradient(90deg, ${defenseColors.primary.main}, ${defenseColors.status.warning})`,
+          background: `linear-gradient(90deg, ${defenseColors.primary.main}, ${defenseColors.status.info})`,
         }}
       />
 
-      <CardContent sx={{ p: 2 }}>
-        <Typography variant="caption" sx={{ color: defenseColors.text.muted }}>
-          {label}
-        </Typography>
-
+      <CardContent sx={{ p: 2, "&:last-child": { pb: 2 } }}>
         <Typography
           variant="h4"
           sx={{
             color: defenseColors.text.primary,
             fontWeight: 800,
-            my: 0.5,
+            lineHeight: 1.1,
           }}
         >
-          {value.toLocaleString()}
+          {kpi.value.toLocaleString()}
         </Typography>
 
-        <Typography variant="body2" sx={{ color: defenseColors.text.muted }}>
-          {helper}
+        <Typography
+          variant="body2"
+          sx={{ color: defenseColors.text.muted, mt: 0.75 }}
+        >
+          {kpi.label}
         </Typography>
       </CardContent>
     </Card>

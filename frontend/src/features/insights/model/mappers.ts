@@ -1,5 +1,8 @@
-import type { InsightsSummaryApiResponse } from "../api/types";
-import type { InsightCard } from "./types";
+import type {
+  InsightsDashboardApiResponse,
+  InsightsTimelineApiResponse,
+} from "../api/types";
+import type { InsightsDashboard, InsightsTimelinePoint } from "./types";
 
 export function formatTypeLabel(type: string): string {
   return type
@@ -11,24 +14,44 @@ export function formatTypeLabel(type: string): string {
     .join(" ");
 }
 
-export function mapInsightsSummaryToCards(
-  raw: InsightsSummaryApiResponse,
-): InsightCard[] {
-  const vesselCard: InsightCard = {
-    key: "total-vessels",
-    label: "Total Vessels",
-    value: raw.vessel_count,
-    helper: "Total vessels currently tracked",
+export function mapInsightsTimeline(
+  raw: InsightsTimelineApiResponse,
+): InsightsTimelinePoint[] {
+  return raw.timeline.map((t) => ({
+    date: t.date,
+    count: t.count,
+  }));
+}
+
+export function mapInsightsDashboard(
+  raw: InsightsDashboardApiResponse,
+): InsightsDashboard {
+  return {
+    kpis: raw.kpis.map((k) => ({
+      id: k.id,
+      label: k.label,
+      value: k.value,
+    })),
+    eventTypeTotal: raw.event_type_total,
+    eventTypeShares: raw.event_type_shares.map((s) => ({
+      key: s.key,
+      label: s.label || formatTypeLabel(s.key),
+      count: s.count,
+      percent: s.percent,
+    })),
+    timeline: raw.timeline.map((t) => ({
+      date: t.date,
+      count: t.count,
+    })),
+    categories: raw.categories.map((c) => ({
+      id: c.id,
+      title: c.title,
+      total: c.total,
+      items: c.items.map((item) => ({
+        key: item.key,
+        label: item.label || formatTypeLabel(item.key),
+        count: item.count,
+      })),
+    })),
   };
-
-  const eventCards: InsightCard[] = [...raw.event_type_counts]
-    .sort((a, b) => b.count - a.count)
-    .map((item) => ({
-      key: item.type,
-      label: formatTypeLabel(item.type),
-      value: item.count,
-      helper: `Count of ${item.type} events`,
-    }));
-
-  return [vesselCard, ...eventCards];
 }

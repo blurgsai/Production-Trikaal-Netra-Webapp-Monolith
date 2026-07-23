@@ -1,6 +1,38 @@
-export interface InsightCard {
-  key: string;
+export interface InsightsKpi {
+  id: string;
   label: string;
   value: number;
-  helper: string;
+}
+
+export interface InsightsEventTypeShare {
+  key: string;
+  label: string;
+  count: number;
+  percent: number;
+}
+
+export interface InsightsTimelinePoint {
+  date: string;
+  count: number;
+}
+
+export interface InsightsCategoryItem {
+  key: string;
+  label: string;
+  count: number;
+}
+
+export interface InsightsCategory {
+  id: string;
+  title: string;
+  total: number;
+  items: InsightsCategoryItem[];
+}
+
+export interface InsightsDashboard {
+  kpis: InsightsKpi[];
+  eventTypeShares: InsightsEventTypeShare[];
+  eventTypeTotal: number;
+  timeline: InsightsTimelinePoint[];
+  categories: InsightsCategory[];
 }
