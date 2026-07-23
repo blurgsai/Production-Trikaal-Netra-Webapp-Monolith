@@ -3,7 +3,8 @@ import { Alert, Box, CircularProgress, Stack, Typography } from "@mui/material";
 
 import { defenseColors } from "@/shared/theme";
 
-import { useInsights, useInsightsTimeline } from "../hooks/useInsights";
+import { useInsights } from "../hooks/useInsights";
+import { useInsightsTimeline } from "../hooks/useInsightsTimeline";
 import type { InsightsTimelineRange } from "../model/types";
 import { ActivityTimelineChart } from "./ActivityTimelineChart";
 import { CategoryListCard } from "./CategoryListCard";
