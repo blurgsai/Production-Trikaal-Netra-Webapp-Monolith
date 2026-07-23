@@ -20,6 +20,7 @@ import AdminPanelPage from "./pages/AdminPanelPage";
 import { UserManagement, MapManagement, DataManagement } from "@/features/admin";
 import { Dashboard, Threats, Articles } from "@/features/worldMonitoring";
 import { FocusModePage } from "@/features/focusMode";
+import { InsightsPage } from "@/features/insights";
 
 const queryClient = new QueryClient();
 
@@ -51,6 +52,7 @@ function App() {
                   <Route path="/events" element={<EventsPage />} />
                   <Route path="/historical-playback" element={<HistoricalPlaybackPage />} />
                   <Route path="/focus-mode" element={<FocusModePage />} />
+                  <Route path="/insights" element={<InsightsPage />} />
                   <Route path="/world-monitoring" element={<WorldMonitoringPage />}>
                     <Route index element={<Navigate to="/world-monitoring/dashboard" replace />} />
                     <Route path="dashboard" element={<Dashboard />} />
