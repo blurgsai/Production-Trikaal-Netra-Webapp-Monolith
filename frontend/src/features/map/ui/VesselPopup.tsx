@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Card,
   CardHeader,
@@ -21,6 +22,7 @@ import DirectionsBoatIcon from "@mui/icons-material/DirectionsBoat";
 import SettingsIcon from "@mui/icons-material/Settings";
 import BrokenImageIcon from "@mui/icons-material/BrokenImage";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import CenterFocusStrongIcon from "@mui/icons-material/CenterFocusStrong";
 import type { VesselInfo, PopupFieldConfig, VesselDataUpload } from "../model/types";
 import { useVesselDetails } from "../hooks/useVesselDetails";
 import { useVesselImage } from "../hooks/useVesselImage";
@@ -111,6 +113,7 @@ function getDateFromUpload(upload: VesselDataUpload): string {
 }
 
 function VesselPopup({ vessel, latlng, popupFields, onClose, onPopupFieldsChange }: VesselPopupProps) {
+  const navigate = useNavigate();
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [timelineDialog, setTimelineDialog] = useState<{ dbName: string; uploads: VesselDataUpload[] } | null>(null);
@@ -139,6 +142,16 @@ function VesselPopup({ vessel, latlng, popupFields, onClose, onPopupFieldsChange
     onPopupFieldsChange({ enabledFields: newFields });
   };
 
+  const handleFocusMode = () => {
+    if (!vessel.id) return;
+    const end = Math.floor(Date.now() / 1000);
+    const start = end - 7 * 24 * 60 * 60;
+    navigate(
+      `/focus-mode?vesselId=${encodeURIComponent(vessel.id)}&start=${start}&end=${end}`,
+    );
+    onClose();
+  };
+
   return (
     <Card
       sx={{
@@ -162,6 +175,15 @@ function VesselPopup({ vessel, latlng, popupFields, onClose, onPopupFieldsChange
         }
         action={
           <Box sx={{ display: "flex", alignItems: "center" }}>
+            <IconButton
+              onClick={handleFocusMode}
+              disabled={!vessel.id}
+              size="small"
+              aria-label="focus-mode"
+              title="Focus Mode"
+            >
+              <CenterFocusStrongIcon />
+            </IconButton>
             {onPopupFieldsChange && (
               <IconButton
                 onClick={() => setSettingsOpen((s) => !s)}

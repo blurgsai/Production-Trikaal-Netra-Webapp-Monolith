@@ -5,7 +5,7 @@ import { useLocalStorage } from "@/shared";
 import { useState, useEffect, useCallback } from "react";
 import { Mosaic, MosaicWindow, type MosaicNode } from "react-mosaic-component";
 import "react-mosaic-component/react-mosaic-component.css";
-import "./MapPage.css";
+import "@/shared/ui/mosaic/mosaic.css";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 
