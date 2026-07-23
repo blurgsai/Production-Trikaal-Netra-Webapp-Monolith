@@ -1,37 +1,14 @@
+import axiosInstance from '@/shared/api/client'
 import type {
   TrajectoryApiResponse,
   VesselsByMmsiApiResponse,
   EventsApiResponse,
-  MockPlaybackData,
-  TrajectoryPointRaw,
+  MongoEventListApiResponse,
 } from './types'
-
-const MOCK_FILES = [
-  'prolonged_stationary.json',
-  'prolonged_low_speed.json',
-  'geofence_intrusion.json',
-] as const
-
-const VESSEL_NAMES: Record<string, string> = {
-  '366168522': 'MV Arabian Sea',
-  '123456789': 'MV Pacific Star',
-  '987654321': 'MV Indian Ocean',
-}
 
 export const pingFocusMode = async (): Promise<true> => {
   await new Promise((r) => setTimeout(r, 100))
   return true
-}
-
-const fetchMockData = async (mmsi: string): Promise<MockPlaybackData> => {
-  for (const file of MOCK_FILES) {
-    const res = await fetch(`/mock/playback/${file}`)
-    const data: MockPlaybackData = await res.json()
-    const vessels = data.event_details.vessels_involved.map(String)
-    if (vessels.includes(mmsi)) return data
-  }
-  const res = await fetch(`/mock/playback/${MOCK_FILES[0]}`)
-  return res.json()
 }
 
 export const getVesselTrajectory = async (
@@ -39,43 +16,19 @@ export const getVesselTrajectory = async (
   startTime?: number,
   endTime?: number,
 ): Promise<TrajectoryApiResponse> => {
-  const data = await fetchMockData(vesselId)
-  const trajectories = data.trajectories
-  const sortedTimestamps = Object.keys(trajectories).sort((a, b) => Number(a) - Number(b))
+  const params: Record<string, number> = {}
+  if (startTime !== undefined) params.start_time = startTime
+  if (endTime !== undefined) params.end_time = endTime
 
-  const points: TrajectoryPointRaw[] = []
-  for (const ts of sortedTimestamps) {
-    const vesselData = trajectories[ts][vesselId]
-    if (!vesselData) continue
-    const timestampSec = Math.floor(Number(ts) / 1000)
-    if (startTime && timestampSec < startTime) continue
-    if (endTime && timestampSec > endTime) continue
-    points.push({
-      lat: vesselData.latitude,
-      lon: vesselData.longitude,
-      timestamp: timestampSec,
-      speed: vesselData.speed_mps,
-      heading: vesselData.heading,
-    })
-  }
-
-  return {
-    trajectory: points,
-    mmsi: Number(vesselId),
-    count: points.length,
-  }
+  const res = await axiosInstance.get(`/api/focus-mode/vessel/${vesselId}/trajectory`, { params })
+  return res.data
 }
 
 export const getVesselsByMmsi = async (
   mmsi: number,
 ): Promise<VesselsByMmsiApiResponse> => {
-  await new Promise((r) => setTimeout(r, 200))
-  const name = VESSEL_NAMES[String(mmsi)] ?? `Vessel ${mmsi}`
-  return {
-    vessels: [
-      { vessel_id: mmsi, ship_name: name },
-    ],
-  }
+  const res = await axiosInstance.get(`/api/focus-mode/vessel/by-mmsi/${mmsi}`)
+  return res.data
 }
 
 export const getVesselEvents = async (
@@ -83,35 +36,28 @@ export const getVesselEvents = async (
   startTime?: number,
   endTime?: number,
 ): Promise<EventsApiResponse> => {
-  const data = await fetchMockData(vesselId)
-  const event = data.event_details
-  const vesselsInvolved = event.vessels_involved.map(String)
-
-  if (!vesselsInvolved.includes(vesselId)) {
-    return { events: [] }
+  const filters: Array<{ field: string; operator: string; value: string }> = [
+    { field: 'vessels_involved', operator: 'eq', value: vesselId },
+  ]
+  if (startTime !== undefined) {
+    filters.push({ field: 'timestamp', operator: 'gte', value: new Date(startTime * 1000).toISOString() })
+  }
+  if (endTime !== undefined) {
+    filters.push({ field: 'timestamp', operator: 'lte', value: new Date(endTime * 1000).toISOString() })
   }
 
-  const eventTimestampSec = event.timestamp
-    ? Math.floor(new Date(event.timestamp).getTime() / 1000)
-    : null
-
-  if (startTime && eventTimestampSec !== null && eventTimestampSec < startTime) {
-    return { events: [] }
-  }
-  if (endTime && eventTimestampSec !== null && eventTimestampSec > endTime) {
-    return { events: [] }
-  }
+  const res = await axiosInstance.get<MongoEventListApiResponse>('/api/mongo-events/list', {
+    params: { limit: 1000, offset: 0, filters: JSON.stringify(filters) },
+  })
 
   return {
-    events: [
-      {
-        event_id: event.id ?? `event_${event.type}`,
-        type: event.type,
-        severity: event.severity,
-        status: event.status,
-        timestamp: event.timestamp,
-        location: event.location,
-      },
-    ],
+    events: res.data.events.map((e) => ({
+      id: e.id,
+      type: e.type ?? undefined,
+      severity: e.severity ?? undefined,
+      status: e.status ?? undefined,
+      timestamp: e.timestamp ?? undefined,
+      location: e.location ?? undefined,
+    })),
   }
 }

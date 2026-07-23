@@ -142,36 +142,60 @@ function getEventCenterView(
   };
 }
 
+/**
+ * Cesium's camera.flyTo/flyToBoundingSphere compute the frustum from the
+ * canvas's current pixel size. Right after the Viewer is constructed, the
+ * Mosaic tile it lives in may not have finished measuring/laying out yet, so
+ * the canvas can still be 0x0 for a frame or two -- flying the camera at that
+ * moment throws "DeveloperError: Expected width to be greater than 0, actual
+ * value was 0". Defer until the canvas actually has a size.
+ */
+function whenCanvasSized(
+  viewer: Cesium.Viewer,
+  cb: () => void,
+  attempt = 0,
+): void {
+  if (viewer.isDestroyed()) return;
+  if (viewer.canvas.clientWidth > 0 && viewer.canvas.clientHeight > 0) {
+    cb();
+    return;
+  }
+  if (attempt > 120) return; // ~2s at 60fps -- give up quietly rather than spin forever
+  requestAnimationFrame(() => whenCanvasSized(viewer, cb, attempt + 1));
+}
+
 function setInitialViewCenteredOn(
   viewer: Cesium.Viewer,
   lat: number,
   lon: number,
   deltaDegrees: number,
 ): void {
-  const is2D = viewer.scene.mode === Cesium.SceneMode.SCENE2D;
+  whenCanvasSized(viewer, () => {
+    const is2D = viewer.scene.mode === Cesium.SceneMode.SCENE2D;
 
-  if (is2D) {
-    viewer.camera.flyTo({
-      destination: Cesium.Rectangle.fromDegrees(
-        lon - deltaDegrees,
-        lat - deltaDegrees,
-        lon + deltaDegrees,
-        lat + deltaDegrees,
-      ),
+    if (is2D) {
+      viewer.camera.flyTo({
+        destination: Cesium.Rectangle.fromDegrees(
+          lon - deltaDegrees,
+          lat - deltaDegrees,
+          lon + deltaDegrees,
+          lat + deltaDegrees,
+        ),
+        duration: 0.8,
+      });
+      return;
+    }
+
+    const center = Cesium.Cartesian3.fromDegrees(lon, lat);
+    const radiusMeters = deltaDegrees * 111_000;
+    viewer.camera.flyToBoundingSphere(new Cesium.BoundingSphere(center, radiusMeters), {
       duration: 0.8,
+      offset: new Cesium.HeadingPitchRange(
+        0,
+        -Cesium.Math.toRadians(45),
+        radiusMeters * 2,
+      ),
     });
-    return;
-  }
-
-  const center = Cesium.Cartesian3.fromDegrees(lon, lat);
-  const radiusMeters = deltaDegrees * 111_000;
-  viewer.camera.flyToBoundingSphere(new Cesium.BoundingSphere(center, radiusMeters), {
-    duration: 0.8,
-    offset: new Cesium.HeadingPitchRange(
-      0,
-      -Cesium.Math.toRadians(45),
-      radiusMeters * 2,
-    ),
   });
 }
 
@@ -181,19 +205,21 @@ function fitTrajectoryView(
 ): void {
   if (coords.length === 0) return;
 
-  const positions = computeSurfacePositions(viewer, coords);
-  const boundingSphere = Cesium.BoundingSphere.fromPoints(positions);
-  const is2D = viewer.scene.mode === Cesium.SceneMode.SCENE2D;
+  whenCanvasSized(viewer, () => {
+    const positions = computeSurfacePositions(viewer, coords);
+    const boundingSphere = Cesium.BoundingSphere.fromPoints(positions);
+    const is2D = viewer.scene.mode === Cesium.SceneMode.SCENE2D;
 
-  viewer.camera.flyToBoundingSphere(boundingSphere, {
-    duration: 0.8,
-    offset: is2D
-      ? undefined
-      : new Cesium.HeadingPitchRange(
-          0,
-          -Cesium.Math.toRadians(45),
-          Math.max(boundingSphere.radius * 2, 1000),
-        ),
+    viewer.camera.flyToBoundingSphere(boundingSphere, {
+      duration: 0.8,
+      offset: is2D
+        ? undefined
+        : new Cesium.HeadingPitchRange(
+            0,
+            -Cesium.Math.toRadians(45),
+            Math.max(boundingSphere.radius * 2, 1000),
+          ),
+    });
   });
 }
 
@@ -540,7 +566,11 @@ export const FocusModeMap = ({
     const viewer = viewerRef.current;
     if (!container || !viewer || !isReady) return;
 
-    const resize = () => viewer.resize();
+    const resize = () => {
+      if (viewer.isDestroyed()) return;
+      if (container.clientWidth === 0 || container.clientHeight === 0) return;
+      viewer.resize();
+    };
     resize();
 
     const observer = new ResizeObserver(resize);
