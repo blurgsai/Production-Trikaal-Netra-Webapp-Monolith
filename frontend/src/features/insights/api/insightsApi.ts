@@ -1,8 +1,20 @@
 import axiosInstance from "@/shared/api/client";
 
-import type { InsightsSummaryApiResponse } from "./types";
+import type {
+  InsightsDashboardApiResponse,
+  InsightsTimelineApiResponse,
+} from "./types";
 
-export async function fetchInsightsSummary(): Promise<InsightsSummaryApiResponse> {
-  const res = await axiosInstance.get<InsightsSummaryApiResponse>("/insights/summary");
+export async function fetchInsightsDashboard(): Promise<InsightsDashboardApiResponse> {
+  const res = await axiosInstance.get<InsightsDashboardApiResponse>("/insights/summary");
+  return res.data;
+}
+
+export async function fetchInsightsTimeline(
+  timelineRange: string = "1w"
+): Promise<InsightsTimelineApiResponse> {
+  const res = await axiosInstance.get<InsightsTimelineApiResponse>("/insights/timeline", {
+    params: { timeline_range: timelineRange },
+  });
   return res.data;
 }

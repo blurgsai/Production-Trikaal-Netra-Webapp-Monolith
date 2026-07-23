@@ -1,16 +1,16 @@
 import { useQuery } from "@tanstack/react-query";
 
-import { fetchInsightsSummary } from "../api/insightsApi";
-import { mapInsightsSummaryToCards } from "../model/mappers";
+import { fetchInsightsDashboard } from "../api/insightsApi";
+import { mapInsightsDashboard } from "../model/mappers";
 
-const INSIGHTS_KEY = "insights-summary";
+const INSIGHTS_KEY = "insights-dashboard";
 
 export function useInsights() {
   return useQuery({
     queryKey: [INSIGHTS_KEY],
     queryFn: async () => {
-      const raw = await fetchInsightsSummary();
-      return mapInsightsSummaryToCards(raw);
+      const raw = await fetchInsightsDashboard();
+      return mapInsightsDashboard(raw);
     },
   });
 }
