@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { WMSTileLayer } from "react-leaflet";
 
 interface VesselLayerProps {
@@ -12,14 +13,15 @@ function VesselLayer({ opacity, styleName, refreshKey, cqlFilter }: VesselLayerP
     import.meta.env.VITE_GEOSERVER_WORKSPACE
   }/wms`;
 
-  const params = cqlFilter ? ({ CQL_FILTER: cqlFilter } as never) : undefined;
-  
-  console.log("🗺️ WMS Layer Debug:", {
-    cqlFilter,
-    params,
-    hasFilter: !!cqlFilter,
-    key: `vessel-${refreshKey}-${styleName}-${cqlFilter ?? "none"}`,
-  });
+  // Memoized so the object reference is stable across re-renders (e.g. mousemove-driven
+  // BaseMap re-renders) and only changes when the filter value itself changes. Otherwise
+  // react-leaflet's WMSTileLayer compares params by reference and calls layer.setParams()
+  // (which redraws/refetches the WMS tiles) on every render, causing the vessel layer to
+  // continuously flicker/refetch whenever a CQL filter is active.
+  const params = useMemo(
+    () => (cqlFilter ? ({ CQL_FILTER: cqlFilter } as never) : undefined),
+    [cqlFilter]
+  );
 
   return (
     <WMSTileLayer
