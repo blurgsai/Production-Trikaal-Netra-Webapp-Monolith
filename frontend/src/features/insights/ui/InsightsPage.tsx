@@ -1,15 +1,25 @@
+import { useState } from "react";
 import { Alert, Box, CircularProgress, Stack, Typography } from "@mui/material";
 
 import { defenseColors } from "@/shared/theme";
 
-import { useInsights } from "../hooks/useInsights";
+import { useInsights, useInsightsTimeline } from "../hooks/useInsights";
+import type { InsightsTimelineRange } from "../model/types";
 import { ActivityTimelineChart } from "./ActivityTimelineChart";
 import { CategoryListCard } from "./CategoryListCard";
 import { InsightKpiCard } from "./InsightKpiCard";
 import { TopEventTypesDonut } from "./TopEventTypesDonut";
 
 export function InsightsPage() {
+  const [timelineRange, setTimelineRange] =
+    useState<InsightsTimelineRange>("1w");
   const { data, isLoading, error } = useInsights();
+  const {
+    data: timeline = [],
+    isLoading: timelineLoading,
+    isFetching: timelineFetching,
+    error: timelineError,
+  } = useInsightsTimeline(timelineRange);
 
   if (isLoading) {
     return (
@@ -71,7 +81,14 @@ export function InsightsPage() {
               shares={dashboard.eventTypeShares}
               total={dashboard.eventTypeTotal}
             />
-            <ActivityTimelineChart />
+            <ActivityTimelineChart
+              timeline={timeline}
+              timelineRange={timelineRange}
+              onTimelineRangeChange={setTimelineRange}
+              isLoading={timelineLoading}
+              isFetching={timelineFetching}
+              error={Boolean(timelineError)}
+            />
           </Box>
 
           <Box

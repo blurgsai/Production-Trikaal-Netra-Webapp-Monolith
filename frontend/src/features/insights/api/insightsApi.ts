@@ -5,15 +5,13 @@ import type {
   InsightsTimelineApiResponse,
 } from "./types";
 
-export type InsightsTimelineRange = "all" | "1y" | "6m" | "3m" | "1m" | "1w";
-
 export async function fetchInsightsDashboard(): Promise<InsightsDashboardApiResponse> {
   const res = await axiosInstance.get<InsightsDashboardApiResponse>("/insights/summary");
   return res.data;
 }
 
 export async function fetchInsightsTimeline(
-  timelineRange: InsightsTimelineRange = "1w"
+  timelineRange: string = "1w"
 ): Promise<InsightsTimelineApiResponse> {
   const res = await axiosInstance.get<InsightsTimelineApiResponse>("/insights/timeline", {
     params: { timeline_range: timelineRange },

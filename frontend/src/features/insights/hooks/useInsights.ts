@@ -1,11 +1,8 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 
-import {
-  fetchInsightsDashboard,
-  fetchInsightsTimeline,
-  type InsightsTimelineRange,
-} from "../api/insightsApi";
+import { fetchInsightsDashboard, fetchInsightsTimeline } from "../api/insightsApi";
 import { mapInsightsDashboard, mapInsightsTimeline } from "../model/mappers";
+import type { InsightsTimelineRange } from "../model/types";
 
 const INSIGHTS_KEY = "insights-dashboard";
 const INSIGHTS_TIMELINE_KEY = "insights-timeline";

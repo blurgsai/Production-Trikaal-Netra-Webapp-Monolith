@@ -1,4 +1,3 @@
-import { useState } from "react";
 import {
   Box,
   CircularProgress,
@@ -21,8 +20,7 @@ import {
 
 import { defenseColors } from "@/shared/theme";
 
-import type { InsightsTimelineRange } from "../api/insightsApi";
-import { useInsightsTimeline } from "../hooks/useInsights";
+import type { InsightsTimelinePoint, InsightsTimelineRange } from "../model/types";
 
 const TIMELINE_RANGE_OPTIONS: { value: InsightsTimelineRange; label: string }[] = [
   { value: "all", label: "All time" },
@@ -33,12 +31,23 @@ const TIMELINE_RANGE_OPTIONS: { value: InsightsTimelineRange; label: string }[] 
   { value: "1w", label: "Past 1 week" },
 ];
 
-export function ActivityTimelineChart() {
-  const [timelineRange, setTimelineRange] =
-    useState<InsightsTimelineRange>("1w");
-  const { data: timeline = [], isLoading, isFetching, error } =
-    useInsightsTimeline(timelineRange);
+interface ActivityTimelineChartProps {
+  timeline: InsightsTimelinePoint[];
+  timelineRange: InsightsTimelineRange;
+  onTimelineRangeChange: (range: InsightsTimelineRange) => void;
+  isLoading?: boolean;
+  isFetching?: boolean;
+  error?: boolean;
+}
 
+export function ActivityTimelineChart({
+  timeline,
+  timelineRange,
+  onTimelineRangeChange,
+  isLoading = false,
+  isFetching = false,
+  error = false,
+}: ActivityTimelineChartProps) {
   return (
     <Paper
       sx={{
@@ -68,7 +77,7 @@ export function ActivityTimelineChart() {
           <Select
             value={timelineRange}
             onChange={(e) =>
-              setTimelineRange(e.target.value as InsightsTimelineRange)
+              onTimelineRangeChange(e.target.value as InsightsTimelineRange)
             }
             sx={{
               color: defenseColors.text.primary,
@@ -135,7 +144,11 @@ export function ActivityTimelineChart() {
                   name="Events"
                   stroke={defenseColors.primary.main}
                   strokeWidth={2.5}
-                  dot={timeline.length <= 31 ? { fill: defenseColors.primary.dark, r: 3 } : false}
+                  dot={
+                    timeline.length <= 31
+                      ? { fill: defenseColors.primary.dark, r: 3 }
+                      : false
+                  }
                   activeDot={{ r: 5, fill: defenseColors.primary.hover }}
                 />
               </LineChart>
