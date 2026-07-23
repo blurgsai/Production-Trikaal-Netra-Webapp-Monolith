@@ -40,35 +40,20 @@ export interface EventsApiResponse {
   events: EventRaw[]
 }
 
-export interface MockPlaybackData {
-  event_details: {
-    id?: string
-    type: string
-    location: { type: string; coordinates: [number, number] }
-    timestamp: string
-    start_time: string
-    end_time: string
-    duration: { value: number; unit: string }
-    vessels_involved: (string | number)[]
-    severity: string
-    model: string
-    status: string
-    s2_cell_id: string
-    temporality: string
-    event_source: string
-    information: Record<string, unknown>
-  }
-  trajectories: Record<string, Record<string, {
-    latitude: number
-    longitude: number
-    speed_mps: number
-    heading: number
-    course: number
-  }>>
-  time_window: { start: number; end: number }
-  geofence_polygon?: {
-    geofence_id: string
-    asset_name: string
-    polygon: { type: string; coordinates: number[][][] }
-  }
+// Raw shape of GET /api/mongo-events/list (owned locally -- focusMode can't
+// import eventTable's equivalent type across the feature boundary).
+export interface MongoEventListItemRaw {
+  id: string
+  type: string | null
+  severity: string | null
+  status: string | null
+  timestamp: string | null
+  location: EventLocationRaw | null
+}
+
+export interface MongoEventListApiResponse {
+  events: MongoEventListItemRaw[]
+  total: number
+  limit: number
+  offset: number
 }

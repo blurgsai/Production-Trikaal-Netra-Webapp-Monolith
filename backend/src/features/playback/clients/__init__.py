@@ -6,9 +6,12 @@ ClickHouse (AIS vessel trajectories). Knows nothing about FastAPI or domain mode
 Self-contained: reads the events / compound / polygons / ports collections directly
 (cross-feature imports are forbidden), using collection names from settings.
 
-ClickHouse note: on this deployment `metadata_timestamp` is stored in **milliseconds**
-(unlike the legacy backend which treated it as seconds), so all trajectory time bounds
-are compared in ms and returned as ms.
+ClickHouse note: `metadata_timestamp` in ais_processed_flat is stored in **unix
+seconds** (verified directly against the real trikaal_v3.ais_processed_flat table —
+not milliseconds as this module previously assumed, which was silently returning zero
+trajectory rows for every event). The queries below multiply by 1000 at the query
+boundary so every other layer (services/, models/, the frontend contract) can keep
+working in ms.
 """
 from __future__ import annotations
 
@@ -112,16 +115,16 @@ async def fetch_trajectories(
         return {}
 
     ids_str = ",".join(map(str, ids))
-    upper = f"AND metadata_timestamp <= {int(end_ms)}" if end_ms else ""
+    upper = f"AND metadata_timestamp * 1000 <= {int(end_ms)}" if end_ms else ""
     sql = f"""
         SELECT
-            metadata_timestamp AS ts,
+            metadata_timestamp * 1000 AS ts,
             groupArray((toString(vessel_id), lat, lon,
                         processing_kinematics_speed_mps, course,
                         processing_kinematics_heading_deg)) AS vessel_data
         FROM {_ais_table()}
         WHERE vessel_id IN ({ids_str})
-          AND metadata_timestamp >= {int(start_ms)}
+          AND metadata_timestamp * 1000 >= {int(start_ms)}
           {upper}
           AND lat IS NOT NULL
           AND lon IS NOT NULL
@@ -132,7 +135,7 @@ async def fetch_trajectories(
 
     trajectories: dict[str, dict[str, dict]] = {}
     for row in rows:
-        ts = str(row["ts"])  # already milliseconds
+        ts = str(row["ts"])  # ms (query converts from stored unix seconds)
         frame = trajectories.setdefault(ts, {})
         for v in row["vessel_data"]:
             frame[str(v[0])] = {

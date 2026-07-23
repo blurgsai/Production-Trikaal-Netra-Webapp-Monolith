@@ -8,6 +8,7 @@ from fastapi import FastAPI
 from src.features.admin.router import router as admin_router
 from src.features.compound_events.router import router as compound_events_router
 from src.features.events.router import router as events_router
+from src.features.focus_mode.router import router as focus_mode_router
 from src.features.insights.router import router as insights_router
 from src.features.playback.router import router as playback_router
 from src.features.users.router import router as user_router
@@ -40,6 +41,7 @@ app.include_router(admin_router)
 app.include_router(events_router)
 app.include_router(compound_events_router)
 app.include_router(playback_router)
+app.include_router(focus_mode_router)
 app.include_router(insights_router)
 
 if __name__ == "__main__":

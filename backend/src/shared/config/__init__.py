@@ -21,6 +21,7 @@ class Settings(BaseSettings):
     # Collection names — overridable per environment (e.g. EVENTS_COLLECTION=events_temp).
     EVENTS_COLLECTION: str = "events"
     COMPOUND_COLLECTION: str = "compound_events"
+    VESSEL_STATE_COLLECTION: str = "vessel_state"
 
     CLICKHOUSE_USER: str = "default"
     CLICKHOUSE_PASSWORD: str = ""

@@ -11,8 +11,11 @@ import { findNearestTrajectoryIndex } from "../model/playbackUtils";
 import type { Vessel, FocusEvent } from "../model/types";
 
 const DIRECT_ENTRY_MMSI = "366168522";
-const DIRECT_ENTRY_START = dayjs("2024-06-15T04:00");
-const DIRECT_ENTRY_END = dayjs("2024-06-15T16:00");
+// Padded a day either side of the seeded demo voyage's actual window
+// (2026-07-14T02:00:30Z -> 2026-07-17T04:16:30Z) to absorb local-timezone
+// parsing here, since dayjs("...") without a "Z" suffix parses as local time.
+const DIRECT_ENTRY_START = dayjs("2026-07-13T00:00");
+const DIRECT_ENTRY_END = dayjs("2026-07-18T00:00");
 
 const getMapEntryTimeRange = () => ({
   start: dayjs().subtract(7, "day"),
