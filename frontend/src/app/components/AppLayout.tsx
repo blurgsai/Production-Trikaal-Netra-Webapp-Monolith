@@ -24,7 +24,9 @@ function AppLayout() {
         }}
       >
         <Header />
-        <Outlet />
+        <Box component="main" sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+          <Outlet />
+        </Box>
         <ChatBot open={isChatbotOpen} onClose={closeChatbot} />
       </Box>
     </Box>

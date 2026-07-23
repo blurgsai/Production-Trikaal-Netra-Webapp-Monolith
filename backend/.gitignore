@@ -4,6 +4,8 @@ env/
 .pytest_cache/
 .ruff_cache/
 .import_linter_cache/
+.venv/
+
 
 # Dev-only fixture generator (extra deps: shapely/pyproj/clickhouse-connect,
 # not in requirements.txt) — reproducible from scripts/playback_demo_data/README.md,
