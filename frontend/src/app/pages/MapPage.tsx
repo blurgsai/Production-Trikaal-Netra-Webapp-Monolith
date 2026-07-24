@@ -1,6 +1,6 @@
 import { Box, Typography, useMediaQuery } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
-import { BaseMap, MapNavbar, VesselTableTool, LayerPanel, VesselConfigPanel, ChartHouse, useMapConfig, useVesselTrajectory, useVesselTable, useVesselColumns, MapTileSettings, useMapUrlParams, useVesselByMmsi, mapRawVesselToInfo } from "@/features/map";
+import { BaseMap, MapNavbar, VesselTableTool, LayerPanel, VesselConfigPanel, ChartHouse, useMapConfig, useVesselTrajectory, useVesselTable, useVesselColumns, MapTileSettings, useMapUrlParams, useVesselByMmsi, vesselInfoFromRaw } from "@/features/map";
 import type { VesselInfo, VesselConfig, ViewTile, Polygon, PopupFieldConfig, ChartConfig } from "@/features/map";
 import { useLocalStorage } from "@/shared";
 import { useState, useEffect, useCallback, useMemo } from "react";
@@ -247,7 +247,7 @@ function MapPage() {
         handleVesselSelect(null);
         return;
       }
-      const info = mapRawVesselToInfo({ id: row.id, ...row.properties });
+      const info = vesselInfoFromRaw({ id: row.id, ...row.properties });
       if (info) {
         handleVesselSelect(info, {
           lat: info.locationCurrentLat,
