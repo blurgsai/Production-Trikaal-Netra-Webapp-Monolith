@@ -6,13 +6,11 @@ import {
   Snackbar,
   Button,
   Fade,
-  IconButton,
   Typography,
 } from "@mui/material";
 import {
   Edit as EditIcon,
   Timeline as TimelineIcon,
-  Close as CloseIcon,
 } from "@mui/icons-material";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -25,7 +23,6 @@ import { useLocalStorage } from "@/shared";
 import { FocusModeMap } from "./FocusModeMap";
 import { FocusPlaybackControls } from "./FocusPlaybackControls";
 import { FocusEventList } from "./FocusEventList";
-import { FocusEventPlaybackTile } from "./FocusEventPlaybackTile";
 import { FocusModeNavbar } from "./FocusModeNavbar";
 import { VesselPickerDialog } from "./VesselPickerDialog";
 import { VesselSearchForm } from "./VesselSearchForm";
@@ -65,11 +62,8 @@ export interface FocusModeViewProps {
   currentPoint: TrajectoryPoint | null;
   playback: Playback;
   visibleEvents: FocusEvent[];
-  selectedEventId: string | null;
-  playbackEvent: FocusEvent | null;
   eventsLoading: boolean;
   onSelectEvent: (event: FocusEvent) => void;
-  onClosePlayback: () => void;
   startTime: number | null;
   endTime: number | null;
   onApplyTimeRange: (start: number, end: number) => void;
@@ -100,11 +94,8 @@ export const FocusModeView = ({
   currentPoint,
   playback,
   visibleEvents,
-  selectedEventId,
-  playbackEvent,
   eventsLoading,
   onSelectEvent,
-  onClosePlayback,
   startTime,
   endTime,
   onApplyTimeRange,
@@ -126,9 +117,9 @@ export const FocusModeView = ({
   >("trikaal_focus_mosaic_layout", DEFAULT_FOCUS_MOSAIC_LAYOUT);
 
   useEffect(() => {
-    if (visibleTiles.length === 0) return
-    setMosaicLayout(buildFocusMosaicLayout(visibleTiles, playbackEvent))
-  }, [visibleTiles, playbackEvent, setMosaicLayout])
+    if (visibleTiles.length === 0) return;
+    setMosaicLayout(buildFocusMosaicLayout(visibleTiles));
+  }, [visibleTiles, setMosaicLayout]);
 
   const renderMapTile = () => (
     <Box sx={{ position: "relative", height: "100%", width: "100%" }}>
@@ -202,34 +193,15 @@ export const FocusModeView = ({
       path={path}
       title={getFocusTileTitle(id)}
       createNode={() => id}
-      toolbarControls={
-        id === "eventPlayback" ? (
-          <IconButton
-            size="small"
-            onClick={onClosePlayback}
-            aria-label="close-event-playback"
-          >
-            <CloseIcon fontSize="small" />
-          </IconButton>
-        ) : (
-          <div />
-        )
-      }
+      toolbarControls={<div />}
     >
       {id === "map" && renderMapTile()}
       {id === "events" && (
         <FocusEventList
           events={visibleEvents}
           vesselLabel={activeLabel}
-          selectedEventId={selectedEventId}
           loading={eventsLoading}
           onSelectEvent={onSelectEvent}
-        />
-      )}
-      {id === "eventPlayback" && playbackEvent && (
-        <FocusEventPlaybackTile
-          event={playbackEvent}
-          vesselLabel={activeLabel}
         />
       )}
     </MosaicWindow>

@@ -35,7 +35,6 @@ function formatLocation(event: FocusEvent): string {
 interface Props {
   events: FocusEvent[]
   vesselLabel: string
-  selectedEventId: string | null
   loading?: boolean
   onSelectEvent: (event: FocusEvent) => void
 }
@@ -43,7 +42,6 @@ interface Props {
 export const FocusEventList = ({
   events,
   vesselLabel,
-  selectedEventId,
   loading = false,
   onSelectEvent,
 }: Props) => (
@@ -80,13 +78,10 @@ export const FocusEventList = ({
             </TableRow>
           </TableHead>
           <TableBody>
-            {events.map((event) => {
-              const selected = event.id === selectedEventId
-              return (
+            {events.map((event) => (
                 <TableRow
                   key={event.id}
                   hover
-                  selected={selected}
                   onClick={() => onSelectEvent(event)}
                   sx={{ cursor: 'pointer' }}
                 >
@@ -109,8 +104,7 @@ export const FocusEventList = ({
                   </TableCell>
                   <TableCell sx={{ whiteSpace: 'nowrap' }}>{formatLocation(event)}</TableCell>
                 </TableRow>
-              )
-            })}
+            ))}
           </TableBody>
         </Table>
       </TableContainer>
