@@ -13,10 +13,8 @@ import {
 import MapIcon from "@mui/icons-material/Map";
 
 import { defenseColors } from "@/shared/theme";
-import {
-  searchVesselsByName,
-  type VesselSearchMatchApiResponse,
-} from "../api/vesselSearchApi";
+import { useVesselSearch } from "../hooks/useVesselSearch";
+import type { VesselSearchMatch } from "../model/types";
 
 interface LocateVesselOnMapButtonProps {
   vesselName: string;
@@ -28,17 +26,13 @@ export default function LocateVesselOnMapButton({
   vesselName,
 }: LocateVesselOnMapButtonProps) {
   const navigate = useNavigate();
+  const { search, matches, loading, error } = useVesselSearch();
 
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [matches, setMatches] = useState<VesselSearchMatchApiResponse[]>([]);
-  const [error, setError] = useState<string | null>(null);
-
   const open = Boolean(anchorEl);
 
   const navigateToVessel = (mmsi: number | null) => {
     if (!mmsi) {
-      setError("Selected vessel has no MMSI, so it cannot be shown on the map.");
       return;
     }
     navigate(`/map?vessel=${mmsi}`);
@@ -47,38 +41,24 @@ export default function LocateVesselOnMapButton({
   const handleClick = async (event: React.MouseEvent<HTMLElement>) => {
     const name = vesselName.trim();
     if (!name) {
-      setError("Vessel name is empty.");
       return;
     }
 
-    setLoading(true);
-    setError(null);
     setAnchorEl(event.currentTarget);
+    const results = await search(name);
 
-    try {
-      const response = await searchVesselsByName(name);
-      const results = response.matches ?? [];
-      setMatches(results);
-
-      if (results.length === 0) {
-        setError(`No vessel found matching "${name}".`);
-      } else if (results.length === 1 && results[0].score >= AUTO_NAVIGATE_MIN_SCORE) {
-        navigateToVessel(results[0].mmsi);
-        setAnchorEl(null);
-      }
-    } catch {
-      setError("Failed to search for vessel. Please try again.");
-    } finally {
-      setLoading(false);
+    // Auto-navigate if single high-confidence match
+    if (results.length === 1 && results[0].score >= AUTO_NAVIGATE_MIN_SCORE) {
+      navigateToVessel(results[0].mmsi);
+      setAnchorEl(null);
     }
   };
 
   const handleClose = () => {
     setAnchorEl(null);
-    setError(null);
   };
 
-  const handleSelect = (match: VesselSearchMatchApiResponse) => {
+  const handleSelect = (match: VesselSearchMatch) => {
     navigateToVessel(match.mmsi);
     if (match.mmsi) {
       handleClose();

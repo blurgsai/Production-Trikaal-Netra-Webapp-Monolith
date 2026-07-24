@@ -357,3 +357,17 @@ export interface ArticlePagination {
   totalPages: number;
   total: number;
 }
+
+// ── Vessel Search types ───────────────────────────────────────────────────────────
+
+export interface VesselSearchMatch {
+  vessel_id: number;
+  ship_name: string;
+  mmsi: number | null;
+  score: number;
+}
+
+export interface VesselSearchMatchApiResponse {
+  query: string;
+  matches: VesselSearchMatch[];
+}
