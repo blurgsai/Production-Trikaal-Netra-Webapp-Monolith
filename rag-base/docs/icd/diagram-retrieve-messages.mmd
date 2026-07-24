@@ -1,0 +1,47 @@
+sequenceDiagram
+    participant Webapp as Webapp<br/>(External App)
+    participant ChatDB as ChatDB<br/>(MongoDB)
+
+    Note over Webapp,ChatDB: Retrieve All Messages for Session
+    
+    Webapp->>ChatDB: Query messages by session_id<br/>(Messages Collection)
+    
+    ChatDB-->>Webapp: Array[Message]<br/>(Ordered by created_at)
+
+%% Data Formats & Schemas
+%%
+%% Request: Query messages by session_id
+%% {
+%%   "operation": "query_messages",
+%%   "filter": {
+%%     "session_id": "string (ObjectId as string)"
+%%   },
+%%   "sort": {
+%%     "created_at": 1
+%%   }
+%% }
+%%
+%% Response: Array of Message objects
+%% [
+%%   {
+%%     "id": "string (ObjectId as string)",
+%%     "session_id": "string (ObjectId as string)",
+%%     "role": "system|user|assistant|tool",
+%%     "content": "string",
+%%     "created_at": "ISO 8601 datetime"
+%%   },
+%%   {
+%%     "id": "65f7a3d9c1e2b4a5f6g7h8ja",
+%%     "session_id": "65f7a3d9c1e2b4a5f6g7h8i9",
+%%     "role": "user",
+%%     "content": "What are our Q1 revenue targets?",
+%%     "created_at": "2026-02-18T10:15:00Z"
+%%   },
+%%   {
+%%     "id": "65f7a3d9c1e2b4a5f6g7h8jb",
+%%     "session_id": "65f7a3d9c1e2b4a5f6g7h8i9",
+%%     "role": "assistant",
+%%     "content": "Based on the analytics data, Q1 targets are...",
+%%     "created_at": "2026-02-18T10:15:15Z"
+%%   }
+%% ]

@@ -17,6 +17,7 @@ from src.features.world_monitor.clients import (
     fetch_metadata,
     fetch_recent_events,
     fetch_today_article_count,
+    fetch_vessels_by_name,
 )
 from src.features.world_monitor.models import (
     SEVERITY_ORDER,
@@ -29,6 +30,7 @@ from src.features.world_monitor.models import (
     map_article_preview_from_doc,
     map_event_from_doc,
     map_map_markers_from_doc,
+    map_vessel_search_matches,
 )
 from src.shared.errors import NotFoundError
 
@@ -42,6 +44,11 @@ async def get_metadata(db) -> dict[str, Any]:
     metadata = await fetch_metadata(db)
     metadata["sort_options"] = SORT_OPTIONS
     return metadata
+
+
+async def search_vessels_by_name(db, name: str, limit: int = 5) -> dict[str, Any]:
+    docs = await fetch_vessels_by_name(db, name)
+    return map_vessel_search_matches(docs, name, limit)
 
 
 async def get_event_list(db, **filters: Any) -> dict[str, Any]:

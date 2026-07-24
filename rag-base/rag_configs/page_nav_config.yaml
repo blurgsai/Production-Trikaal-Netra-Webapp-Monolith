@@ -1,0 +1,192 @@
+selected_llm:
+  provider: gemini
+  model: gemini-3.1-flash-lite
+enabled_sources:
+- page_navigator
+page_navigator:
+  parameters:
+    llm_provider: gemini
+    llm_model: gemini-3.1-flash-lite
+    base_url: http://34.60.206.175
+    site_context:
+      global_operators:
+        string:
+          eq:
+            token: '='
+            template: '{key}={value}'
+            description: Exact string match
+          ne:
+            token: '!='
+            template: '{key}!={value}'
+            description: String does not equal
+          contains:
+            token: '~'
+            template: '{key}~{value}'
+            description: Substring search
+          starts:
+            token: ^
+            template: '{key}^{value}'
+            description: Prefix match
+          ends:
+            token: $
+            template: '{key}${value}'
+            description: Suffix match
+        number:
+          eq:
+            token: '='
+            template: '{key}={value}'
+            description: Equal to
+          ne:
+            token: '!='
+            template: '{key}!={value}'
+            description: Not equal to
+          gt:
+            token: '>'
+            template: '{key}>{value}'
+            description: Greater than
+          lt:
+            token: <
+            template: '{key}<{value}'
+            description: Less than
+          gte:
+            token: '>='
+            template: '{key}>={value}'
+            description: Greater than or equal
+          lte:
+            token: <=
+            template: '{key}<={value}'
+            description: Less than or equal
+        datetime:
+          eq:
+            token: '='
+            template: '{key}={iso_value}'
+            description: Exact datetime match
+          gte:
+            token: '>='
+            template: '{key}>={iso_value}'
+            description: On or after datetime
+          lte:
+            token: <=
+            template: '{key}<={iso_value}'
+            description: On or before datetime
+      pages:
+          map:
+            endpoint: /map
+            attributes:
+              - name: ais_source
+                path: aisInfo.aisSource
+                type: string
+                description: "The source identifier for the AIS data"
+                examples: []
+              - name: ais_transponder_class
+                path: aisInfo.aisTransponderClass
+                type: string
+                description: "Class of the AIS transponder (e.g., Class A, Class B)"
+                examples: []
+              - name: mmsi
+                path: identification.mmsi
+                type: number
+                description: "Maritime Mobile Service Identity"
+                examples: []
+              - name: ship_name
+                path: identification.shipName
+                type: string
+                description: "Registered name of the vessel"
+                examples: []
+              - name: flag
+                path: identification.flag
+                type: string
+                description: "Country of vessel registration"
+                examples: []
+              - name: latitude
+                path: location.current.lat
+                type: number
+                description: "Current latitude coordinate"
+                examples: []
+              - name: longitude
+                path: location.current.lon
+                type: number
+                description: "Current longitude coordinate"
+                examples: []
+              - name: speed_over_ground
+                path: kinematics.speedOverGroundMps
+                type: number
+                description: "Current speed in meters per second"
+                examples: []
+              - name: course_over_ground
+                path: kinematics.headingDeg
+                type: number
+                description: "Current heading in degrees"
+                examples: []
+              - name: nav_status
+                path: status.navStatusParsed
+                type: string
+                description: "Human-readable navigation status"
+                examples: ["Underway using engine", "At anchor"]
+
+          events:
+            endpoint: /events
+            attributes:
+              - name: event_id
+                path: event_id
+                type: string
+                description: "Unique identifier for the event"
+                examples: []
+              - name: event_type
+                path: type
+                type: string
+                description: "The category of the event (e.g., Loitering, Geofence Entry)"
+                examples: []
+              - name: start_timestamp
+                path: start_time
+                type: datetime
+                description: "The date and time the event began"
+                examples: []
+              - name: end_timestamp
+                path: end_time
+                type: datetime
+                description: "The date and time the event concluded"
+                examples: []
+              - name: severity
+                path: severity
+                type: string
+                description: "The calculated impact level of the event"
+                examples: ["Low", "Medium", "High", "Critical"]
+              - name: mmsi
+                path: mmsi
+                type: number
+                description: "MMSI of the primary vessel involved in the event"
+                examples: []
+              - name: geofence_name
+                path: information.geofence_name
+                type: string
+                description: "Name of the geofence associated with the event"
+                examples: []
+              - name: other_mmsi
+                path: information.other_mmsi
+                type: number
+                description: "MMSI of the second vessel in multi-vessel events (e.g., Rendezvous)"
+                examples: []
+              - name: event_source
+                path: event_source
+                type: string
+                description: "The system or detector that generated the event"
+                examples: []
+              - name: duration
+                path: duration
+                type: number
+                description: "Total duration of the event in seconds"
+                examples: []
+  selected_tools:
+  - name: generate_full_url
+    description: Generates a full URL based on the user query and page configuration
+  schema_resource:
+    name: page_navigator_schema
+    description: Complete Page Navigator schema documentation
+    content: "Base URL: http://34.60.206.175/\n\nPages: map, events\nAttributes:\n \
+      \ - city (string), country (string)\n  - MMSI (number), event_type (string),\
+      \ start_timestamp (datetime)\n\nGlobal Operators:\n  - String: eq, ne, contains,\
+      \ starts, ends\n  - Number: eq, ne, gt, lt, gte, lte\n  - Datetime: eq, gte,\
+      \ lte"
+
+

@@ -1,0 +1,33 @@
+flowchart LR
+
+    SYS["Producer Systems"]
+
+    API["Notification Service
+    FastAPI"]
+
+    CFG["Topic Config
+    MongoDB Collection"]
+
+    WS["WebSocket Manager"]
+
+    DB[(MongoDB)]
+
+    CLIENT["Web / Mobile Client"]
+
+    SYS -->|"POST /notify
+topic
+clientIds/groupId
+body
+metadata"| API
+
+    API --> CFG
+
+    API -->|"Insert Notification"| DB
+
+    API -->|"Send Email"| API
+
+    API -->|"Push if Connected"| WS
+
+    WS --> CLIENT
+
+    CLIENT -->|"GET /notifications"| API

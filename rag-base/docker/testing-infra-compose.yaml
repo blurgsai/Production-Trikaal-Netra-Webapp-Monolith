@@ -1,0 +1,56 @@
+services:
+  clickhouse:
+    image: clickhouse/clickhouse-server:latest
+    container_name: clickhouse-csv-ingest
+    ports:
+      - "9000:9000"
+      - "8123:8123"
+    environment:
+      CLICKHOUSE_USER: default
+      CLICKHOUSE_PASSWORD: naji123
+    volumes:
+      - ./docker_volumes/clickhouse/init_db:/docker-entrypoint-initdb.d
+      - ./docker_volumes/clickhouse/sensor_data.csv:/var/lib/clickhouse/user_files/sensor_data.csv
+    healthcheck:
+      test: ["CMD", "clickhouse-client", "--query", "SELECT 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    profiles: [infra, tool-server, api, test-ui, all]
+  mongo:
+    image: mongo:7
+    container_name: mongo-server
+    shm_size: 1gb  # Increase from default (64MB)
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: chat-admin
+      MONGO_INITDB_ROOT_PASSWORD: chat-pwd-123
+    volumes:
+      - ./docker_volumes/mongo:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    profiles: [infra, tool-server, api, test-ui, config, all]
+
+  chroma:
+    build:
+      context: .
+      dockerfile: dockerfiles/Dockerfile.chroma
+    container_name: chroma-server
+    ports:
+      - "8080:8000"
+    environment:
+      IS_PERSISTENT: "TRUE"
+      ANONYMIZED_TELEMETRY: "TRUE"
+    volumes:
+      - ./docker_volumes/chroma:/data
+    profiles: [infra, tool-server, api, test-ui, config, all]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v2/heartbeat"]
+      interval: 10s
+      timeout: 5s
+      retries: 3

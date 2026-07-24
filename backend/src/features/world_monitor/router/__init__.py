@@ -8,6 +8,7 @@ from src.features.world_monitor.models import (
     OverviewRecentResponse,
     OverviewSummary,
     OverviewTrendPoint,
+    VesselSearchResponse,
     WorldMonitorArticleDetail,
     WorldMonitorArticleListResponse,
     WorldMonitorEventDetail,
@@ -27,6 +28,7 @@ from src.features.world_monitor.services import (
     get_overview_recent,
     get_overview_summary,
     get_overview_trends,
+    search_vessels_by_name,
 )
 from src.shared.auth import get_current_user
 from src.shared.dependencies import get_db
@@ -37,6 +39,16 @@ router = APIRouter(prefix="/world-monitor", tags=["World Monitoring"])
 @router.get("/filters/metadata", response_model=WorldMonitorMetadataResponse)
 async def get_world_monitor_metadata(db=Depends(get_db), current_user: dict = Depends(get_current_user)):
     return await get_metadata(db)
+
+
+@router.get("/vessels/search", response_model=VesselSearchResponse)
+async def search_world_monitor_vessels(
+    name: str = Query(..., min_length=1),
+    limit: int = Query(5, ge=1, le=20),
+    db=Depends(get_db),
+    current_user: dict = Depends(get_current_user),
+):
+    return await search_vessels_by_name(db, name, limit)
 
 
 @router.get("/events", response_model=WorldMonitorEventListResponse)

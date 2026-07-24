@@ -1,0 +1,12 @@
+.env
+docker.env
+**/*.pyc
+**/__pycache__/
+.git/
+.gitignore
+*.md
+*.mermaid
+*.pdf
+*.db
+.venv/
+venv/

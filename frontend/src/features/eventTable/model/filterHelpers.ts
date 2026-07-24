@@ -1,4 +1,5 @@
 import type { EventFilter, FilterOperator, FilterRow } from './types';
+import { generateUUID } from '@/shared/utils/uuid';
 
 const RESERVED_PARAMS = new Set(['q', 'page', 'rows', 'id']);
 
@@ -136,7 +137,7 @@ export function isValidFilterRow(row: FilterRow): boolean {
  */
 export function filtersToRows(filters: EventFilter[]): FilterRow[] {
   return filters.map(f => ({
-    id: crypto.randomUUID(),
+    id: generateUUID(),
     field: f.field,
     operator: f.operator,
     value: f.value,

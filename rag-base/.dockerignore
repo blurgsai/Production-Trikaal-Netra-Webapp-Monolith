@@ -1,0 +1,9 @@
+logs/
+mongo_data
+chroma_data
+ollama_models/
+.venv/
+.cache/
+.github
+docker_volumes/
+app_logs.jsonl

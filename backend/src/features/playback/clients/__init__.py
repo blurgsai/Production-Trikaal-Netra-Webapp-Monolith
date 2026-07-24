@@ -121,7 +121,7 @@ async def fetch_trajectories(
             metadata_timestamp * 1000 AS ts,
             groupArray((toString(vessel_id), lat, lon,
                         processing_kinematics_speed_mps, course,
-                        processing_kinematics_heading_deg)) AS vessel_data
+                        processing_kinematics_cog_deg)) AS vessel_data
         FROM {_ais_table()}
         WHERE vessel_id IN ({ids_str})
           AND metadata_timestamp * 1000 >= {int(start_ms)}
