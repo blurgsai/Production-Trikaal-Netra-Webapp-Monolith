@@ -34,7 +34,7 @@ interface ChatbotProps {
 export default function Chatbot({ open, onClose }: ChatbotProps) {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [fullscreen, setFullscreen] = useState(false);
-  const [showHistory, setShowHistory] = useState(true);
+  const [showHistory, setShowHistory] = useState(false);
   const [input, setInput] = useState("");
   const [isNewSession, setIsNewSession] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -122,7 +122,7 @@ export default function Chatbot({ open, onClose }: ChatbotProps) {
         const { part, operation, value } = parsed;
 
         // Only process content path
-        if (!part?.startsWith("/messsage/content")) return;
+        if (!part?.startsWith("/message/content")) return;
 
         if (operation !== "append") return;
 
@@ -278,7 +278,10 @@ export default function Chatbot({ open, onClose }: ChatbotProps) {
                 </IconButton>
 
                 <IconButton
-                  onClick={() => setFullscreen((f) => !f)}
+                  onClick={() => {
+                    setFullscreen((f) => !f);
+                    setShowHistory((h) => !h);
+                  }}
                   sx={{
                     color: "text.primary",
                     width: 40,

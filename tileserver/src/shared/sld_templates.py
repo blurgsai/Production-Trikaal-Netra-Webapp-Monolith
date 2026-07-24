@@ -1094,6 +1094,8 @@ def get_sld_for_layer(layer_name: str) -> str | None:
     return None
 
 
+SLD_TEMPLATES = SLD_MAP
+
 def get_default_sld_for_geometry(geom_type: str) -> str:
     """Get a default SLD based on geometry type."""
     g = geom_type.lower()

@@ -1,0 +1,143 @@
+I will search `text_source.py` for the `upload_documents` tool to understand its parameters and upload flow.
+
+Searched for "upload_documents"
+
+I will search the entire codebase for `upload_documents` to see where the document upload tool is defined.
+
+Searched for "upload_documents"
+
+I will search `api.py` to see what HTTP endpoints are available for document uploads.
+
+Searched for "upload"
+
+I will read lines 850 to 900 of [api.py](file:///Users/roshansamuel/Blurgs%20AI/omnisense/api.py) to inspect the exact endpoint definition for adding/uploading documents.
+
+Viewed api.py:850-900
+
+I will read lines 800 to 850 of [api.py](file:///Users/roshansamuel/Blurgs%20AI/omnisense/api.py) to check the endpoint path and request schema.
+
+Viewed api.py:800-850
+
+I will search for the definition of the `GlobalUploadDocuments` Pydantic model to see its parameters.
+
+Searched for "class GlobalUploadDocuments"
+
+I will read lines 155 to 175 of [api.py](file:///Users/roshansamuel/Blurgs%20AI/omnisense/api.py) to view the request body schema.
+
+Viewed api.py:155-175
+
+I will search the repository to see how the `/add-global-documents` endpoint is typically invoked (e.g. from the UI or tests).
+
+Searched for "add-global-documents"
+
+I will view the test script [test_resource_refresh_notification.py](file:///Users/roshansamuel/Blurgs%20AI/omnisense/tests/test_resource_refresh_notification.py) to check the sequence of steps used to test the dynamic resource refresh behavior.
+
+Viewed test_resource_refresh_notification.py:1-100
+
+I will read lines 100 to 297 of [test_resource_refresh_notification.py](file:///Users/roshansamuel/Blurgs%20AI/omnisense/tests/test_resource_refresh_notification.py) to check the rest of the script.
+
+Viewed test_resource_refresh_notification.py:100-297
+
+I will search for `Polaris_Horizon_Profile` in the repository to find the location of this test document.
+
+Searched for "Polaris_Horizon_Profile"
+
+I will search for any `.pdf` files in the repository.
+
+Ran command: `find . -name "*.pdf"`
+
+I will list the `./data` directory to see what sample documents are available.
+
+Listed directory data
+
+I will search for `def ingest_to_chroma_documents` in the codebase to see how files are read and processed during global document upload.
+
+Searched for "def ingest_to_chroma_documents"
+
+I will view lines 110 to 180 of [ingest_to_chroma.py](file:///Users/roshansamuel/Blurgs%20AI/omnisense/core/utils/ingest_to_chroma.py) to see how documents are fetched and processed.
+
+Viewed ingest_to_chroma.py:110-180
+
+I will search `api.py` for references to uploading files to MinIO.
+
+Searched for "upload_file"
+
+I will search for usage of `MinioClient` across all Python files to see what other endpoints or scripts upload files to MinIO.
+
+Searched for "MinioClient"
+
+I will view [verify_ingestion.py](file:///Users/roshansamuel/Blurgs%20AI/omnisense/tests/verify_ingestion.py) to see how files are verified and uploaded to MinIO.
+
+Viewed verify_ingestion.py:1-88
+
+Here are the quick, step-by-step commands to test the dynamic resource refresh behavior. 
+
+You can perform this test using your terminal (with `curl` and Python one-liners). Make sure your services (`make test-ui` or equivalent) are running.
+
+---
+
+### Step 0: Generate an Authentication Token
+Run this command to generate a JWT token for the user `pavan`:
+```bash
+TOKEN=$(python -c "import jwt, time; print(jwt.encode({'sub': 'pavan', 'role': 'user', 'iat': int(time.time())}, 'jwt-secret-key', algorithm='HS256'))") && echo "Token: $TOKEN"
+```
+
+---
+
+### Step 1: Create a New Unique Document Locally
+Create a text file containing unique info that the LLM could not know beforehand:
+```bash
+echo "The Cosmic Energy Grid X-Ray is a top-secret containment system developed in the year 2099 by the Orion Sector." > data/Cosmic_Grid_XRay.txt
+```
+
+---
+
+### Step 2: Upload the Document to MinIO
+Upload the file directly to your MinIO storage bucket using the Python client:
+```bash
+python -c "from core.clients.minio_client import MinioClient; client = MinioClient(); client.client.fput_object(client.bucket_name, 'Cosmic_Grid_XRay.txt', 'data/Cosmic_Grid_XRay.txt')"
+```
+
+---
+
+### Step 3: Create a Session & Ask Question (Expect No Answer)
+1. **Create a new chat session**:
+   ```bash
+   SESSION_ID=$(curl -s -X POST http://localhost:8000/sessions \
+     -H "Authorization: Bearer $TOKEN" \
+     -H "Content-Type: application/json" \
+     -d '{"title": "Resource Refresh Test"}' | python -c "import sys, json; print(json.load(sys.stdin)['session_id'])") && echo "Session ID: $SESSION_ID"
+   ```
+
+2. **Ask about the Cosmic Grid** (since it hasn't been ingested into Chroma yet, it should fail or state that it doesn't know):
+   ```bash
+   curl -N -X POST http://localhost:8000/stream \
+     -H "Authorization: Bearer $TOKEN" \
+     -H "Content-Type: application/json" \
+     -d "{\"session_id\": \"$SESSION_ID\", \"message\": \"What is the Cosmic Energy Grid X-Ray?\"}"
+   ```
+   *(Expect response: "I could not find any specific information..." or similar fallback)*
+
+---
+
+### Step 4: Add the Document Using the Global Endpoint
+Trigger the ingestion. This downloads the file from MinIO, indexes it into Chroma under `global_documents`, registers it in MongoDB, and marks the LLM client's resources as stale:
+```bash
+curl -X POST http://localhost:8000/add-global-documents \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d "{\"file_path\": \"Cosmic_Grid_XRay.txt\", \"file_name\": \"Cosmic_Grid_XRay.txt\", \"description\": \"Top-secret grid from 2099\", \"session_id\": \"$SESSION_ID\"}"
+```
+*(Wait 3 seconds for the indexes and webhook notifications to propagate)*
+
+---
+
+### Step 5: Ask Again in the Same Session (Expect Successful Retrieval)
+Ask the same question again. Because the cache was invalidated, the LLM will re-fetch the resource metadata from the MCP server, see the new document registry, and query it:
+```bash
+curl -N -X POST http://localhost:8000/stream \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d "{\"session_id\": \"$SESSION_ID\", \"message\": \"What is the Cosmic Energy Grid X-Ray?\"}"
+```
+*(Expect response: "The Cosmic Energy Grid X-Ray is a top-secret containment system developed in the year 2099 by the Orion Sector.")*

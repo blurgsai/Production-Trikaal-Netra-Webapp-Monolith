@@ -15,6 +15,7 @@ WORKDIR /app
 # that do not exist on Debian Trixie (the base for python:3.12-slim).
 # Library list matches exactly what Playwright reported as missing.
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
     libglib2.0-0 \
     libnss3 \
     libnspr4 \

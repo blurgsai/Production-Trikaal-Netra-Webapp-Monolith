@@ -1,0 +1,85 @@
+sequenceDiagram
+    participant Webapp as Webapp<br/>(External App)
+    participant RAG as RAG Microservice
+    participant ChatDB as ChatDB<br/>(MongoDB)
+    
+    Note over Webapp,ChatDB: Send Message & Stream Response
+    
+    Webapp->>ChatDB: Insert user message - Stream.1
+    Note right of Webapp: User message inserted by Webapp before RAG request
+    
+    Webapp->>RAG: POST /stream<br/>{session_id} - Stream.2
+    
+    
+    
+    RAG-->>Webapp: Stream tokens<br/>(Server-Sent Events) - Stream.3
+    
+    RAG->>ChatDB: Insert assistant message - Stream.4
+
+%% Data Formats & Schemas
+%%
+%% Stream.1 User Message Inserted to ChatDB - Message document with role="user"
+%% Inserted by Webapp BEFORE making the POST /stream request to RAG
+%% Schema (as stored in MongoDB):
+%% {
+%%   "_id": "string (ObjectId serialized to string by JSONEncoder)",
+%%   "session_id": "string (ObjectId as string from request)",
+%%   "role": "user",
+%%   "content": "string (user message text)",
+%%   "created_at": "ISO 8601 datetime (e.g., 2026-02-18T10:15:00Z or similar)"
+%% }
+%% Example:
+%% {
+%%   "_id": "65f7a3d9c1e2b4a5f6g7h8ja",
+%%   "session_id": "65f7a3d9c1e2b4a5f6g7h8i9",
+%%   "role": "user",
+%%   "content": "What are our Q1 revenue targets?",
+%%   "created_at": "2026-02-18T10:15:00Z"
+%% }
+%%
+%% Stream.2 Request to /stream Endpoint - POST request with StreamRequest JSON
+%% {
+%%   "session_id": "string (ObjectId as string)"
+%% }
+%% Example:
+%% {
+%%   "session_id": "65f7a3d9c1e2b4a5f6g7h8i9"
+%% }
+%%
+%% Stream.3 Stream Response (Server-Sent Events)
+%% Content-Type: text/event-stream
+%% Transfer-Encoding: chunked
+%%
+%% Content Event Format:
+%% data: {"type": "content", "text": "string (individual LLM text chunk)"}
+%% Examples:
+%% data: {"type": "content", "text": "Based"}
+%% data: {"type": "content", "text": " on"}
+%% data: {"type": "content", "text": " the"}
+%% data: {"type": "content", "text": " analytics"}
+%%
+%% Error Event Format (if applicable):
+%% data: {"type": "error", "content": "error message"}
+%% Example:
+%% data: {"type": "error", "content": "LLM Client not connected"}
+%%
+%% End of Stream:
+%% data: [DONE]
+%%
+%% Stream.4 Assistant Message Inserted to ChatDB - Message document with role="assistant"
+%% Schema (as stored in MongoDB after streaming completes):
+%% {
+%%   "_id": "string (ObjectId serialized to string by JSONEncoder)",
+%%   "session_id": "string (ObjectId as string from request)",
+%%   "role": "assistant",
+%%   "content": "string (complete assistant response text - accumulated from all streamed chunks)",
+%%   "created_at": "ISO 8601 datetime (e.g., 2026-02-18T10:15:30Z or similar)"
+%% }
+%% Example:
+%% {
+%%   "_id": "65f7a3d9c1e2b4a5f6g7h8jc",
+%%   "session_id": "65f7a3d9c1e2b4a5f6g7h8i9",
+%%   "role": "assistant",
+%%   "content": "Based on the analytics, Q1 targets are $2.5M for Northeast...",
+%%   "created_at": "2026-02-18T10:15:30Z"
+%% }

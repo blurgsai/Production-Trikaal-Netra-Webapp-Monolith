@@ -14,7 +14,8 @@
 set -euo pipefail
 
 GEOSERVER_PORT="${1:-8080}"
-GEOSERVER_URL="http://localhost:${GEOSERVER_PORT}/geoserver/rest"
+GEOSERVER_HOST="${GEOSERVER_HOST:-localhost}"
+GEOSERVER_URL="http://${GEOSERVER_HOST}:${GEOSERVER_PORT}/geoserver/rest"
 GS_USER="${GEOSERVER_ADMIN_USER:-admin}"
 GS_PASS="${GEOSERVER_ADMIN_PASSWORD:-geoserver}"
 
@@ -97,6 +98,7 @@ response=$(curl -s -o /dev/null -w "%{http_code}" \
 case "$response" in
     201) echo "[init-geoserver]   Datastore created" ;;
     409) echo "[init-geoserver]   Datastore already exists — skipping" ;;
+    500) echo "[init-geoserver]   Datastore may already exist — skipping" ;;
     *)   echo "[init-geoserver]   ERROR: HTTP $response"; exit 1 ;;
 esac
 

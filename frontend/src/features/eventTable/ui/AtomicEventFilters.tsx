@@ -8,6 +8,7 @@ import { DateTimePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
 import FilterListIcon from '@mui/icons-material/FilterList';
+import { generateUUID } from '@/shared/utils/uuid';
 import CloseIcon      from '@mui/icons-material/Close';
 import AddIcon        from '@mui/icons-material/Add';
 import DeleteIcon     from '@mui/icons-material/Delete';
@@ -98,7 +99,7 @@ export function AtomicEventFilters({
   };
 
   const createRow = (): FilterRow => ({
-    id: crypto.randomUUID(),
+    id: generateUUID(),
     field: '', operator: '', value: '', value2: '',
   });
 

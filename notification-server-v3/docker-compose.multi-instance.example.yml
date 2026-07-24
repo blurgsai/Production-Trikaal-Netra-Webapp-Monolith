@@ -1,0 +1,153 @@
+# ──────────────────────────────────────────────────────────────────────────────
+# Notification Server v3 — Multi-Instance Example
+# ──────────────────────────────────────────────────────────────────────────────
+# 3 app nodes behind nginx, sharing MongoDB + Redis for WebSocket pub/sub.
+# To use: cp docker-compose.multi-instance.example.yml docker-compose.override.yml
+# Then: docker-compose up -d
+# ──────────────────────────────────────────────────────────────────────────────
+
+services:
+
+  notification-mongo:
+    image: mongo:7
+    restart: unless-stopped
+    volumes:
+      - notification_mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - notification-net
+
+  notification-redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - notification-net
+
+  notification-app-1:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: notification-app-1
+    restart: unless-stopped
+    environment:
+      - mongodb_uri=mongodb://notification-mongo:27017
+      - mongodb_db=notification_server
+      - smtp_host=smtp.gmail.com
+      - smtp_port=587
+      - smtp_user=
+      - smtp_password=
+      - smtp_from=
+      - smtp_tls=true
+      - api_key_header=X-API-Key
+      - api_keys=[]
+      - ws_heartbeat_interval=30
+      - redis_url=redis://notification-redis:6379
+      - secret_key=change-me-in-production-use-a-long-random-string
+      - sqlite_path=/data/admin.db
+      - session_max_age=86400
+    volumes:
+      - notification_sqlite_data:/data
+    depends_on:
+      notification-mongo:
+        condition: service_healthy
+      notification-redis:
+        condition: service_healthy
+    networks:
+      - notification-net
+
+  notification-app-2:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: notification-app-2
+    restart: unless-stopped
+    environment:
+      - mongodb_uri=mongodb://notification-mongo:27017
+      - mongodb_db=notification_server
+      - smtp_host=smtp.gmail.com
+      - smtp_port=587
+      - smtp_user=
+      - smtp_password=
+      - smtp_from=
+      - smtp_tls=true
+      - api_key_header=X-API-Key
+      - api_keys=[]
+      - ws_heartbeat_interval=30
+      - redis_url=redis://notification-redis:6379
+      - secret_key=change-me-in-production-use-a-long-random-string
+      - sqlite_path=/data/admin.db
+      - session_max_age=86400
+    volumes:
+      - notification_sqlite_data:/data
+    depends_on:
+      notification-mongo:
+        condition: service_healthy
+      notification-redis:
+        condition: service_healthy
+    networks:
+      - notification-net
+
+  notification-app-3:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: notification-app-3
+    restart: unless-stopped
+    environment:
+      - mongodb_uri=mongodb://notification-mongo:27017
+      - mongodb_db=notification_server
+      - smtp_host=smtp.gmail.com
+      - smtp_port=587
+      - smtp_user=
+      - smtp_password=
+      - smtp_from=
+      - smtp_tls=true
+      - api_key_header=X-API-Key
+      - api_keys=[]
+      - ws_heartbeat_interval=30
+      - redis_url=redis://notification-redis:6379
+      - secret_key=change-me-in-production-use-a-long-random-string
+      - sqlite_path=/data/admin.db
+      - session_max_age=86400
+    volumes:
+      - notification_sqlite_data:/data
+    depends_on:
+      notification-mongo:
+        condition: service_healthy
+      notification-redis:
+        condition: service_healthy
+    networks:
+      - notification-net
+
+  notification-nginx:
+    image: nginx:alpine
+    container_name: notification-nginx
+    restart: unless-stopped
+    ports:
+      - "8003:80"
+    volumes:
+      - ./nginx.multi-instance.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - notification-app-1
+      - notification-app-2
+      - notification-app-3
+    networks:
+      - notification-net
+
+networks:
+  notification-net:
+    driver: bridge
+
+volumes:
+  notification_mongo_data:
+  notification_sqlite_data:

@@ -1,0 +1,17 @@
+# MCP Tool Server
+FROM python:3.11-slim
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    && rm -rf /var/lib/apt/lists/* \
+    && pip install --no-cache-dir uv
+
+COPY requirements/requirements-tool-server.txt .
+RUN uv pip install --system -r requirements-tool-server.txt
+
+COPY . .
+
+EXPOSE 5000
+CMD ["python", "run_server.py"]
