@@ -103,6 +103,8 @@ services:
       - "8001:8001"
     networks:
       - monolith-net
+      - geoserver-net
+      - rag-net
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
