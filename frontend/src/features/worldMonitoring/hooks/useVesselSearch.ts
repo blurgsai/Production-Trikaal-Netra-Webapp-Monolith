@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { searchVesselsByName } from "../api/vesselSearchApi";
+import { mapVesselSearchMatches } from "../model/mappers";
 import type { VesselSearchMatchApiResponse } from "../model/types";
 
 interface UseVesselSearchResult {
@@ -19,7 +20,7 @@ export function useVesselSearch(): UseVesselSearchResult {
     setError(null);
     try {
       const response = await searchVesselsByName(name);
-      const results = response.matches ?? [];
+      const results = mapVesselSearchMatches(response.matches ?? []);
       setMatches(results);
       if (results.length === 0) {
         setError(`No vessel found matching "${name}".`);

@@ -127,7 +127,7 @@ export default function LocateVesselOnMapButton({
               <List dense disablePadding>
                 {matches.map((match) => (
                   <ListItemButton
-                    key={match.vessel_id}
+                    key={match.vesselId}
                     onClick={() => handleSelect(match)}
                     sx={{
                       borderRadius: 1,
@@ -138,7 +138,7 @@ export default function LocateVesselOnMapButton({
                   >
                     <Box>
                       <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                        {match.ship_name}
+                        {match.shipName}
                       </Typography>
                       <Typography variant="caption" sx={{ color: defenseColors.text.muted }}>
                         {match.mmsi ? `MMSI: ${match.mmsi}` : "MMSI unavailable"}

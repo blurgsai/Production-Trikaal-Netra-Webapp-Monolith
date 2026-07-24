@@ -361,8 +361,8 @@ export interface ArticlePagination {
 // ── Vessel Search types ───────────────────────────────────────────────────────────
 
 export interface VesselSearchMatch {
-  vessel_id: number;
-  ship_name: string;
+  vesselId: number;
+  shipName: string;
   mmsi: number | null;
   score: number;
 }
