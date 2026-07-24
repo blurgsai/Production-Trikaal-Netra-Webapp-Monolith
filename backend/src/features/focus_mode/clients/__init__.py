@@ -85,7 +85,7 @@ async def fetch_trajectory_rows(
             lat,
             lon,
             processing_kinematics_speed_mps AS speed,
-            processing_kinematics_heading_deg AS heading
+            processing_kinematics_cog_deg AS heading
         FROM {_ais_table()}
         WHERE vessel_id = {int(vessel_id)}
           AND lat IS NOT NULL

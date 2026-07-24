@@ -1,0 +1,111 @@
+services:
+
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    ports:
+      - "27017:27017"
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app-1:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "8001:8000"
+    environment:
+      - APP_NAME=Notification Server Node 1
+      - APP_VERSION=3.0.0
+      - MONGODB_URI=mongodb://mongo:27017
+      - MONGODB_DB=notification_server
+      - API_KEYS=["secret-key-1","secret-key-2"]
+      - SECRET_KEY=replace-with-a-long-random-string-at-least-32-chars
+      - SQLITE_PATH=/data/admin.db
+      - REDIS_URL=redis://redis:6379
+      - WS_HEARTBEAT_INTERVAL=30
+    volumes:
+      - sqlite_data:/data
+    depends_on:
+      mongo:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  app-2:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "8002:8000"
+    environment:
+      - APP_NAME=Notification Server Node 2
+      - APP_VERSION=3.0.0
+      - MONGODB_URI=mongodb://mongo:27017
+      - MONGODB_DB=notification_server
+      - API_KEYS=["secret-key-1","secret-key-2"]
+      - SECRET_KEY=replace-with-a-long-random-string-at-least-32-chars
+      - SQLITE_PATH=/data/admin.db
+      - REDIS_URL=redis://redis:6379
+      - WS_HEARTBEAT_INTERVAL=30
+    volumes:
+      - sqlite_data:/data
+    depends_on:
+      mongo:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  app-3:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "8003:8000"
+    environment:
+      - APP_NAME=Notification Server Node 3
+      - APP_VERSION=3.0.0
+      - MONGODB_URI=mongodb://mongo:27017
+      - MONGODB_DB=notification_server
+      - API_KEYS=["secret-key-1","secret-key-2"]
+      - SECRET_KEY=replace-with-a-long-random-string-at-least-32-chars
+      - SQLITE_PATH=/data/admin.db
+      - REDIS_URL=redis://redis:6379
+      - WS_HEARTBEAT_INTERVAL=30
+    volumes:
+      - sqlite_data:/data
+    depends_on:
+      mongo:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  nginx:
+    image: nginx:alpine
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - app-1
+      - app-2
+      - app-3
+
+volumes:
+  mongo_data:
+  sqlite_data:

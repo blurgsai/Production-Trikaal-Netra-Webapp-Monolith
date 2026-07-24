@@ -1,0 +1,5 @@
+{
+    "type": "streamable-http",
+    "url": "http://localhost:5000/mcp",
+    "note": "For Streamable HTTP connections, add this URL directly in your MCP Client"
+}

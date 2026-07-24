@@ -33,6 +33,12 @@ app = FastAPI(lifespan=lifespan)
 
 setup_cors(app)
 
+
+@app.get("/health")
+async def health():
+    return {"status": "ok"}
+
+
 app.include_router(user_router)
 app.include_router(vessel_router)
 app.include_router(vessel_flags_router)

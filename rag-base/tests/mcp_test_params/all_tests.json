@@ -1,0 +1,285 @@
+{
+    "clickhouse_select_query": [
+        {
+            "test_id": "ch_select_001",
+            "name": "Count all sensor records",
+            "description": "Get total count of all sensor data records",
+            "query": "SELECT count() FROM dlrl_ew.sensor_data",
+            "expected_is_error": false
+        },
+        {
+            "test_id": "ch_select_002",
+            "name": "Get records by source",
+            "description": "Get sensor records from a specific source with limit",
+            "query": "SELECT Source, RecordID, Timestamp, Platform FROM dlrl_ew.sensor_data WHERE Source IS NOT NULL LIMIT 100",
+            "expected_is_error": false
+        },
+        {
+            "test_id": "ch_select_003",
+            "name": "Get latest records",
+            "description": "Get the most recent sensor records sorted by timestamp",
+            "query": "SELECT RecordID, Timestamp, Platform, Source, Frequency, Band FROM dlrl_ew.sensor_data ORDER BY Timestamp DESC LIMIT 50",
+            "expected_is_error": false
+        },
+        {
+            "test_id": "ch_select_err_001",
+            "name": "Invalid query - syntax error",
+            "description": "Test query with invalid syntax",
+            "query": "SELECT * FROM WHERE invalid syntax here",
+            "expected_is_error": true
+        },
+        {
+            "test_id": "ch_select_err_002",
+            "name": "Query non-existent table",
+            "description": "Query a table that does not exist",
+            "query": "SELECT * FROM nonexistent_table",
+            "expected_is_error": true
+        },
+        {
+            "test_id": "ch_select_err_003",
+            "name": "Invalid database name",
+            "description": "Query from invalid database",
+            "query": "SELECT * FROM nonexistent_db.sensor_data",
+            "expected_is_error": true
+        }
+    ],
+    "clickhouse_list_databases": [
+        {
+            "test_id": "ch_listdb_001",
+            "name": "List all databases",
+            "description": "Get list of all databases on the ClickHouse server",
+            "expected_is_error": false
+        }
+    ],
+    "clickhouse_list_tables": [
+        {
+            "test_id": "ch_listtbl_001",
+            "name": "List dlrl_ew tables",
+            "description": "Get all tables in the dlrl_ew database",
+            "database": "dlrl_ew",
+            "expected_is_error": false
+        },
+        {
+            "test_id": "ch_listtbl_err_001",
+            "name": "List tables from non-existent database",
+            "description": "Try to list tables from a database that does not exist",
+            "database": "nonexistent_db",
+            "expected_is_error": true
+        }
+    ],
+    "clickhouse_describe_table_schema": [
+        {
+            "test_id": "ch_desc_001",
+            "name": "Get sensor_data schema",
+            "description": "Describe the complete schema of sensor_data table",
+            "database": "dlrl_ew",
+            "table": "sensor_data",
+            "expected_is_error": false
+        },
+        {
+            "test_id": "ch_desc_err_001",
+            "name": "Describe non-existent table",
+            "description": "Try to describe a table that does not exist",
+            "database": "dlrl_ew",
+            "table": "nonexistent_table",
+            "expected_is_error": true
+        }
+    ],
+  "mongo_find": [
+    {
+      "test_id": "mongo_find_001",
+      "name": "Find by ObjectId",
+      "description": "Find a document by its _id using ObjectId",
+      "database": "trident-satint-dev",
+      "collection": "sub_tasks",
+      "filter": "{\"_id\": {\"$oid\": \"690dcb338ba45824dd835345\"}}",
+      "projection": "{}",
+      "limit": 10,
+      "expected_is_error": false
+    },
+    {
+      "test_id": "mongo_find_002",
+      "name": "Find by user_id",
+      "description": "Find all tasks for a specific user",
+      "database": "trident-satint-dev",
+      "collection": "sub_tasks",
+      "filter": "{\"user_id\": {\"$oid\": \"68df82c5442f29cf44341139\"}}",
+      "projection": "{}",
+      "limit": 10,
+      "expected_is_error": false
+    },
+    {
+      "test_id": "mongo_find_003",
+      "name": "Find by status",
+      "description": "Find all documents with awaiting_approval status",
+      "database": "trident-satint-dev",
+      "collection": "sub_tasks",
+      "filter": "{\"status\": \"awaiting_approval\"}",
+      "projection": "{}",
+      "limit": 20,
+      "expected_is_error": false
+    },
+    {
+      "test_id": "mongo_find_err_001",
+      "name": "Invalid filter JSON",
+      "description": "Test with malformed JSON filter",
+      "database": "trident-satint-dev",
+      "collection": "sub_tasks",
+      "filter": "{invalid json not proper}",
+      "projection": "{}",
+      "limit": 10,
+      "expected_is_error": true
+    },
+    {
+      "test_id": "mongo_find_err_002",
+      "name": "Invalid projection JSON",
+      "description": "Test with malformed JSON projection",
+      "database": "trident-satint-dev",
+      "collection": "sub_tasks",
+      "filter": "{\"status\": \"awaiting_approval\"}",
+      "projection": "{invalid projection}",
+      "limit": 10,
+      "expected_is_error": true
+    }
+  ],
+  "mongo_aggregate": [
+    {
+      "test_id": "mongo_agg_001",
+      "name": "Count by status",
+      "description": "Group tasks by status and count",
+      "database": "trident-satint-dev",
+      "collection": "sub_tasks",
+      "pipeline": "[{\"$group\": {\"_id\": \"$status\", \"count\": {\"$sum\": 1}}}]",
+      "expected_is_error": false
+    },
+    {
+      "test_id": "mongo_agg_002",
+      "name": "Count by user",
+      "description": "Count tasks per user",
+      "database": "trident-satint-dev",
+      "collection": "sub_tasks",
+      "pipeline": "[{\"$group\": {\"_id\": \"$user_id\", \"task_count\": {\"$sum\": 1}}}]",
+      "expected_is_error": false
+    },
+    {
+      "test_id": "mongo_agg_003",
+      "name": "Sort by date",
+      "description": "Get tasks sorted by creation date descending",
+      "database": "trident-satint-dev",
+      "collection": "sub_tasks",
+      "pipeline": "[{\"$sort\": {\"created_date\": -1}}, {\"$limit\": 20}]",
+      "expected_is_error": false
+    },
+    {
+      "test_id": "mongo_agg_err_001",
+      "name": "Invalid pipeline JSON",
+      "description": "Test with malformed JSON pipeline",
+      "database": "trident-satint-dev",
+      "collection": "sub_tasks",
+      "pipeline": "[{invalid json}]",
+      "expected_is_error": true
+    },
+    {
+      "test_id": "mongo_agg_err_002",
+      "name": "Invalid pipeline stage",
+      "description": "Test with invalid aggregation stage",
+      "database": "trident-satint-dev",
+      "collection": "sub_tasks",
+      "pipeline": "[{\"$invalid_stage\": {\"field\": \"value\"}}]",
+      "expected_is_error": true
+    }
+  ],
+  "mongo_count": [
+    {
+      "test_id": "mongo_count_001",
+      "name": "Count all documents",
+      "description": "Total count of all documents in collection",
+      "database": "trident-satint-dev",
+      "collection": "sub_tasks",
+      "filter": "{}",
+      "expected_is_error": false
+    },
+    {
+      "test_id": "mongo_count_002",
+      "name": "Count by status",
+      "description": "Count documents with awaiting_approval status",
+      "database": "trident-satint-dev",
+      "collection": "sub_tasks",
+      "filter": "{\"status\": \"awaiting_approval\"}",
+      "expected_is_error": false
+    },
+    {
+      "test_id": "mongo_count_err_001",
+      "name": "Invalid filter for count",
+      "description": "Test count with malformed JSON filter",
+      "database": "trident-satint-dev",
+      "collection": "sub_tasks",
+      "filter": "{bad json}",
+      "expected_is_error": true
+    }
+  ],
+  "mongo_explain": [
+    {
+      "test_id": "mongo_explain_001",
+      "name": "Explain simple filter",
+      "description": "Get execution plan for finding by status",
+      "database": "trident-satint-dev",
+      "collection": "sub_tasks",
+      "filter": "{\"status\": \"awaiting_approval\"}",
+      "expected_is_error": false
+    },
+    {
+      "test_id": "mongo_explain_err_001",
+      "name": "Explain with invalid filter",
+      "description": "Get execution plan for invalid filter",
+      "database": "trident-satint-dev",
+      "collection": "sub_tasks",
+      "filter": "{malformed json}",
+      "expected_is_error": true
+    }
+  ],
+  "mongo_list_databases": [
+    {
+      "test_id": "mongo_listdb_001",
+      "name": "List all databases",
+      "description": "Get list of all databases on the server",
+      "expected_is_error": false
+    }
+  ],
+  "mongo_list_collections": [
+    {
+      "test_id": "mongo_listcol_001",
+      "name": "List trident-satint-dev collections",
+      "description": "Get all collections in the trident-satint-dev database",
+      "database": "trident-satint-dev",
+      "expected_is_error": false
+    },
+    {
+      "test_id": "mongo_listcol_err_001",
+      "name": "List from non-existent database",
+      "description": "Try to list collections from a database that does not exist",
+      "database": "nonexistent_database",
+      "expected_is_error": false
+    }
+  ],
+  "mongo_collection_schema": [
+    {
+      "test_id": "mongo_schema_001",
+      "name": "Get sub_tasks schema",
+      "description": "Infer schema from sub_tasks collection",
+      "database": "trident-satint-dev",
+      "collection": "sub_tasks",
+      "sample_size": 10,
+      "expected_is_error": false
+    },
+    {
+      "test_id": "mongo_schema_err_001",
+      "name": "Schema from non-existent collection",
+      "description": "Try to infer schema from non-existent collection",
+      "database": "trident-satint-dev",
+      "collection": "nonexistent_collection",
+      "sample_size": 10,
+      "expected_is_error": false
+    }
+  ]
+}

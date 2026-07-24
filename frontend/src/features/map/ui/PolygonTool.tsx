@@ -5,6 +5,7 @@ import "leaflet-draw/dist/leaflet.draw.css";
 import { useMap } from "react-leaflet";
 import { Paper, Button } from "@mui/material";
 import { defenseColors } from "@/shared/theme";
+import { generateUUID } from "@/shared/utils/uuid";
 import type { Polygon } from "../model/types";
 
 interface PolygonToolProps {
@@ -119,7 +120,7 @@ function PolygonTool({ enabled, polygons, onChange, onDrawComplete }: PolygonToo
       if (points.length < 3) return;
 
       const newPolygon: Polygon = {
-        id: crypto.randomUUID(),
+        id: generateUUID(),
         points,
       };
 
