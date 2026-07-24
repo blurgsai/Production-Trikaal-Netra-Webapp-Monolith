@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Box } from '@mui/material';
+import { Box, useMediaQuery, useTheme } from '@mui/material';
 import { EventTablePanel } from '@/features/eventTable';
 import type { Event, CompoundInstance } from '@/features/eventTable';
 import { PlaybackPanel } from '@/features/playback';
@@ -23,15 +23,25 @@ function EmptyPlayback() {
 }
 
 export function EventsPage() {
+  const theme = useTheme();
+  const isNarrow = useMediaQuery(theme.breakpoints.down('md'));
   const [selectedEvent, setSelectedEvent] = useState<Event | CompoundInstance | null>(null);
 
   return (
-    <Box sx={{ display: 'flex', height: '100%', overflow: 'hidden' }}>
-      {/* Left panel */}
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: isNarrow ? 'column' : 'row',
+        height: '100%',
+        overflow: 'hidden',
+      }}
+    >
       <Box
         sx={{
-          width: '50%',
-          borderRight: 1,
+          width: isNarrow ? '100%' : '50%',
+          height: isNarrow ? '50%' : '100%',
+          borderRight: isNarrow ? 0 : 1,
+          borderBottom: isNarrow ? 1 : 0,
           borderColor: 'divider',
           overflow: 'hidden',
           display: 'flex',
@@ -44,8 +54,14 @@ export function EventsPage() {
         />
       </Box>
 
-      {/* Right panel */}
-      <Box sx={{ width: '50%', overflow: 'hidden', position: 'relative' }}>
+      <Box
+        sx={{
+          width: isNarrow ? '100%' : '50%',
+          height: isNarrow ? '50%' : '100%',
+          overflow: 'hidden',
+          position: 'relative',
+        }}
+      >
         {selectedEvent ? (
           <PlaybackPanel
             eventId={(selectedEvent as Event).id ?? (selectedEvent as CompoundInstance).id}

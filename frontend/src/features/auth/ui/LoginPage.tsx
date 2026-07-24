@@ -1,5 +1,6 @@
 import { useState } from "react";
 import {
+  Alert,
   Box,
   TextField,
   Button,
@@ -9,11 +10,35 @@ import {
   Paper,
   Stack,
 } from "@mui/material";
-import { Visibility, VisibilityOff, Lock } from "@mui/icons-material";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
 import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
-import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
 import { useTheme } from "@mui/material/styles";
+import axios from "axios";
 import { useLogin } from "../hooks/useLogin";
+
+function getLoginErrorMessage(error: unknown): string {
+  if (axios.isAxiosError(error)) {
+    const detail = error.response?.data?.detail;
+    if (typeof detail === "string" && detail.trim()) return detail;
+    if (error.response?.status === 401) {
+      return "Invalid username or password";
+    }
+  }
+  return "Login failed. Please try again.";
+}
+
+const loginFieldSx = {
+  "& .MuiOutlinedInput-root": {
+    borderRadius: 1.5,
+  },
+  "& .MuiInputLabel-root": {
+    color: "text.secondary",
+  },
+  "& .MuiInputLabel-root.Mui-focused, & .MuiInputLabel-root.MuiInputLabel-shrink":
+    {
+      color: "primary.main",
+    },
+};
 
 function LoginPage() {
   const theme = useTheme();
@@ -21,12 +46,22 @@ function LoginPage() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
-  const { mutate: login, isPending } = useLogin();
+  const { mutate: login, isPending, error, reset } = useLogin();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (isPending || !username.trim() || !password.trim()) return;
     login({ username, password });
+  };
+
+  const handleUsernameChange = (value: string) => {
+    if (error) reset();
+    setUsername(value);
+  };
+
+  const handlePasswordChange = (value: string) => {
+    if (error) reset();
+    setPassword(value);
   };
 
   return (
@@ -91,37 +126,23 @@ function LoginPage() {
             fullWidth
             margin="normal"
             variant="outlined"
-            placeholder="Username"
+            label="Username"
             value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <PersonOutlineIcon sx={{ fontSize: 20, color: "text.secondary" }} />
-                </InputAdornment>
-              ),
-            }}
-            sx={{
-              "& .MuiOutlinedInput-root": {
-                borderRadius: 1.5,
-              },
-            }}
+            onChange={(e) => handleUsernameChange(e.target.value)}
+            error={Boolean(error)}
+            sx={loginFieldSx}
           />
 
           <TextField
             fullWidth
             margin="normal"
             variant="outlined"
-            placeholder="Password"
+            label="Password"
             type={showPassword ? "text" : "password"}
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(e) => handlePasswordChange(e.target.value)}
+            error={Boolean(error)}
             InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Lock sx={{ fontSize: 20, color: "text.secondary" }} />
-                </InputAdornment>
-              ),
               endAdornment: (
                 <InputAdornment position="end">
                   <IconButton
@@ -135,12 +156,14 @@ function LoginPage() {
                 </InputAdornment>
               ),
             }}
-            sx={{
-              "& .MuiOutlinedInput-root": {
-                borderRadius: 1.5,
-              },
-            }}
+            sx={loginFieldSx}
           />
+
+          {error && (
+            <Alert severity="error" sx={{ mt: 1.5 }}>
+              {getLoginErrorMessage(error)}
+            </Alert>
+          )}
 
           <Box
             sx={{

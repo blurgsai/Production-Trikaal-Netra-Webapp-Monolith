@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { ThemeProvider } from "@mui/material/styles";
 import { CssBaseline } from "@mui/material";
 import { http, HttpResponse } from "msw";
@@ -148,16 +149,24 @@ describe("Articles integration", () => {
       await waitFor(() => expect(screen.getByText("Recent incidents near the Red Sea have escalated tensions.")).toBeInTheDocument());
     });
 
-    it("I-06: renders search input with placeholder", async () => {
+    it("I-06: renders Filters control", async () => {
       setupSuccessHandlers();
       renderWithProviders(<Articles />);
-      await waitFor(() => expect(screen.getByPlaceholderText("Search title, summary, source, author")).toBeInTheDocument());
+      await waitFor(() =>
+        expect(screen.getByRole("button", { name: /Filters/i })).toBeInTheDocument(),
+      );
     });
 
-    it("I-07: renders source dropdown with All sources option", async () => {
+    it("I-07: opens filter dialog from Filters button", async () => {
       setupSuccessHandlers();
       renderWithProviders(<Articles />);
-      await waitFor(() => expect(screen.getByPlaceholderText("All sources")).toBeInTheDocument());
+      await waitFor(() =>
+        expect(screen.getByRole("button", { name: /Filters/i })).toBeInTheDocument(),
+      );
+      await userEvent.click(screen.getByRole("button", { name: /Filters/i }));
+      await waitFor(() =>
+        expect(screen.getByRole("dialog")).toBeInTheDocument(),
+      );
     });
 
     it("I-08: renders source options from metadata", async () => {
@@ -166,10 +175,16 @@ describe("Articles integration", () => {
       await waitFor(() => expect(screen.getAllByText("Reuters").length).toBeGreaterThan(0));
     });
 
-    it("I-09: renders All statuses option in status dropdown", async () => {
+    it("I-09: filter dialog exposes Reset action", async () => {
       setupSuccessHandlers();
       renderWithProviders(<Articles />);
-      await waitFor(() => expect(screen.getByPlaceholderText("All statuses")).toBeInTheDocument());
+      await waitFor(() =>
+        expect(screen.getByRole("button", { name: /Filters/i })).toBeInTheDocument(),
+      );
+      await userEvent.click(screen.getByRole("button", { name: /Filters/i }));
+      await waitFor(() =>
+        expect(screen.getByRole("button", { name: /Reset/i })).toBeInTheDocument(),
+      );
     });
 
     it("I-10: does not show error alert on success", async () => {

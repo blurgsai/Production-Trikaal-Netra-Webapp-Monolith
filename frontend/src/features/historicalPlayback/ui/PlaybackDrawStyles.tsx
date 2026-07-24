@@ -1,8 +1,10 @@
-import { GlobalStyles } from "@mui/material";
+import { GlobalStyles, useMediaQuery } from "@mui/material";
 import { useTheme, alpha } from "@mui/material/styles";
 
 export function PlaybackDrawStyles() {
   const theme = useTheme();
+  const prefersReducedMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
+  const transition = prefersReducedMotion ? "none" : "all 0.15s ease";
 
   return (
     <GlobalStyles
@@ -41,7 +43,7 @@ export function PlaybackDrawStyles() {
           display: "flex !important",
           alignItems: "center",
           justifyContent: "center",
-          transition: "all 0.15s ease",
+          transition,
           opacity: 0.95,
           filter: "brightness(4) contrast(1.5) !important",
         },
@@ -73,7 +75,7 @@ export function PlaybackDrawStyles() {
           backgroundColor: "transparent !important",
           color: `${theme.palette.text.primary} !important`,
           borderBottom: `1px solid ${alpha(theme.palette.divider, 0.4)} !important`,
-          transition: "all 0.15s ease",
+          transition,
         },
         ".leaflet-control-zoom a:hover": {
           backgroundColor: `${alpha(theme.palette.primary.main, 0.18)} !important`,

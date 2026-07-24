@@ -50,6 +50,7 @@ export interface BufferedCanvasLayerProps {
   geometry: PlaybackGeometry;
   filters: PlaybackFilter[];
   granularity: TimeGranularity;
+  preferReducedMotion?: boolean;
 }
 
 interface CanvasOverlayLayer extends L.Layer {
@@ -66,6 +67,7 @@ export default function BufferedCanvasLayer({
   geometry,
   filters,
   granularity,
+  preferReducedMotion = false,
 }: BufferedCanvasLayerProps) {
   const map = useMap();
   const theme = useTheme();
@@ -243,7 +245,9 @@ export default function BufferedCanvasLayer({
         setIsPlaying(false);
       }
 
-      const easeFactor = computeEaseFactor(playbackSpeed);
+      const easeFactor = preferReducedMotion
+        ? 1
+        : computeEaseFactor(playbackSpeed);
 
       vesselsRef.current.forEach((v) => {
         advanceVessel(v, logicalGlobalMs);
@@ -269,6 +273,7 @@ export default function BufferedCanvasLayer({
     draw,
     granularity,
     totalChunks,
+    preferReducedMotion,
   ]);
 
   useEffect(() => {
@@ -519,6 +524,9 @@ export default function BufferedCanvasLayer({
     <>
       {isBuffering && (
         <Paper
+          role="status"
+          aria-live="polite"
+          aria-busy="true"
           onMouseDown={(e) => e.stopPropagation()}
           onClick={(e) => e.stopPropagation()}
           onDoubleClick={(e) => e.stopPropagation()}

@@ -16,13 +16,27 @@ export function EventRow({ event, isSelected, onSelect }: Props) {
   return (
     <TableRow
       hover
+      selected={isSelected}
+      tabIndex={0}
+      aria-selected={isSelected}
       onClick={() => onSelect(event)}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onSelect(event);
+        }
+      }}
       sx={{
         cursor: 'pointer',
         backgroundColor: isSelected
           ? alpha(theme.palette.primary.main, 0.08)
           : 'inherit',
         transition: 'background-color 0.15s ease',
+        '&:focus-visible': {
+          outline: '2px solid',
+          outlineColor: 'primary.main',
+          outlineOffset: -2,
+        },
       }}
     >
       <TableCell sx={{ fontFamily: 'monospace', fontSize: '0.75rem' }}>

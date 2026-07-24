@@ -7,6 +7,8 @@ import {
   Button,
   Fade,
   Typography,
+  CircularProgress,
+  useMediaQuery,
 } from "@mui/material";
 import {
   Edit as EditIcon,
@@ -63,7 +65,11 @@ export interface FocusModeViewProps {
   playback: Playback;
   visibleEvents: FocusEvent[];
   eventsLoading: boolean;
+  selectedEventId: string | null;
+  selectionAnnouncement: string;
   onSelectEvent: (event: FocusEvent) => void;
+  onHighlightEvent: (event: FocusEvent) => void;
+  onSelectEventMarker: (event: FocusEvent) => void;
   startTime: number | null;
   endTime: number | null;
   onApplyTimeRange: (start: number, end: number) => void;
@@ -95,7 +101,11 @@ export const FocusModeView = ({
   playback,
   visibleEvents,
   eventsLoading,
+  selectedEventId,
+  selectionAnnouncement,
   onSelectEvent,
+  onHighlightEvent,
+  onSelectEventMarker,
   startTime,
   endTime,
   onApplyTimeRange,
@@ -108,6 +118,7 @@ export const FocusModeView = ({
   snackbar,
   onSnackbarClose,
 }: FocusModeViewProps) => {
+  const prefersReducedMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
   const [visibleTiles, setVisibleTiles] = useLocalStorage<FocusToggleTile[]>(
     "trikaal_focus_mosaic_tiles",
     DEFAULT_FOCUS_TILES,
@@ -121,8 +132,19 @@ export const FocusModeView = ({
     setMosaicLayout(buildFocusMosaicLayout(visibleTiles));
   }, [visibleTiles, setMosaicLayout]);
 
+  const showEmptyTrajectory = !isLoading && trajectory.length === 0;
+  const showMapLoading = isLoading;
+
   const renderMapTile = () => (
-    <Box sx={{ position: "relative", height: "100%", width: "100%" }}>
+    <Box
+      sx={{
+        position: "relative",
+        height: "100%",
+        width: "100%",
+        pointerEvents: showMapLoading ? "none" : "auto",
+      }}
+      aria-busy={showMapLoading}
+    >
       <FocusModeMap
         trajectory={visibleTrajectory}
         fullTrajectory={trajectory}
@@ -131,10 +153,36 @@ export const FocusModeView = ({
         events={visibleEvents}
         fitKey={fitKey}
         eventsLoading={eventsLoading}
+        preferReducedMotion={prefersReducedMotion}
         onNavigateToEvent={onNavigateToEvent}
+        onSelectEventMarker={onSelectEventMarker}
       />
-      {trajectory.length === 0 && (
-        <Fade in>
+      {showMapLoading && (
+        <Box
+          role="status"
+          aria-live="polite"
+          aria-busy="true"
+          sx={{
+            position: "absolute",
+            inset: 0,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 1.5,
+            bgcolor: (theme) => theme.palette.background.paper,
+            opacity: 0.92,
+            zIndex: 1250,
+          }}
+        >
+          <CircularProgress size={36} aria-label="Loading map data" />
+          <Typography variant="body2" color="text.secondary" fontWeight={600}>
+            Loading trajectory and events…
+          </Typography>
+        </Box>
+      )}
+      {showEmptyTrajectory && (
+        <Fade in timeout={prefersReducedMotion ? 0 : undefined}>
           <Box
             sx={{
               position: "absolute",
@@ -170,7 +218,7 @@ export const FocusModeView = ({
           </Box>
         </Fade>
       )}
-      {trajectory.length > 0 && (
+      {trajectory.length > 0 && !showMapLoading && (
         <FocusPlaybackControls
           trajectory={trajectory}
           events={visibleEvents}
@@ -201,7 +249,9 @@ export const FocusModeView = ({
           events={visibleEvents}
           vesselLabel={activeLabel}
           loading={eventsLoading}
+          selectedEventId={selectedEventId}
           onSelectEvent={onSelectEvent}
+          onHighlightEvent={onHighlightEvent}
         />
       )}
     </MosaicWindow>
@@ -217,8 +267,31 @@ export const FocusModeView = ({
             width: "100%",
             display: "flex",
             flexDirection: "column",
+            position: "relative",
+            overflow: "hidden",
           }}
         >
+          <Typography
+            component="div"
+            aria-live="polite"
+            aria-atomic="true"
+            sx={{
+              position: "absolute",
+              width: "1px",
+              height: "1px",
+              padding: 0,
+              margin: 0,
+              overflow: "hidden",
+              clip: "rect(0, 0, 0, 0)",
+              whiteSpace: "nowrap",
+              border: 0,
+              top: 0,
+              left: 0,
+            }}
+          >
+            {selectionAnnouncement}
+          </Typography>
+
           <FocusModeNavbar
             isLoaded={isLoaded}
             activeLabel={activeLabel}

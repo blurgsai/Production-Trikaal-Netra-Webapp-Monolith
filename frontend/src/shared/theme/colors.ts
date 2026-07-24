@@ -46,6 +46,9 @@ export const defenseColors = {
     hover: "rgba(255,255,255,0.07)",
     hoverStrong: "rgba(255,255,255,0.12)",
     selected: "rgba(103, 232, 249, 0.14)",
+    focusVisible: "#67e8f9",
+    focusVisibleOffset: 2,
+    disabledOpacity: 0.38,
   },
   scrollbar: {
     thumb: "rgba(255,255,255,0.15)",

@@ -1,4 +1,4 @@
-import { Fragment, useEffect } from "react";
+import { Fragment, useEffect, useMemo } from "react";
 import { Box, Stack, Typography } from "@mui/material";
 import {
   CircleMarker,
@@ -12,6 +12,18 @@ import "leaflet/dist/leaflet.css";
 import type { ThreatMapMarker, ThreatLevel } from "../model/types";
 import { defenseColors } from "@/shared/theme";
 import { getSeverityConfig } from "../model/mappers";
+
+const srOnlySx = {
+  position: "absolute",
+  width: "1px",
+  height: "1px",
+  padding: 0,
+  margin: 0,
+  overflow: "hidden",
+  clip: "rect(0, 0, 0, 0)",
+  whiteSpace: "nowrap",
+  border: 0,
+} as const;
 
 interface ThreatMapViewportProps {
   markers: ThreatMapMarker[];
@@ -63,8 +75,24 @@ export function ThreatMap({
   isLoading,
   onMarkerClick,
 }: ThreatMapProps) {
+  const mapStatusText = useMemo(() => {
+    if (isLoading) {
+      return "Threat map loading.";
+    }
+    if (selectedMarker) {
+      return `Map highlighting ${selectedMarker.title} at ${selectedMarker.location.name}, threat level ${selectedMarker.threatLevel}.`;
+    }
+    if (!markers.length) {
+      return "Threat map showing no markers for the current filters.";
+    }
+    return `Threat map showing ${markers.length} marker${markers.length === 1 ? "" : "s"}. Use the Event Explorer list for a keyboard-accessible threat list.`;
+  }, [isLoading, markers.length, selectedMarker]);
+
   return (
     <Box
+      role="region"
+      aria-label="Threat map"
+      aria-describedby="threat-map-status"
       sx={{
         position: "relative",
         minHeight: 540,
@@ -74,6 +102,16 @@ export function ThreatMap({
         boxShadow: "0 24px 60px rgba(0,0,0,0.32)",
       }}
     >
+      <Typography
+        id="threat-map-status"
+        component="p"
+        role="status"
+        aria-live="polite"
+        sx={srOnlySx}
+      >
+        {mapStatusText}
+      </Typography>
+
       {isLoading && (
         <Box
           sx={{
