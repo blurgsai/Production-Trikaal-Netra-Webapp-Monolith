@@ -21,4 +21,4 @@ export { useChartConfigs } from "./hooks/useChartConfigs";
 export type { EezRegion } from "./model/types";
 export type { ChartConfig, ChartType, ChartAggregation, ChartDataPoint, ChartDataResult } from "./model/chartTypes";
 export { default as ChartHouse } from "./ui/ChartHouse";
-export { vesselInfoFromRaw } from "./hooks/vesselInfoFromRaw";
+export { vesselInfoFromRaw } from "./model/vesselInfoFromRaw";

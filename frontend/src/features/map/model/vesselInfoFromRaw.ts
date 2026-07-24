@@ -1,5 +1,5 @@
-import type { VesselInfo } from "../model/types";
-import { mapRawVesselToInfo } from "../model/mappers";
+import type { VesselInfo } from "./types";
+import { mapRawVesselToInfo } from "./mappers";
 
 /** Maps a vessel table row (or raw feature props) into domain VesselInfo. */
 export function vesselInfoFromRaw(
