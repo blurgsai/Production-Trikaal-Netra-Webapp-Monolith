@@ -1,0 +1,22 @@
+Business Rules
+#	Rule	Enforcement Location
+BR-01	A user must have a valid JWT token to access any API endpoint except /health	
+jwt_auth.py
+BR-02	A user can only access sessions they own (session.user_id must match authenticated user)	
+session_auth.py
+BR-03	The latest message in a session must be a user message before sending to LLM	
+api.py
+BR-04	If a user does not exist during session creation, the system auto-creates the user from JWT username	
+api.py
+BR-05	Conversation memory is windowed when message count exceeds MEMORY_WINDOW_SIZE	
+llm_client_with_mcp.py
+BR-06	Conversation summarization triggers at MEMORY_THRESHOLD messages and only on first occurrence (summary is None)	
+llm_client_with_mcp.py
+BR-07	Only models listed in allowed_models.json are permitted for LLM inference	
+api.py
+BR-08	RAG source configurations must pass tool registry validation before deployment	
+text_processor.py
+BR-09	Source types must be one of: mongo, clickhouse, text_files, page_navigator	
+base_class.py
+BR-10	Streamed responses are persisted to MongoDB only after the complete stream has finished	
+api.py

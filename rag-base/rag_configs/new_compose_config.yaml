@@ -1,0 +1,923 @@
+selected_llm:
+  provider: gemini
+  model: gemini-3.1-flash-lite
+enabled_sources:
+- mongo
+- text_files
+- page_navigator
+mongo:
+  parameters:
+    connection_string: mongodb://admin:StrongPassword123@34.14.212.228:27017
+    database_name: dev
+  selected_tools:
+  - name: mongo_find
+    description: Find documents matching a filter in a collection
+  - name: mongo_aggregate
+    description: Perform data aggregation with pipeline
+  - name: mongo_count
+    description: Count documents matching a filter
+  - name: mongo_explain
+    description: Get query execution plan and statistics
+  - name: mongo_list_databases
+    description: List all databases on the MongoDB server
+  - name: mongo_list_collections
+    description: List all collections in a database
+  - name: mongo_collection_schema
+    description: Infer collection schema from sample documents
+  schema_resource:
+    name: mongo_schema
+    description: Complete MongoDB schemas and collections for the dev database
+    content: |
+      Database: dev
+      
+      Collections:
+        - world_monitor_articles
+          Description: Articles and news content.
+          Fields:
+            - _id (ObjectId)
+            - article_id (string)
+            - author (string)
+            - event_ids (array of ObjectIds)
+            - image_url (string or null)
+            - ingested_at (Date)
+            - link (string)
+            - location (array of objects containing geometry and name)
+            - processing_status (string)
+            - published (Date)
+            - raw_content (string)
+            - source (string)
+            - source_type (string)
+            - summary (string)
+            - tags (array of strings)
+            - title (string)
+            - updated (Date)
+        
+        - world_monitor_events
+          Description: Events extracted and enriched from articles.
+          Fields:
+            - _id (ObjectId)
+            - article_id (ObjectId)
+            - event_id (ObjectId)
+            - event_type (string)
+            - enriched_at (string)
+            - extracted_data (array of objects containing detailed event info like threat_level, location, incident_type, significance, countries_involved, vessels_involved, damage, and impact_on_shipping)
+            - location (array of objects containing geometry and name)
+            - reasoning (string)
+            - relevance_score (number or null)
+            - summary (string)
+            - threat_level (string)
+            - user_ids (array of ObjectIds)
+
+        - lloyds_latest
+          Description: Lloyds Register technical and historical snapshot data for vessels. Keyed by IMO number (vessel.imo) and vessel_id. Contains 145,000+ vessel records. Use this to look up static vessel details, technical specs, ownership, engine data, and build history.
+          Fields:
+            - _id (string, format "vessel_{vessel_id}")
+            - vessel_id (number — internal Trikaal vessel identifier)
+            - snapshot_id (string — Lloyds snapshot reference e.g. "LLIDS865_202107150000")
+            - timestamp (Date — snapshot capture date)
+            - vessel (object containing:
+                imo (number — IMO number, primary lookup key),
+                vessel_name (string),
+                year_of_build (number),
+                flag (string — flag state country),
+                call_sign (string or null),
+                mmsi (number or null),
+                port_of_registry (string or null),
+                gross (number — gross tonnage),
+                net (number — net tonnage),
+                dwt (number — deadweight tonnage))
+            - ownership (object containing current (dict with owner/manager details) and history (array of past ownership records))
+            - engines (object containing engine_id, engine_designation, power_kw (number), rpm (number or null), start_date, engine_dob, no_engines, hp)
+            - design (object containing hull_id, material_of_build, no_decks, bulbous_bow_ind, hull_type, heli_deck_ind)
+            - propulsion_and_dimensions (object containing breadth_extreme, depth, draft, freeboard, lbp, loa — all in metres)
+            - capacities (object containing liquid_capacity, bale_capacity, grain_capacity, bollard_pull, car_capacity, trailer_capacity, gas_capacity)
+            - casualties (array of casualty event objects)
+            - vigilance_score (number — Lloyds risk/compliance score)
+            - flag_history (object containing array of historical flag records)
+            - name_history (object containing array of historical name records)
+          Query tips:
+            - To find by IMO: filter {"vessel.imo": <number>}
+            - To find by vessel name: filter {"vessel.vessel_name": <string>}
+            - To find by MMSI: filter {"vessel.mmsi": <number>}
+
+        - vessel_state
+          Description: Real-time stateful vessel tracking records. One document per vessel, continuously updated with AIS data. Contains 164 active vessel states. Use this to look up current position, speed, heading, status, identity, and kinematics of tracked vessels.
+          Fields:
+            - _id (string, format "{mmsi}-{vesselId}")
+            - vesselId (number — Int64 unique vessel identifier)
+            - vessel_id (number — same as vesselId)
+            - createdTimestamp (number — Unix epoch seconds when record was created)
+            - updatedTimestamp (number — Unix epoch seconds of last AIS update)
+            - polygonId (string or null — geofence/zone ID if vessel is currently inside a polygon)
+            - identification (object containing:
+                mmsi (number — MMSI, primary AIS lookup key),
+                imo (number or null),
+                shipName (string or null),
+                callSign (string or null),
+                flag (string or null — flag state),
+                portOfRegistry (string or null),
+                buildYear (number or null))
+            - aisInfo (object containing:
+                aisTransponderClass (string — e.g. "Class A", "Class B"),
+                aisSource (string — data feed source),
+                aisVersion (number or null))
+            - status (object containing:
+                navStatus (number 0-15 — AIS nav status code),
+                navStatusParsed (string — e.g. "Underway using engine", "At anchor", "Moored"),
+                suspicious (boolean),
+                awaitingFirstPosition (boolean))
+            - dimensions (object containing draught, toBow, toStern, toPort, toStarboard — each has consensus value dict)
+            - destination (object containing reported (string), matched (string), estimatedRoute (string), origin (string))
+            - location (object containing:
+                current (dict with lat (number) and lon (number)),
+                onLand (boolean),
+                history (array of past positions),
+                historyLimit (number))
+            - speed (object containing current speed consensus values in knots and m/s)
+            - heading (object containing current (dict with consensus heading in degrees))
+            - kinematics (object containing:
+                hasKinematics (boolean),
+                speedOverGroundMps (number — speed in m/s),
+                headingDeg (number — heading in degrees 0-360),
+                headingChangeDeg (number),
+                accelerationMps2 (number),
+                timeDeltaSeconds (number),
+                distanceMeters (number))
+            - s2 (object containing token (string — S2 cell token) and level (number))
+            - operational (object containing positionAccuracy, turnRate, maneuverIndicator, raimFlag, radioStatus, epfdType)
+            - communication (object containing repeatIndicator, lastMessageType, isNewVessel, assignedMode, lastUpdateTs)
+            - spoof (object containing status (boolean — true if vessel is suspected spoofing), groupId)
+            - duplicateMmsi (object containing status (boolean), siblingVesselIds (array), probabilityOfSpoofing)
+            - safety (object containing activeEvent (boolean), messageCounts, messageHistory, searchAreaPolygon)
+            - prediction (object containing location1hr (predicted lat/lon dict), timestamp, eta)
+          Query tips:
+            - To find by MMSI: filter {"identification.mmsi": <number>}
+            - To find by ship name: filter {"identification.shipName": <string>}
+            - To find vessels in a zone: filter {"polygonId": <string>}
+            - To find underway vessels: filter {"status.navStatusParsed": "Underway using engine"}
+
+        - events
+          Description: Vessel spatial and behavioural detection events generated by automated detectors (e.g., geofence intrusions, loitering, rendezvous, dark vessel). Contains 4,700+ event records. Use this to find alerts and anomalies for specific vessels, time ranges, event types, or severities.
+          Fields:
+            - _id (ObjectId)
+            - event_id (string — unique event identifier e.g. "evt_854d1e7864de")
+            - type (string — event category. Examples: "geofence_intrusion", "loitering", "dark_ship", "rendezvous", "ais_spoofing")
+            - status (string — lifecycle stage. Values: "start", "end", "active")
+            - severity (string — impact level. Values: "low", "medium", "high", "critical")
+            - start_time (Date — UTC datetime when event began)
+            - end_time (Date — UTC datetime when event ended or null if ongoing)
+            - timestamp (Date — UTC datetime of last event update)
+            - duration (object containing value (number) and unit (string — e.g. "seconds"))
+            - event_source (string — detector/system that generated the event e.g. "ais_stream_handler")
+            - model (string — detection algorithm used e.g. "heuristic")
+            - temporality (string — e.g. "bounded" for completed events, "unbounded" for ongoing)
+            - s2_cell_id (string — S2 spatial index cell identifier)
+            - location (object containing GeoJSON type (e.g. "Point") and coordinates ([longitude, latitude]))
+            - information (object containing event-specific metadata:
+                geofence_id (string — for geofence_intrusion events),
+                geofence_name (string — human-readable geofence name),
+                has_exited_polygon (boolean),
+                other_mmsi (number — MMSI of second vessel for multi-vessel events like rendezvous))
+            - vessels_involved (array of strings/numbers — IDs or MMSIs of all vessels participating in the event)
+          Query tips:
+            - To find events for a vessel: filter {"vessels_involved": {"$in": [<vesselId_or_mmsi>]}}
+            - To find by event type: filter {"type": "geofence_intrusion"}
+            - To find active events: filter {"status": "active"}
+            - To find high-severity events: filter {"severity": {"$in": ["high", "critical"]}}
+            - To find events in a time range: filter {"start_time": {"$gte": <ISODate>, "$lte": <ISODate>}}
+text_files:
+  parameters:
+    collection_name: documents
+    chunk_size: 1000
+    chunk_overlap: 200
+  selected_tools:
+  - name: upload_documents
+    description: Upload and process multiple text files into Chroma
+  - name: search_documents
+    description: Search stored documents using semantic similarity
+  schema_resource:
+    name: text_files_schema
+    description: Text files source documentation and schema
+    content: "Supported file types: .txt, .md, .pdf (text), .json (text content)\n\
+      File handling:\n  - Multiple files can be uploaded simultaneously\n  - Each\
+      \ file is split into chunks and embedded\n  - Chunks are stored with metadata\
+      \ (filename, source)\n  - Full-text search available on all stored content"
+page_navigator:
+  parameters:
+    llm_provider: gemini
+    llm_model: gemini-3.1-flash-lite
+    base_url: http://34.60.206.175
+    site_context:
+      # ─────────────────────────────────────────────────────────────────────────
+      # OPERATOR REFERENCE (Map Page — Vessel Table Column Filters Only)
+      # ─────────────────────────────────────────────────────────────────────────
+      # On /map, any URL param that is NOT a reserved key is treated as a vessel
+      # table column filter. Operators are encoded as VALUE PREFIXES (not separate
+      # keys). First prefix match wins (checked top-to-bottom).
+      #
+      # String column operators:
+      #   contains:  → ?col=contains:Nimitz      → LIKE %Nimitz%
+      #   starts:    → ?col=starts:USS            → LIKE USS%
+      #   ends:      → ?col=ends:Carrier          → LIKE %Carrier
+      #   !=         → ?col!=Under Way            → NOT EQUAL
+      #   (no prefix)→ ?col=Under Way             → EXACT MATCH (default)
+      #
+      # Number column operators (prefix goes inside the value):
+      #   >=         → ?speed_current_consensusvalue=>=15   → >= 15
+      #   <=         → ?speed_current_consensusvalue=<=25   → <= 25
+      #   !=         → ?status_navstatus!=5                 → != 5
+      #   >          → ?heading_current_consensusvalue=>90  → > 90
+      #   <          → ?heading_current_consensusvalue=<270 → < 270
+      #   (no prefix)→ ?identification_mmsi=123456789       → = 123456789 (exact)
+      #
+      # Datetime params (date_from, date_to, start, end, etc.) are standalone named
+      # params — NOT value-prefix operators. Format: ISO 8601 UTC.
+      #   Accepted: 2025-01-01T10:00:00Z  |  2025-01-01T10:00:00+00:00  |  2025-01-01T10:00:00
+      #
+      # Polygon / Zone format (zone param on /map and /historical-playback):
+      #   Comma-separated lat,lng pairs — minimum 3 points (6 values).
+      #   Ring is auto-closed (first point appended if not repeated).
+      #   Multiple zone= params → multiple polygon filters (MultiPolygon on playback).
+      #   Format: lat1,lng1,lat2,lng2,lat3,lng3,...
+      #   Example: zone=18.4,72.8,18.6,73.0,18.5,73.2
+      global_operators:
+        string:
+          contains:
+            prefix: 'contains:'
+            template: '{key}=contains:{value}'
+            description: "Substring search (LIKE %value%). Example: ?identification_shipname=contains:Nimitz"
+          starts:
+            prefix: 'starts:'
+            template: '{key}=starts:{value}'
+            description: "Prefix match (LIKE value%). Example: ?identification_shipname=starts:USS"
+          ends:
+            prefix: 'ends:'
+            template: '{key}=ends:{value}'
+            description: "Suffix match (LIKE %value). Example: ?identification_shipname=ends:Carrier"
+          ne:
+            prefix: '!='
+            template: '{key}!={value}'
+            description: "Not equal to. Example: ?navigationstatus!=Under Way"
+          eq:
+            prefix: ''
+            template: '{key}={value}'
+            description: "Exact match (default, no prefix). Example: ?navigationstatus=Under Way"
+        number:
+          gte:
+            prefix: '>='
+            template: '{key}=>={value}'
+            description: "Greater than or equal. Example: ?speed_current_consensusvalue=>=15"
+          lte:
+            prefix: '<='
+            template: '{key}=<={value}'
+            description: "Less than or equal. Example: ?speed_current_consensusvalue=<=25"
+          ne:
+            prefix: '!='
+            template: '{key}!={value}'
+            description: "Not equal to. Example: ?status_navstatus!=5"
+          gt:
+            prefix: '>'
+            template: '{key}=>{value}'
+            description: "Greater than. Example: ?heading_current_consensusvalue=>90"
+          lt:
+            prefix: '<'
+            template: '{key}=<{value}'
+            description: "Less than. Example: ?heading_current_consensusvalue=<270"
+          eq:
+            prefix: ''
+            template: '{key}={value}'
+            description: "Exact match (default, no prefix). Example: ?identification_mmsi=123456789"
+        datetime:
+          # Datetime params are standalone named parameters (date_from, date_to,
+          # start, end, published_from, ingested_from, etc.) — NOT value-prefix
+          # operators like strings/numbers. Each param accepts an ISO 8601 UTC
+          # datetime value directly. Accepted formats:
+          #   2025-01-01T10:00:00Z         (UTC with Z suffix — preferred)
+          #   2025-01-01T10:00:00+00:00    (UTC with offset)
+          #   2025-01-01T10:00:00          (assumed UTC if no timezone)
+          eq:
+            token: '='
+            template: '{key}={value}'
+            description: "Exact datetime match. Use a dedicated named param (e.g. date_from=2025-01-01T00:00:00Z)."
+          gte:
+            token: '>='
+            template: '{key}>={value}'
+            description: "On or after datetime. Typically used for range start params like date_from, start, published_from."
+          lte:
+            token: '<='
+            template: '{key}<={value}'
+            description: "On or before datetime. Typically used for range end params like date_to, end, published_to."
+      pages:
+        # ───────────────────────────────────────────────────────────────────────
+        # MAP PAGE  /map
+        # Real-time vessel positions on Leaflet map with WMS/WFS layers from
+        # GeoServer. Supports vessel selection, track display, zone drawing,
+        # layer toggling, and a vessel data table with progressive column filters.
+        #
+        # RESERVED params (NOT treated as vessel table column filters):
+        #   vessel, track, zone, flyto, layers, basemap, briefing, view
+        # All OTHER params → vessel table column filter (PostGIS trikaalx:vessels).
+        # ───────────────────────────────────────────────────────────────────────
+        map:
+          endpoint: /map
+          example_urls:
+            - description: Select vessel by MMSI and show 1-hour track
+              url: /map?vessel=123456789&track=3600
+            - description: Filter vessels in a zone with speed > 15 knots
+              url: /map?zone=18.4,72.8,18.6,73.0,18.5,73.2&speed_current_consensusvalue=>15
+            - description: Fly to Mumbai area, dark basemap, show table and layers panels
+              url: /map?flyto=72.8,18.4,73.2,18.6&basemap=dark&view=map,table,layers
+            - description: Filter by ship name containing Nimitz with briefing open
+              url: /map?identification_shipname=contains:Nimitz&briefing=1
+            - description: Filter by speed >= 15 AND heading < 270
+              url: /map?speed_current_consensusvalue=>=15&heading_current_consensusvalue=<270
+          attributes:
+            # ── Reserved / Structural Params ──────────────────────────────────
+            - name: vessel
+              path: vessel
+              type: string
+              description: "Select vessel by MMSI. Fetches vessel info via WFS GetFeature with CQL_FILTER=identification_mmsi={mmsi} and selects it on the map."
+              examples: ["123456789"]
+            - name: track
+              path: track
+              type: number
+              description: "Show vessel track for last N seconds (max 2592000 = 30 days). Fetches trajectory from ClickHouse integration_test.ais_processed_flat."
+              examples: [3600, 86400, 604800]
+            - name: zone
+              path: zone
+              type: string
+              description: "Polygon zone filter (repeatable). Comma-separated lat,lng pairs, min 3 points = 6 values. Ring auto-closed. Filters vessel table via WFS CQL WITHIN(geom, SRID=4326;POLYGON(...)). Multiple zone params = multiple polygon filters."
+              examples: ["18.4,72.8,18.6,73.0,18.5,73.2", "19.0,73.0,19.2,73.2,19.1,73.3"]
+            - name: flyto
+              path: flyto
+              type: string
+              description: "Fly camera to bounding box. Format: minLng,minLat,maxLng,maxLat (4 floats). Animates map to specified bounding box."
+              examples: ["72.8,18.4,73.2,18.6"]
+            - name: layers
+              path: layers
+              type: string
+              description: "Enable overlay layers from tileserver. Comma-separated layer IDs."
+              examples: ["eez,basemap_dark", "eez"]
+            - name: basemap
+              path: basemap
+              type: string
+              description: "Set base map style ID from tileserver."
+              examples: ["dark", "light", "satellite"]
+            - name: briefing
+              path: briefing
+              type: string
+              description: "Open briefing sidebar panel ('1' or 'true')."
+              examples: ["1", "true"]
+            - name: view
+              path: view
+              type: string
+              description: "Set visible tiles/panels. Comma-separated from: map, table, layers, vessel, charts."
+              examples: ["map,table", "map,table,layers", "map,vessel,charts"]
+            # ── Vessel Table Column Filters (PostGIS trikaalx:vessels) ─────────
+            # Use exact PostGIS column names. Apply operator prefixes to the value.
+            - name: identification_mmsi
+              path: identification_mmsi
+              type: number
+              description: "Vessel MMSI number filter (exact match or operator prefix). PostGIS column: identification_mmsi (bigint)."
+              examples: [123456789]
+            - name: identification_imo
+              path: identification_imo
+              type: number
+              description: "Vessel IMO number filter. PostGIS column: identification_imo (bigint)."
+              examples: [9876543]
+            - name: identification_callsign
+              path: identification_callsign
+              type: string
+              description: "Vessel callsign filter. PostGIS column: identification_callsign (text). Supports contains:/starts:/ends: prefixes."
+              examples: ["WXYZ", "contains:AB"]
+            - name: identification_shipname
+              path: identification_shipname
+              type: string
+              description: "Ship/vessel name filter. PostGIS column: identification_shipname (text). Supports contains:/starts:/ends: prefixes."
+              examples: ["contains:Nimitz", "starts:USS", "ends:Carrier"]
+            - name: identification_flag
+              path: identification_flag
+              type: string
+              description: "Flag state filter. PostGIS column: identification_flag (text)."
+              examples: ["USA", "PAN", "contains:US"]
+            - name: identification_portofregistry
+              path: identification_portofregistry
+              type: string
+              description: "Port of registry filter. PostGIS column: identification_portofregistry (text)."
+              examples: ["Panama", "contains:Mumbai"]
+            - name: navigationstatus
+              path: navigationstatus
+              type: string
+              description: "Navigation status text filter. PostGIS column: navigationstatus (text)."
+              examples: ["Under Way", "At Anchor", "Moored"]
+            - name: status_navstatus
+              path: status_navstatus
+              type: number
+              description: "Numeric nav status filter (AIS codes 0-15). PostGIS column: status_navstatus (bigint)."
+              examples: [0, 1, 5]
+            - name: status_navstatusparsed
+              path: status_navstatusparsed
+              type: string
+              description: "Parsed navigation status text filter. PostGIS column: status_navstatusparsed (text)."
+              examples: ["Underway using engine", "contains:anchor"]
+            - name: location_current_lat
+              path: location_current_lat
+              type: number
+              description: "Current latitude filter. PostGIS column: location_current_lat (double)."
+              examples: [18.5]
+            - name: location_current_lon
+              path: location_current_lon
+              type: number
+              description: "Current longitude filter. PostGIS column: location_current_lon (double)."
+              examples: [72.8]
+            - name: heading_current_consensusvalue
+              path: heading_current_consensusvalue
+              type: number
+              description: "Current heading in degrees filter. PostGIS column: heading_current_consensusvalue (double). Use operator prefix e.g. >90 or <270."
+              examples: [90, 180, ">90", "<270"]
+            - name: course_current_consensusvalue
+              path: course_current_consensusvalue
+              type: number
+              description: "Current course over ground filter. PostGIS column: course_current_consensusvalue (double)."
+              examples: [120, ">=90"]
+            - name: speed_current_consensusvalue
+              path: speed_current_consensusvalue
+              type: number
+              description: "Current speed consensus value filter. PostGIS column: speed_current_consensusvalue (double). Use operator prefix e.g. >=15 or <=25."
+              examples: [15, ">=15", "<=25"]
+            - name: kinematics_speedovergroundmps
+              path: kinematics_speedovergroundmps
+              type: number
+              description: "Speed over ground in m/s filter. PostGIS column: kinematics_speedovergroundmps (double)."
+              examples: [7.5, ">=5.0"]
+            - name: kinematics_headingdeg
+              path: kinematics_headingdeg
+              type: number
+              description: "Kinematics heading in degrees filter. PostGIS column: kinematics_headingdeg (double)."
+              examples: [135]
+            - name: kinematics_distance_m
+              path: kinematics_distance_m
+              type: number
+              description: "Distance traveled in meters filter. PostGIS column: kinematics_distance_m (double)."
+              examples: [5000, ">=1000"]
+            - name: kinematics_accelerationmps2
+              path: kinematics_accelerationmps2
+              type: number
+              description: "Acceleration in m/s² filter. PostGIS column: kinematics_accelerationmps2 (double)."
+              examples: [0.5, ">0"]
+            - name: destination_reported
+              path: destination_reported
+              type: string
+              description: "Reported destination filter. PostGIS column: destination_reported (text)."
+              examples: ["SINGAPORE", "ROTTERDAM", "contains:MUMB"]
+            - name: destination_estimatedroute
+              path: destination_estimatedroute
+              type: string
+              description: "Estimated route destination filter. PostGIS column: destination_estimatedroute (text)."
+              examples: ["contains:Singapore"]
+            - name: voyage_destination
+              path: voyage_destination
+              type: string
+              description: "Voyage destination filter. PostGIS column: voyage_destination (text)."
+              examples: ["MUMBAI", "contains:PORT"]
+            - name: voyage_eta
+              path: voyage_eta
+              type: string
+              description: "Estimated time of arrival filter. PostGIS column: voyage_eta (text)."
+              examples: ["2025-01-15T06:00"]
+            - name: category
+              path: category
+              type: string
+              description: "Vessel category filter. PostGIS column: category (text)."
+              examples: ["Cargo", "Tanker", "Passenger"]
+            - name: subcategory
+              path: subcategory
+              type: string
+              description: "Vessel subcategory filter. PostGIS column: subcategory (text)."
+              examples: ["Container Ship", "Crude Oil Tanker"]
+            - name: polygonid
+              path: polygonid
+              type: string
+              description: "Polygon/zone ID filter. PostGIS column: polygonid (text)."
+              examples: ["zone-001"]
+            - name: s2_level
+              path: s2_level
+              type: number
+              description: "S2 cell level filter. PostGIS column: s2_level (bigint)."
+              examples: [10, 12]
+            - name: s2_token
+              path: s2_token
+              type: string
+              description: "S2 cell token filter. PostGIS column: s2_token (text)."
+              examples: ["3d21"]
+            - name: spoof_status
+              path: spoof_status
+              type: string
+              description: "Spoofing flag filter (true/false). PostGIS column: spoof_status (boolean)."
+              examples: ["true", "false"]
+            - name: status_suspicious
+              path: status_suspicious
+              type: string
+              description: "Suspicious activity flag filter (true/false). PostGIS column: status_suspicious (boolean)."
+              examples: ["true", "false"]
+            - name: dimensions_draught_consensusvalue
+              path: dimensions_draught_consensusvalue
+              type: number
+              description: "Draught depth filter. PostGIS column: dimensions_draught_consensusvalue (double)."
+              examples: [10.5, ">=8.0"]
+            - name: operational_epfdtype
+              path: operational_epfdtype
+              type: number
+              description: "EPFD type filter. PostGIS column: operational_epfdtype (bigint)."
+              examples: [1, 7]
+            - name: operational_maneuverindicator
+              path: operational_maneuverindicator
+              type: number
+              description: "Maneuver indicator filter. PostGIS column: operational_maneuverindicator (bigint)."
+              examples: [0, 1]
+            - name: servicestatus
+              path: servicestatus
+              type: string
+              description: "Service status filter. PostGIS column: servicestatus (text)."
+              examples: ["Active", "contains:Act"]
+            - name: communication_assignedmode
+              path: communication_assignedmode
+              type: string
+              description: "Communication assigned mode filter. PostGIS column: communication_assignedmode (text)."
+              examples: ["0"]
+
+        # ───────────────────────────────────────────────────────────────────────
+        # WORLD MONITORING PAGE  /world-monitoring
+        # Displays threat events and news articles with progressive filtering.
+        # Two tabs: 'threats' (world_monitor_events) and 'articles' (world_monitor_articles).
+        # ───────────────────────────────────────────────────────────────────────
+        world_monitoring:
+          endpoint: /world-monitoring
+          example_urls:
+            - description: View critical threats in Gulf of Aden from Jan 2025
+              url: /world-monitoring?tab=threats&threat_level=CRITICAL&location=Gulf of Aden&date_from=2025-01-01T00:00:00Z
+            - description: Search articles about South China Sea from Reuters, newest first
+              url: /world-monitoring?tab=articles&search=South China Sea&source=Reuters&sort=latest
+            - description: High relevance piracy events with linked articles
+              url: /world-monitoring?tab=threats&event_type=Piracy&relevance_min=0.8&has_article=true
+            - description: Multiple threat levels (HIGH and CRITICAL) for conflict events
+              url: /world-monitoring?tab=threats&event_type=Conflict&threat_level=HIGH&threat_level=CRITICAL
+            - description: Articles about maritime security tagged and filtered by date
+              url: /world-monitoring?tab=articles&tags=maritime security&published_from=2025-01-01T00:00:00Z&sort=most_relevant
+          attributes:
+            # ── Structural / Shared Params ────────────────────────────────────
+            - name: tab
+              path: tab
+              type: string
+              description: "Active tab. 'threats' shows world_monitor_events; 'articles' shows world_monitor_articles. Default: threats."
+              examples: ["threats", "articles"]
+            - name: sort
+              path: sort
+              type: string
+              description: "Sort order for both threats and articles. Valid values: latest, oldest, most_relevant, most_severe."
+              examples: ["latest", "oldest", "most_relevant", "most_severe"]
+            # ── Threat Filters (tab=threats) ──────────────────────────────────
+            - name: keyword
+              path: keyword
+              type: string
+              description: "Full-text keyword search across event_type, threat_level, reasoning, extracted_data.reasoning (case-insensitive regex). Used on threats tab."
+              examples: ["piracy", "conflict", "missile"]
+            - name: event_type
+              path: event_type
+              type: string
+              description: "Filter by event type (repeatable — multiple values = $in match). E.g., &event_type=Piracy&event_type=Conflict."
+              examples: ["Piracy", "Conflict", "Smuggling"]
+            - name: threat_level
+              path: threat_level
+              type: string
+              description: "Filter by threat level (repeatable). Valid values: LOW, MEDIUM, HIGH, CRITICAL. Multiple values = $in match."
+              examples: ["CRITICAL", "HIGH", "MEDIUM", "LOW"]
+            - name: source
+              path: source
+              type: string
+              description: "Filter by source (repeatable). On threats tab: resolves article IDs by source then filters events. On articles tab: exact match on source field."
+              examples: ["Reuters", "AP News", "BBC"]
+            - name: date_from
+              path: date_from
+              type: datetime
+              description: "Threat date range start (ISO 8601). Filters on enriched_at field."
+              examples: ["2025-01-01T00:00:00Z", "2025-06-01T00:00:00Z"]
+            - name: date_to
+              path: date_to
+              type: datetime
+              description: "Threat date range end (ISO 8601). Filters on enriched_at field."
+              examples: ["2025-01-31T23:59:59Z", "2025-06-30T23:59:59Z"]
+            - name: has_article
+              path: has_article
+              type: string
+              description: "Filter events that have ('true') or don't have ('false') a linked article."
+              examples: ["true", "false"]
+            - name: relevance_min
+              path: relevance_min
+              type: number
+              description: "Minimum relevance score (0.0–1.0). Range filter on relevance_score."
+              examples: [0.7, 0.8, 0.9]
+            - name: relevance_max
+              path: relevance_max
+              type: number
+              description: "Maximum relevance score (0.0–1.0). Range filter on relevance_score."
+              examples: [1.0, 0.9]
+            - name: location
+              path: location
+              type: string
+              description: "Location name search on threats (case-insensitive regex on location.name)."
+              examples: ["Gulf of Aden", "Red Sea", "Strait of Hormuz"]
+            - name: vessel_name
+              path: vessel_name
+              type: string
+              description: "Extracted vessel name search (case-insensitive regex on extracted_data.extracted_data.vessel_name)."
+              examples: ["USS Nimitz", "contains:Nimitz"]
+            - name: threat_type
+              path: threat_type
+              type: string
+              description: "Extracted threat type search (case-insensitive regex on extracted_data.extracted_data.threat_type)."
+              examples: ["missile", "drone", "piracy"]
+            - name: origin
+              path: origin
+              type: string
+              description: "Extracted origin search (case-insensitive regex on extracted_data.extracted_data.origin)."
+              examples: ["Iran", "Yemen", "Russia"]
+            - name: damage
+              path: damage
+              type: string
+              description: "Extracted damage info search (case-insensitive regex on extracted_data.extracted_data.damage)."
+              examples: ["structural", "hull breach"]
+            - name: countermeasures
+              path: countermeasures
+              type: string
+              description: "Extracted countermeasures search (case-insensitive regex on extracted_data.extracted_data.countermeasures)."
+              examples: ["naval patrol", "escort", "evasive maneuver"]
+            # ── Article Filters (tab=articles) ────────────────────────────────
+            - name: search
+              path: search
+              type: string
+              description: "Full-text article search across title, summary, source, author (case-insensitive regex). Used on articles tab."
+              examples: ["South China Sea", "piracy attack"]
+            - name: title
+              path: title
+              type: string
+              description: "Article title search (case-insensitive regex on title field)."
+              examples: ["South China Sea", "Gulf of Aden"]
+            - name: author
+              path: author
+              type: string
+              description: "Article author search (case-insensitive regex on author field)."
+              examples: ["Reuters", "Jane Doe"]
+            - name: source_type
+              path: source_type
+              type: string
+              description: "Source type filter (exact match on source_type). E.g., RSS, Web."
+              examples: ["RSS", "Web"]
+            - name: status
+              path: status
+              type: string
+              description: "Processing status filter (exact match on processing_status)."
+              examples: ["processed", "pending"]
+            - name: published_from
+              path: published_from
+              type: datetime
+              description: "Article published date range start (ISO 8601). Filters on published field."
+              examples: ["2025-01-01T00:00:00Z"]
+            - name: published_to
+              path: published_to
+              type: datetime
+              description: "Article published date range end (ISO 8601). Filters on published field."
+              examples: ["2025-01-31T23:59:59Z"]
+            - name: ingested_from
+              path: ingested_from
+              type: datetime
+              description: "Article ingested date range start (ISO 8601). Filters on ingested_at field."
+              examples: ["2025-01-01T00:00:00Z"]
+            - name: ingested_to
+              path: ingested_to
+              type: datetime
+              description: "Article ingested date range end (ISO 8601). Filters on ingested_at field."
+              examples: ["2025-01-31T23:59:59Z"]
+            - name: updated_from
+              path: updated_from
+              type: datetime
+              description: "Article last-updated date range start (ISO 8601). Filters on updated field."
+              examples: ["2025-01-01T00:00:00Z"]
+            - name: updated_to
+              path: updated_to
+              type: datetime
+              description: "Article last-updated date range end (ISO 8601). Filters on updated field."
+              examples: ["2025-01-31T23:59:59Z"]
+            - name: tags
+              path: tags
+              type: string
+              description: "Article tags search (case-insensitive regex on tags array field)."
+              examples: ["maritime security", "piracy", "conflict"]
+            - name: article_location
+              path: article_location
+              type: string
+              description: "Article location name search (case-insensitive regex on location.name field in articles)."
+              examples: ["Strait of Hormuz", "Red Sea", "Arabian Sea"]
+
+        # ───────────────────────────────────────────────────────────────────────
+        # HISTORICAL PLAYBACK PAGE  /historical-playback
+        # Define a geographic zone (polygon) and time window, then play back
+        # vessel movements. Queries ClickHouse ais_processed_flat for historical
+        # AIS data. All vessel filters combine with AND logic.
+        # Backend: Polygon bounding box for ClickHouse query + Shapely polygon check.
+        # ───────────────────────────────────────────────────────────────────────
+        historical_playback:
+          endpoint: /historical-playback
+          example_urls:
+            - description: Playback in Mumbai area for 2 hours at minute granularity
+              url: /historical-playback?start=2025-01-01T10:00:00Z&end=2025-01-01T12:00:00Z&granularity=minute&zone=18.4,72.8,18.6,73.0,18.5,73.2
+            - description: Playback with MMSI filter and speed range
+              url: /historical-playback?start=2025-01-01T10:00:00Z&end=2025-01-01T14:00:00Z&mmsi=123456789&speed_min=10&speed_max=25
+            - description: Multi-zone playback with ship name filter at hour granularity
+              url: /historical-playback?zone=18.4,72.8,18.6,73.0,18.5,73.2&zone=19.0,73.0,19.2,73.2,19.1,73.3&ship_name=Nimitz&granularity=hour
+            - description: Filter by multiple MMSI values, heading range, and destination
+              url: /historical-playback?start=2025-01-01T00:00:00Z&end=2025-01-02T00:00:00Z&mmsi=123456789&mmsi=987654321&heading_min=90&heading_max=270&destination=Singapore
+          attributes:
+            # ── Time Window Params ────────────────────────────────────────────
+            - name: start
+              path: start
+              type: datetime
+              description: "Playback window start datetime (ISO 8601 UTC). Converted to YYYY-MM-DD HH:MM:SS UTC for ClickHouse query."
+              examples: ["2025-01-01T10:00:00Z", "2025-06-15T08:00:00Z"]
+            - name: end
+              path: end
+              type: datetime
+              description: "Playback window end datetime (ISO 8601 UTC)."
+              examples: ["2025-01-01T12:00:00Z", "2025-06-15T18:00:00Z"]
+            - name: granularity
+              path: granularity
+              type: string
+              description: "Time frame granularity controlling playback frame interval. Valid: minute (60s), hour (3600s), day (86400s), week (604800s). Default: hour. Invalid values silently fall back to default."
+              examples: ["minute", "hour", "day", "week"]
+            # ── Zone Param ────────────────────────────────────────────────────
+            - name: zone
+              path: zone
+              type: string
+              description: "Polygon zone for playback (repeatable). Comma-separated lat,lng pairs, min 3 points = 6 values. Multiple zone params create MultiPolygon. Auto-opens playback config dialog. Ring auto-closed. Format: lat1,lng1,lat2,lng2,lat3,lng3,..."
+              examples: ["18.4,72.8,18.6,73.0,18.5,73.2,18.4,72.8", "19.0,73.0,19.2,73.2,19.1,73.3"]
+            # ── Vessel Filters (ClickHouse ais_processed_flat) ────────────────
+            # All filters combine with AND logic.
+            # WHERE (mmsi=X AND speed>=Y AND speed<=Z AND shipname LIKE '%N%')
+            - name: mmsi
+              path: mmsi
+              type: number
+              description: "Filter by MMSI (repeatable — multiple mmsi params = multiple vessels). Exact match (eq) on mmsi column."
+              examples: [123456789, 987654321]
+            - name: vessel_id
+              path: vessel_id
+              type: number
+              description: "Filter by vessel ID (repeatable numeric ID). Exact match (eq) on vessel_id column."
+              examples: [42, 100]
+            - name: speed_min
+              path: speed_min
+              type: number
+              description: "Minimum speed filter (gte on speed column in ClickHouse)."
+              examples: [10, 5.5]
+            - name: speed_max
+              path: speed_max
+              type: number
+              description: "Maximum speed filter (lte on speed column in ClickHouse)."
+              examples: [25, 15.0]
+            - name: ship_name
+              path: ship_name
+              type: string
+              description: "Ship name search (LIKE filter — %value% — on shipname column in ClickHouse)."
+              examples: ["Nimitz", "Ever Given"]
+            - name: destination
+              path: destination
+              type: string
+              description: "Destination search (LIKE filter on destination column in ClickHouse)."
+              examples: ["Singapore", "Mumbai", "Rotterdam"]
+            - name: callsign
+              path: callsign
+              type: string
+              description: "Callsign search (LIKE filter on callsign column in ClickHouse)."
+              examples: ["ABC123", "VROO"]
+            - name: nav_status
+              path: nav_status
+              type: number
+              description: "Navigation status filter (AIS codes 0-15, exact match on status column in ClickHouse)."
+              examples: [0, 1, 5, 8]
+            - name: heading_min
+              path: heading_min
+              type: number
+              description: "Minimum heading filter in degrees (0-360). gte on heading column."
+              examples: [90, 0]
+            - name: heading_max
+              path: heading_max
+              type: number
+              description: "Maximum heading filter in degrees (0-360). lte on heading column."
+              examples: [270, 180]
+            - name: course_min
+              path: course_min
+              type: number
+              description: "Minimum course over ground in degrees (0-360). gte on course column."
+              examples: [0, 45]
+            - name: course_max
+              path: course_max
+              type: number
+              description: "Maximum course over ground in degrees (0-360). lte on course column."
+              examples: [180, 360]
+  selected_tools:
+  - name: generate_full_url
+    description: Generates a full URL based on the user query and page configuration
+  schema_resource:
+    name: page_navigator_schema
+    description: Complete Page Navigator schema — URL format, operator rules, page params, and examples
+    content: |
+      Base URL: http://34.60.206.175
+
+      Pages:
+        - /map               — Real-time vessel positions (GeoServer WMS/WFS + ClickHouse tracks)
+        - /world-monitoring  — Threat events and news articles (MongoDB)
+        - /historical-playback — Historical AIS trajectory playback (ClickHouse)
+
+      ═══════════════════════════════════════════════════════════════════
+      MAP PAGE (/map)
+      ═══════════════════════════════════════════════════════════════════
+      Reserved params (NOT vessel table filters):
+        vessel, track, zone, flyto, layers, basemap, briefing, view
+
+      Any OTHER param → vessel table column filter (PostGIS trikaalx:vessels).
+      Operator is encoded as a VALUE PREFIX (not a separate key):
+
+        String operators (first match wins):
+          contains:  ?identification_shipname=contains:Nimitz   → LIKE %Nimitz%
+          starts:    ?identification_shipname=starts:USS         → LIKE USS%
+          ends:      ?identification_shipname=ends:Carrier       → LIKE %Carrier
+          !=         ?navigationstatus!=Under Way                → NOT EQUAL
+          (none)     ?navigationstatus=Under Way                 → EXACT MATCH
+
+        Number operators (prefix inside the value string):
+          >=         ?speed_current_consensusvalue=>=15          → >= 15
+          <=         ?speed_current_consensusvalue=<=25          → <= 25
+          !=         ?status_navstatus!=5                        → != 5
+          >          ?heading_current_consensusvalue=>90         → > 90
+          <          ?heading_current_consensusvalue=<270        → < 270
+          (none)     ?identification_mmsi=123456789              → = 123456789
+
+      Zone / Polygon format (zone param):
+        Comma-separated lat,lng pairs — min 3 points (6 values).
+        Ring auto-closed. Multiple zone= params = multiple polygon filters.
+        Example: ?zone=18.4,72.8,18.6,73.0,18.5,73.2
+
+      Example URLs:
+        /map?vessel=123456789&track=3600
+        /map?zone=18.4,72.8,18.6,73.0,18.5,73.2&speed_current_consensusvalue=>15
+        /map?flyto=72.8,18.4,73.2,18.6&basemap=dark&view=map,table,layers
+        /map?identification_shipname=contains:Nimitz&briefing=1
+        /map?speed_current_consensusvalue=>=15&heading_current_consensusvalue=<270
+
+      ═══════════════════════════════════════════════════════════════════
+      WORLD MONITORING PAGE (/world-monitoring)
+      ═══════════════════════════════════════════════════════════════════
+      Two tabs: tab=threats (default) | tab=articles
+      sort: latest | oldest | most_relevant | most_severe
+
+      Threat filters: keyword, event_type (repeatable), threat_level (repeatable: LOW/MEDIUM/HIGH/CRITICAL),
+        source (repeatable), date_from, date_to, has_article, relevance_min, relevance_max,
+        location, vessel_name, threat_type, origin, damage, countermeasures
+
+      Article filters: search, title, author, source, source_type, status,
+        published_from, published_to, ingested_from, ingested_to, updated_from, updated_to,
+        tags, article_location
+
+      Repeatable params: Use multiple identical keys — e.g., &event_type=Piracy&event_type=Conflict
+
+      Example URLs:
+        /world-monitoring?tab=threats&threat_level=CRITICAL&location=Gulf of Aden&date_from=2025-01-01T00:00:00Z
+        /world-monitoring?tab=articles&search=South China Sea&source=Reuters&sort=latest
+        /world-monitoring?tab=threats&event_type=Piracy&relevance_min=0.8&has_article=true
+        /world-monitoring?tab=threats&event_type=Conflict&threat_level=HIGH&threat_level=CRITICAL
+
+      ═══════════════════════════════════════════════════════════════════
+      HISTORICAL PLAYBACK PAGE (/historical-playback)
+      ═══════════════════════════════════════════════════════════════════
+      Required context: start (ISO 8601), end (ISO 8601), zone (polygon coords).
+      granularity: minute | hour (default) | day | week
+
+      Vessel filters (all AND-combined → single ClickHouse WHERE clause):
+        mmsi (repeatable), vessel_id (repeatable), speed_min, speed_max,
+        ship_name (LIKE), destination (LIKE), callsign (LIKE),
+        nav_status (0-15), heading_min, heading_max, course_min, course_max
+
+      Zone format: lat1,lng1,lat2,lng2,... (min 6 values). Multiple zone= → MultiPolygon.
+      Example: WHERE (mmsi=123456789 AND speed>=10 AND speed<=25 AND shipname LIKE '%Nimitz%')
+
+      Example URLs:
+        /historical-playback?start=2025-01-01T10:00:00Z&end=2025-01-01T12:00:00Z&granularity=minute&zone=18.4,72.8,18.6,73.0,18.5,73.2
+        /historical-playback?start=2025-01-01T10:00:00Z&end=2025-01-01T14:00:00Z&mmsi=123456789&speed_min=10&speed_max=25
+        /historical-playback?zone=18.4,72.8,18.6,73.0,18.5,73.2&zone=19.0,73.0,19.2,73.2,19.1,73.3&ship_name=Nimitz&granularity=hour
+
+      ═══════════════════════════════════════════════════════════════════
+      DATETIME FORMAT (all datetime params)
+      ═══════════════════════════════════════════════════════════════════
+        ISO 8601 UTC preferred:
+          2025-01-01T10:00:00Z         (UTC with Z suffix — preferred)
+          2025-01-01T10:00:00+00:00    (UTC with offset)
+          2025-01-01T10:00:00          (assumed UTC if no timezone)

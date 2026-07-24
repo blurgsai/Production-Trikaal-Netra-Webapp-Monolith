@@ -29,6 +29,7 @@ import {
 } from "../model/mappers";
 
 import { ArticleMetadataChips } from "./ArticleMetadataChips";
+import LocateVesselOnMapButton from "./LocateVesselOnMapButton";
 
 // ── Main component ────────────────────────────────────────────────────────────
 
@@ -209,6 +210,19 @@ export default function EventDetailDialog({
                       ),
                     )}
                   </Stack>
+                  {(eventDetail.structuredFields as StructuredField[])
+                    .find((f) => f.key === "vessel_name" && typeof f.value === "string" && f.value.trim().length > 0)
+                    ?.value && (
+                    <Box sx={{ mt: 1.5 }}>
+                      <LocateVesselOnMapButton
+                        vesselName={
+                          (eventDetail.structuredFields as StructuredField[]).find(
+                            (f) => f.key === "vessel_name"
+                          )!.value as string
+                        }
+                      />
+                    </Box>
+                  )}
                 </Box>
               )}
 

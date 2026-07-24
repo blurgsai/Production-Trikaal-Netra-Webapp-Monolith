@@ -1,0 +1,47 @@
+# Tool Registry - Maps each RAG source to its available tools
+# This file is used by the configuration generation app to validate
+# that selected tools are actually available for each data source
+
+mongo:
+  mongo_find:
+    name: mongo_find
+    description: Find documents matching a filter in a collection
+  mongo_aggregate:
+    name: mongo_aggregate
+    description: Perform data aggregation with pipeline
+  mongo_count:
+    name: mongo_count
+    description: Count documents matching a filter
+  mongo_explain:
+    name: mongo_explain
+    description: Get query execution plan and statistics
+  mongo_list_databases:
+    name: mongo_list_databases
+    description: List all databases on the MongoDB server
+  mongo_list_collections:
+    name: mongo_list_collections
+    description: List all collections in a database
+  mongo_collection_schema:
+    name: mongo_collection_schema
+    description: Infer collection schema from sample documents
+
+clickhouse:
+  query_analytics:
+    name: query_analytics
+    description: Execute SELECT queries on ClickHouse
+  store_metrics:
+    name: store_metrics
+    description: Insert data into ClickHouse tables
+
+text_files:
+  upload_documents:
+    name: upload_documents
+    description: Upload and process multiple text files into Chroma
+  search_documents:
+    name: search_documents
+    description: Search stored documents using semantic similarity
+
+page_navigator:
+  generate_full_url:
+    name: generate_full_url
+    description: Generates a full URL based on the user query and page configuration

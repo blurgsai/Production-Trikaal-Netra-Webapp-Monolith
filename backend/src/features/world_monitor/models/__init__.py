@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import difflib
 import re
 from collections.abc import Iterable
 from datetime import datetime
@@ -131,6 +132,19 @@ class WorldMonitorMetadataResponse(BaseModel):
     sort_options: list[dict[str, str]]
 
 
+class VesselSearchMatch(BaseModel):
+    vessel_id: int
+    ship_name: str
+    mmsi: int | None = None
+    score: float
+
+
+class VesselSearchResponse(BaseModel):
+    success: bool = True
+    query: str
+    matches: list[VesselSearchMatch] = Field(default_factory=list)
+
+
 class OverviewSummary(BaseModel):
     active_events: int
     critical_high_events: int
@@ -197,6 +211,38 @@ def _clean_text(value: str | None) -> str | None:
     return re.sub(r"\s+", " ", value).strip()
 
 
+def _iter_extracted_payloads(event_doc: dict[str, Any]) -> list[dict[str, Any]]:
+    """Yield extracted_data payload dicts from either document shape.
+
+    Some events store extracted_data as a list of wrapper dicts:
+        [{extracted_data: {vessel_name: ...}}, ...]
+    Others store it as a plain dict:
+        {vessel_name: ...}
+    This normalises both into a list of payload dicts.
+    """
+    raw = event_doc.get("extracted_data")
+    if raw is None:
+        return []
+    if isinstance(raw, dict):
+        # Could be a direct payload or a single wrapper
+        if "extracted_data" in raw and isinstance(raw["extracted_data"], dict):
+            return [raw["extracted_data"]]
+        return [raw]
+    if isinstance(raw, list):
+        payloads: list[dict[str, Any]] = []
+        for item in raw:
+            if not isinstance(item, dict):
+                continue
+            nested = item.get("extracted_data")
+            if isinstance(nested, dict):
+                payloads.append(nested)
+            elif isinstance(item, dict) and item:
+                # Item itself is the payload (no nested wrapper)
+                payloads.append(item)
+        return payloads
+    return []
+
+
 def _strip_html(value: str | None) -> str | None:
     if not value:
         return None
@@ -220,8 +266,8 @@ def _extract_reasoning(event_doc: dict[str, Any]) -> str | None:
     direct = _clean_text(event_doc.get("reasoning"))
     if direct:
         return direct
-    for item in event_doc.get("extracted_data", []) or []:
-        nested = _clean_text((item if isinstance(item, dict) else {}).get("extracted_data", {}).get("reasoning"))
+    for payload in _iter_extracted_payloads(event_doc):
+        nested = _clean_text(payload.get("reasoning"))
         if nested:
             return nested
     return None
@@ -231,16 +277,16 @@ def _extract_threat_level(event_doc: dict[str, Any]) -> str:
     level = event_doc.get("threat_level")
     if isinstance(level, str) and level.strip():
         return level.strip().upper()
-    for item in event_doc.get("extracted_data", []) or []:
-        nested = (item if isinstance(item, dict) else {}).get("extracted_data", {}).get("threat_level")
+    for payload in _iter_extracted_payloads(event_doc):
+        nested = payload.get("threat_level")
         if isinstance(nested, str) and nested.strip():
             return nested.strip().upper()
     return "MEDIUM"
 
 
 def _primary_location_name(event_doc: dict[str, Any]) -> str | None:
-    for item in event_doc.get("extracted_data", []) or []:
-        nested_location = (item if isinstance(item, dict) else {}).get("extracted_data", {}).get("location")
+    for payload in _iter_extracted_payloads(event_doc):
+        nested_location = payload.get("location")
         if isinstance(nested_location, str) and nested_location.strip():
             return nested_location.strip()
     locations = event_doc.get("location") or []
@@ -302,8 +348,7 @@ def _build_event_title(
     vessel_name = None
     threat_type = None
 
-    for item in event_doc.get("extracted_data", []) or []:
-        payload = (item if isinstance(item, dict) else {}).get("extracted_data", {})
+    for payload in _iter_extracted_payloads(event_doc):
         vessel_name = vessel_name or _clean_text(payload.get("vessel_name"))
         threat_type = threat_type or _clean_text(payload.get("threat_type"))
 
@@ -326,8 +371,7 @@ def _build_event_summary(
     if direct_summary:
         return direct_summary
 
-    for item in event_doc.get("extracted_data", []) or []:
-        payload = (item if isinstance(item, dict) else {}).get("extracted_data", {})
+    for payload in _iter_extracted_payloads(event_doc):
         nested_summary = _clean_text(payload.get("summary"))
         if nested_summary:
             return nested_summary
@@ -358,8 +402,7 @@ def _build_event_summary(
 def _extract_structured_fields(event_doc: dict[str, Any]) -> list[dict[str, Any]]:
     fields: list[dict[str, Any]] = []
     seen: set[str] = set()
-    for item in event_doc.get("extracted_data", []) or []:
-        payload = (item if isinstance(item, dict) else {}).get("extracted_data", {})
+    for payload in _iter_extracted_payloads(event_doc):
         for key, value in payload.items():
             if key in {"summary", "reasoning", "threat_level"} or value in (None, "", []):
                 continue
@@ -368,6 +411,41 @@ def _extract_structured_fields(event_doc: dict[str, Any]) -> list[dict[str, Any]
             seen.add(key)
             fields.append({"key": key, "label": _labelize(key), "value": value})
     return fields
+
+
+def map_vessel_search_matches(
+    docs: list[dict[str, Any]], query: str, limit: int = 5
+) -> dict[str, Any]:
+    """Fuzzy-rank vessel_state candidate docs against `query` by ship name.
+
+    Mongo only gives us a case-insensitive substring match; this ranks that
+    candidate pool by similarity so the frontend can auto-pick a confident
+    single match or offer a short disambiguation list.
+    """
+    normalized_query = query.strip().lower()
+    matches: list[dict[str, Any]] = []
+    for doc in docs:
+        identification = doc.get("identification") or {}
+        ship_name = identification.get("shipName")
+        vessel_id = doc.get("vesselId")
+        if not ship_name or vessel_id is None:
+            continue
+        normalized_ship_name = str(ship_name).strip().lower()
+        ratio = difflib.SequenceMatcher(None, normalized_query, normalized_ship_name).ratio()
+        # Strongly boost cases where the query is a substring of the ship name,
+        # as those are usually the most relevant vessel matches.
+        substring_bonus = 0.2 if normalized_query in normalized_ship_name else 0.0
+        score = min(round(ratio + substring_bonus, 4), 1.0)
+        matches.append(
+            {
+                "vessel_id": int(vessel_id),
+                "ship_name": str(ship_name),
+                "mmsi": identification.get("mmsi"),
+                "score": score,
+            }
+        )
+    matches.sort(key=lambda item: (-item["score"], -len(item["ship_name"])))
+    return {"query": query, "matches": matches[:limit]}
 
 
 def map_article_preview_from_doc(

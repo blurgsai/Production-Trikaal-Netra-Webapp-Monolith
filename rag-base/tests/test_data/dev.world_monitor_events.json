@@ -1,0 +1,1215 @@
+[{
+  "_id": {
+    "$oid": "69d895f26240d1b495bdd58c"
+  },
+  "event_id": {
+    "$oid": "69d895f26240d1b495bdd58b"
+  },
+  "user_ids": [
+    {
+      "$oid": "698db2290e156f68111bc8d2"
+    },
+    {
+      "$oid": "69d75773d1ca57bffab8f3e4"
+    }
+  ],
+  "article_id": {
+    "$oid": "69c2749b140695bf83dfabf9"
+  },
+  "event_type": "MissileDroneThreat",
+  "relevance_score": null,
+  "extracted_data": [
+    {
+      "event_type": "MissileDroneThreat",
+      "extracted_data": {
+        "location": "Strait of Hormuz",
+        "vessel_name": null,
+        "threat_type": "missiles, drones, artillery",
+        "origin": "Iran",
+        "damage": null,
+        "countermeasures": null,
+        "threat_level": "HIGH",
+        "summary": "Analysts warn that Western navies operating in the Strait of Hormuz face significant risks from Iranian missiles, drones, and artillery.",
+        "reasoning": "The article mentions that Western navies operating in the Strait of Hormuz are within range of Iranian missiles and cheap drones, which serves as a threat assessment rather than a report of an actual event. As no hostile action or strike has occurred, this constitutes a low-priority surveillance and threat context, identifying the potential for future missile or drone engagement."
+      }
+    }
+  ],
+  "threat_level": "HIGH",
+  "location": [
+    {
+      "name": "Paris",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          2.320041,
+          48.8588897
+        ]
+      }
+    },
+    {
+      "name": "Strait of Hormuz",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          56.202770199999996,
+          26.449406099999997
+        ]
+      }
+    },
+    {
+      "name": "U.K.",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.7114596,
+          16.9873547
+        ]
+      }
+    },
+    {
+      "name": "France",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          1.8883335,
+          46.603354
+        ]
+      }
+    },
+    {
+      "name": "Iran",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          54.5643516,
+          32.6475314
+        ]
+      }
+    },
+    {
+      "name": "Persian Gulf",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          50.0119434,
+          36.3200516
+        ]
+      }
+    },
+    {
+      "name": "Gulf of Oman",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          58.9845823,
+          24.213802899999997
+        ]
+      }
+    }
+  ],
+  "reasoning": "The article mentions that Western navies operating in the Strait of Hormuz are within range of Iranian missiles and cheap drones, which serves as a threat assessment rather than a report of an actual event. As no hostile action or strike has occurred, this constitutes a low-priority surveillance and threat context, identifying the potential for future missile or drone engagement.",
+  "summary": "Analysts warn that Western navies operating in the Strait of Hormuz face significant risks from Iranian missiles, drones, and artillery.",
+  "enriched_at": "2026-04-10T06:17:22.552429+00:00"
+},
+{
+  "_id": {
+    "$oid": "69d895f96240d1b495bdd58e"
+  },
+  "event_id": {
+    "$oid": "69d895f96240d1b495bdd58d"
+  },
+  "user_ids": [
+    {
+      "$oid": "698db2290e156f68111bc8d2"
+    },
+    {
+      "$oid": "69d75773d1ca57bffab8f3e4"
+    }
+  ],
+  "article_id": {
+    "$oid": "69c2749b140695bf83dfabf9"
+  },
+  "event_type": "GeopoliticalTension",
+  "relevance_score": null,
+  "extracted_data": [
+    {
+      "event_type": "MissileDroneThreat",
+      "extracted_data": {
+        "location": "Strait of Hormuz",
+        "vessel_name": null,
+        "threat_type": "missiles, drones, artillery",
+        "origin": "Iran",
+        "damage": null,
+        "countermeasures": null,
+        "threat_level": "HIGH",
+        "summary": "Analysts warn that Western navies operating in the Strait of Hormuz face significant risks from Iranian missiles, drones, and artillery.",
+        "reasoning": "The article mentions that Western navies operating in the Strait of Hormuz are within range of Iranian missiles and cheap drones, which serves as a threat assessment rather than a report of an actual event. As no hostile action or strike has occurred, this constitutes a low-priority surveillance and threat context, identifying the potential for future missile or drone engagement."
+      }
+    },
+    {
+      "event_type": "GeopoliticalTension",
+      "extracted_data": {
+        "location": "Strait of Hormuz",
+        "countries_involved": "United States, Iran, United Kingdom, France",
+        "incident_type": "Geopolitical tension regarding maritime security and potential blockade",
+        "vessels_involved": "Very large crude carriers (VLCCs)",
+        "escalation_level": "Preparatory stage for security operations; heightened rhetorical tension",
+        "impact_on_shipping": "Risk of disruption to the safe passage of crude oil tankers",
+        "threat_level": "HIGH",
+        "summary": null,
+        "reasoning": "The event is classified as High priority because it involves an active standoff regarding the security of the Strait of Hormuz, a critical global maritime chokepoint. The potential for military intervention and the strategic vulnerability of naval vessels to Iranian missile and drone threats indicate a direct risk of escalating regional conflict and disruption to vital shipping routes."
+      }
+    }
+  ],
+  "threat_level": "HIGH",
+  "location": [
+    {
+      "name": "Paris",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          2.320041,
+          48.8588897
+        ]
+      }
+    },
+    {
+      "name": "Strait of Hormuz",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          56.202770199999996,
+          26.449406099999997
+        ]
+      }
+    },
+    {
+      "name": "U.K.",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.7114596,
+          16.9873547
+        ]
+      }
+    },
+    {
+      "name": "France",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          1.8883335,
+          46.603354
+        ]
+      }
+    },
+    {
+      "name": "Iran",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          54.5643516,
+          32.6475314
+        ]
+      }
+    },
+    {
+      "name": "Persian Gulf",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          50.0119434,
+          36.3200516
+        ]
+      }
+    },
+    {
+      "name": "Gulf of Oman",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          58.9845823,
+          24.213802899999997
+        ]
+      }
+    }
+  ],
+  "reasoning": "The event is classified as High priority because it involves an active standoff regarding the security of the Strait of Hormuz, a critical global maritime chokepoint. The potential for military intervention and the strategic vulnerability of naval vessels to Iranian missile and drone threats indicate a direct risk of escalating regional conflict and disruption to vital shipping routes.",
+  "summary": null,
+  "enriched_at": "2026-04-10T06:17:29.319231+00:00"
+},
+{
+  "_id": {
+    "$oid": "69d896006240d1b495bdd590"
+  },
+  "event_id": {
+    "$oid": "69d896006240d1b495bdd58f"
+  },
+  "user_ids": [
+    {
+      "$oid": "698db2290e156f68111bc8d2"
+    },
+    {
+      "$oid": "69d75773d1ca57bffab8f3e4"
+    }
+  ],
+  "article_id": {
+    "$oid": "69c2749b140695bf83dfabfa"
+  },
+  "event_type": "NavalExercise",
+  "relevance_score": null,
+  "extracted_data": [
+    {
+      "event_type": "NavalExercise",
+      "extracted_data": {
+        "location": "Bahrain",
+        "participating_countries": "United States",
+        "exercise_name": null,
+        "vessel_types": "Independence-class littoral combat ship, Avenger-class mine countermeasures ships, MH-60S helicopters, unmanned underwater vehicles",
+        "duration": null,
+        "significance": "Assessment of the operational effectiveness and suitability of new mine countermeasure technology compared to legacy systems in the Middle East.",
+        "threat_level": "MEDIUM",
+        "summary": null,
+        "reasoning": "The article discusses the operational capabilities and testing of U.S. Navy counter-mine systems rather than describing an active NavalExercise event. Consequently, this does not fit the provided priority definitions as no specific drill or operation occurred, and the text focuses solely on defense procurement and maintenance evaluations."
+      }
+    }
+  ],
+  "threat_level": "MEDIUM",
+  "location": [
+    {
+      "name": "Bahrain",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          50.5344606,
+          26.1551249
+        ]
+      }
+    },
+    {
+      "name": "Middle East",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -76.5888477,
+          39.3014159
+        ]
+      }
+    }
+  ],
+  "reasoning": "The article discusses the operational capabilities and testing of U.S. Navy counter-mine systems rather than describing an active NavalExercise event. Consequently, this does not fit the provided priority definitions as no specific drill or operation occurred, and the text focuses solely on defense procurement and maintenance evaluations.",
+  "summary": null,
+  "enriched_at": "2026-04-10T06:17:36.341456+00:00"
+},
+{
+  "_id": {
+    "$oid": "69d896076240d1b495bdd592"
+  },
+  "event_id": {
+    "$oid": "69d896076240d1b495bdd591"
+  },
+  "user_ids": [
+    {
+      "$oid": "698db2290e156f68111bc8d2"
+    },
+    {
+      "$oid": "69d75773d1ca57bffab8f3e4"
+    }
+  ],
+  "article_id": {
+    "$oid": "69c2749b140695bf83dfabfb"
+  },
+  "event_type": "NavalExercise",
+  "relevance_score": null,
+  "extracted_data": [
+    {
+      "event_type": "NavalExercise",
+      "extracted_data": {
+        "location": "Souda Bay, Greece; Red Sea",
+        "participating_countries": "United States",
+        "exercise_name": "Operation Epic Fury",
+        "vessel_types": "aircraft carrier, Carrier Strike Group",
+        "duration": null,
+        "significance": "Operation in the Red Sea as part of overseas deployment",
+        "threat_level": "LOW",
+        "summary": null,
+        "reasoning": "The event is classified as a NavalExercise because the USS Gerald R. Ford Carrier Strike Group is described as currently deployed and engaged in Operation Epic Fury. This falls under the medium priority category because it involves a significant carrier strike group operating in a sensitive region, despite the specific mention of maintenance and a non-combat fire."
+      }
+    }
+  ],
+  "threat_level": "LOW",
+  "location": [
+    {
+      "name": "Greece",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          21.9877132,
+          38.9953683
+        ]
+      }
+    },
+    {
+      "name": "Red Sea",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          34.0930512,
+          25.5664162
+        ]
+      }
+    },
+    {
+      "name": "Middle East",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -76.5888477,
+          39.3014159
+        ]
+      }
+    },
+    {
+      "name": "Iran",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          54.5643516,
+          32.6475314
+        ]
+      }
+    },
+    {
+      "name": "Venezuela",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -66.1109318,
+          8.0018709
+        ]
+      }
+    }
+  ],
+  "reasoning": "The event is classified as a NavalExercise because the USS Gerald R. Ford Carrier Strike Group is described as currently deployed and engaged in Operation Epic Fury. This falls under the medium priority category because it involves a significant carrier strike group operating in a sensitive region, despite the specific mention of maintenance and a non-combat fire.",
+  "summary": null,
+  "enriched_at": "2026-04-10T06:17:43.547109+00:00"
+},
+{
+  "_id": {
+    "$oid": "69d8960e6240d1b495bdd594"
+  },
+  "event_id": {
+    "$oid": "69d8960e6240d1b495bdd593"
+  },
+  "user_ids": [
+    {
+      "$oid": "698db2290e156f68111bc8d2"
+    },
+    {
+      "$oid": "69d75773d1ca57bffab8f3e4"
+    }
+  ],
+  "article_id": {
+    "$oid": "69c2749b140695bf83dfabfc"
+  },
+  "event_type": "GeopoliticalTension",
+  "relevance_score": null,
+  "extracted_data": [
+    {
+      "event_type": "GeopoliticalTension",
+      "extracted_data": {
+        "location": "Tehran, Iran",
+        "countries_involved": "United States, Israel, Iran",
+        "incident_type": "military strike",
+        "vessels_involved": null,
+        "escalation_level": "high",
+        "impact_on_shipping": null,
+        "threat_level": "CRITICAL",
+        "summary": "U.S.-Israeli military operation planned against Iranian leadership, including Supreme Leader Ali Khamenei, following discussions between President Trump and Prime Minister Netanyahu.",
+        "reasoning": "The event is classified as critical because it details a coordinated military strike between the U.S. and Israel intended to target Iran's supreme leadership, signifying an active armed conflict. This goes beyond heightened tension or naval deployments, as it describes a direct offensive operation that threatens regional stability and meets the criteria for the highest priority classification."
+      }
+    }
+  ],
+  "threat_level": "CRITICAL",
+  "location": [
+    {
+      "name": "Iran",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          54.5643516,
+          32.6475314
+        ]
+      }
+    },
+    {
+      "name": "Tehran",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          51.3896004,
+          35.6892523
+        ]
+      }
+    },
+    {
+      "name": "United States",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -100.445882,
+          39.7837304
+        ]
+      }
+    },
+    {
+      "name": "Middle East",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -76.5888477,
+          39.3014159
+        ]
+      }
+    }
+  ],
+  "reasoning": "The event is classified as critical because it details a coordinated military strike between the U.S. and Israel intended to target Iran's supreme leadership, signifying an active armed conflict. This goes beyond heightened tension or naval deployments, as it describes a direct offensive operation that threatens regional stability and meets the criteria for the highest priority classification.",
+  "summary": "U.S.-Israeli military operation planned against Iranian leadership, including Supreme Leader Ali Khamenei, following discussions between President Trump and Prime Minister Netanyahu.",
+  "enriched_at": "2026-04-10T06:17:50.104151+00:00"
+},
+{
+  "_id": {
+    "$oid": "69d896126240d1b495bdd596"
+  },
+  "event_id": {
+    "$oid": "69d896126240d1b495bdd595"
+  },
+  "user_ids": [
+    {
+      "$oid": "698db2290e156f68111bc8d2"
+    },
+    {
+      "$oid": "69d75773d1ca57bffab8f3e4"
+    }
+  ],
+  "article_id": {
+    "$oid": "69c2749b140695bf83dfabfc"
+  },
+  "event_type": "MissileDroneThreat",
+  "relevance_score": null,
+  "extracted_data": [
+    {
+      "event_type": "GeopoliticalTension",
+      "extracted_data": {
+        "location": "Tehran, Iran",
+        "countries_involved": "United States, Israel, Iran",
+        "incident_type": "military strike",
+        "vessels_involved": null,
+        "escalation_level": "high",
+        "impact_on_shipping": null,
+        "threat_level": "CRITICAL",
+        "summary": "U.S.-Israeli military operation planned against Iranian leadership, including Supreme Leader Ali Khamenei, following discussions between President Trump and Prime Minister Netanyahu.",
+        "reasoning": "The event is classified as critical because it details a coordinated military strike between the U.S. and Israel intended to target Iran's supreme leadership, signifying an active armed conflict. This goes beyond heightened tension or naval deployments, as it describes a direct offensive operation that threatens regional stability and meets the criteria for the highest priority classification."
+      }
+    },
+    {
+      "event_type": "MissileDroneThreat",
+      "extracted_data": {
+        "location": null,
+        "vessel_name": null,
+        "threat_type": null,
+        "origin": null,
+        "damage": null,
+        "countermeasures": null,
+        "threat_level": null,
+        "summary": "The article discusses high-level political and military discussions between Donald Trump and Benjamin Netanyahu regarding a potential military operation in Iran, but it does not report a specific drone or missile attack incident.",
+        "reasoning": "The event 'MissileDroneThreat' is not detected in this article because the text describes high-level political deliberations regarding a potential 'decapitation strike' against leadership, rather than an actual hostile missile or drone approach. Since no specific drone or missile activity or threat is reported as occurring within the article's timeframe, it does not fit any of the provided priority definitions."
+      }
+    }
+  ],
+  "threat_level": null,
+  "location": [
+    {
+      "name": "Iran",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          54.5643516,
+          32.6475314
+        ]
+      }
+    },
+    {
+      "name": "Tehran",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          51.3896004,
+          35.6892523
+        ]
+      }
+    },
+    {
+      "name": "United States",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -100.445882,
+          39.7837304
+        ]
+      }
+    },
+    {
+      "name": "Middle East",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -76.5888477,
+          39.3014159
+        ]
+      }
+    }
+  ],
+  "reasoning": "The event 'MissileDroneThreat' is not detected in this article because the text describes high-level political deliberations regarding a potential 'decapitation strike' against leadership, rather than an actual hostile missile or drone approach. Since no specific drone or missile activity or threat is reported as occurring within the article's timeframe, it does not fit any of the provided priority definitions.",
+  "summary": "The article discusses high-level political and military discussions between Donald Trump and Benjamin Netanyahu regarding a potential military operation in Iran, but it does not report a specific drone or missile attack incident.",
+  "enriched_at": "2026-04-10T06:17:54.097953+00:00"
+},
+{
+  "_id": {
+    "$oid": "69d8961c6240d1b495bdd598"
+  },
+  "event_id": {
+    "$oid": "69d8961c6240d1b495bdd597"
+  },
+  "user_ids": [
+    {
+      "$oid": "698db2290e156f68111bc8d2"
+    },
+    {
+      "$oid": "69d75773d1ca57bffab8f3e4"
+    }
+  ],
+  "article_id": {
+    "$oid": "69c2749b140695bf83dfabff"
+  },
+  "event_type": "MissileDroneThreat",
+  "relevance_score": null,
+  "extracted_data": [
+    {
+      "event_type": "MissileDroneThreat",
+      "extracted_data": {
+        "location": "Bahrain",
+        "vessel_name": null,
+        "threat_type": "drone",
+        "origin": "Iran",
+        "damage": "32 people injured, homes damaged",
+        "countermeasures": "Patriot air defense battery",
+        "threat_level": "CRITICAL",
+        "summary": null,
+        "reasoning": "The event is classified as MissileDroneThreat because the article explicitly links a pre-dawn explosion to an Iranian drone attack that caused civilian injuries and property damage. Given that the blast resulted in injuries to 32 people and damage to homes, it falls under the high priority definition of a strike involving minor to significant damage."
+      }
+    }
+  ],
+  "threat_level": "CRITICAL",
+  "location": [
+    {
+      "name": "Bahrain",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          50.5344606,
+          26.1551249
+        ]
+      }
+    },
+    {
+      "name": "Iran",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          54.5643516,
+          32.6475314
+        ]
+      }
+    },
+    {
+      "name": "Washington",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -77.0363849,
+          38.8950982
+        ]
+      }
+    },
+    {
+      "name": "Saudi Arabia",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          42.3528328,
+          25.6242618
+        ]
+      }
+    },
+    {
+      "name": "Middle East",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -76.5888477,
+          39.3014159
+        ]
+      }
+    },
+    {
+      "name": "Singapore",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          103.8194992,
+          1.357107
+        ]
+      }
+    }
+  ],
+  "reasoning": "The event is classified as MissileDroneThreat because the article explicitly links a pre-dawn explosion to an Iranian drone attack that caused civilian injuries and property damage. Given that the blast resulted in injuries to 32 people and damage to homes, it falls under the high priority definition of a strike involving minor to significant damage.",
+  "summary": null,
+  "enriched_at": "2026-04-10T06:18:04.468154+00:00"
+},
+{
+  "_id": {
+    "$oid": "69d8961f6240d1b495bdd59a"
+  },
+  "event_id": {
+    "$oid": "69d8961f6240d1b495bdd599"
+  },
+  "user_ids": [
+    {
+      "$oid": "698db2290e156f68111bc8d2"
+    },
+    {
+      "$oid": "69d75773d1ca57bffab8f3e4"
+    }
+  ],
+  "article_id": {
+    "$oid": "69c2749b140695bf83dfabff"
+  },
+  "event_type": "GeopoliticalTension",
+  "relevance_score": null,
+  "extracted_data": [
+    {
+      "event_type": "MissileDroneThreat",
+      "extracted_data": {
+        "location": "Bahrain",
+        "vessel_name": null,
+        "threat_type": "drone",
+        "origin": "Iran",
+        "damage": "32 people injured, homes damaged",
+        "countermeasures": "Patriot air defense battery",
+        "threat_level": "CRITICAL",
+        "summary": null,
+        "reasoning": "The event is classified as MissileDroneThreat because the article explicitly links a pre-dawn explosion to an Iranian drone attack that caused civilian injuries and property damage. Given that the blast resulted in injuries to 32 people and damage to homes, it falls under the high priority definition of a strike involving minor to significant damage."
+      }
+    },
+    {
+      "event_type": "GeopoliticalTension",
+      "extracted_data": {
+        "location": "Bahrain",
+        "countries_involved": "United States, Bahrain, Iran",
+        "incident_type": "Military conflict involving missile defense failure",
+        "vessels_involved": null,
+        "escalation_level": "Active war",
+        "impact_on_shipping": "None mentioned",
+        "threat_level": "CRITICAL",
+        "summary": null,
+        "reasoning": "The event is classified as 'GeopoliticalTension' due to the ongoing armed conflict between the U.S.-led coalition and Iran, as explicitly mentioned in the text. This qualifies as 'critical' under the provided definitions because it involves active combat operations and damage to civilian infrastructure in a strategic region."
+      }
+    }
+  ],
+  "threat_level": "CRITICAL",
+  "location": [
+    {
+      "name": "Bahrain",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          50.5344606,
+          26.1551249
+        ]
+      }
+    },
+    {
+      "name": "Iran",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          54.5643516,
+          32.6475314
+        ]
+      }
+    },
+    {
+      "name": "Washington",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -77.0363849,
+          38.8950982
+        ]
+      }
+    },
+    {
+      "name": "Saudi Arabia",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          42.3528328,
+          25.6242618
+        ]
+      }
+    },
+    {
+      "name": "Middle East",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -76.5888477,
+          39.3014159
+        ]
+      }
+    },
+    {
+      "name": "Singapore",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          103.8194992,
+          1.357107
+        ]
+      }
+    }
+  ],
+  "reasoning": "The event is classified as 'GeopoliticalTension' due to the ongoing armed conflict between the U.S.-led coalition and Iran, as explicitly mentioned in the text. This qualifies as 'critical' under the provided definitions because it involves active combat operations and damage to civilian infrastructure in a strategic region.",
+  "summary": null,
+  "enriched_at": "2026-04-10T06:18:07.200446+00:00"
+},
+{
+  "_id": {
+    "$oid": "69d896f83f615ce1374f0ecc"
+  },
+  "event_id": {
+    "$oid": "69d896f83f615ce1374f0ecb"
+  },
+  "user_ids": [
+    {
+      "$oid": "698db2290e156f68111bc8d2"
+    },
+    {
+      "$oid": "69d75773d1ca57bffab8f3e4"
+    }
+  ],
+  "article_id": {
+    "$oid": "69c2749b140695bf83dfabf9"
+  },
+  "event_type": "MissileDroneThreat",
+  "relevance_score": null,
+  "extracted_data": [
+    {
+      "event_type": "MissileDroneThreat",
+      "extracted_data": {
+        "location": "Strait of Hormuz",
+        "vessel_name": null,
+        "threat_type": "missiles, drones, artillery",
+        "origin": "Iran",
+        "damage": null,
+        "countermeasures": null,
+        "threat_level": "HIGH",
+        "summary": "Analysts warn that Western navies operating in the Strait of Hormuz face significant risks from Iranian missile, drone, and artillery capabilities, contradicting President Trump's characterization of securing the passage as a simple maneuver.",
+        "reasoning": "The article mentions that Western navies operating in the Strait of Hormuz would be within range of Iranian missiles and cheap drones, highlighting the persistent threat posed by these weapon systems. This classification reflects a low priority as it identifies a potential threat environment rather than reporting a specific hostile action or strike."
+      }
+    }
+  ],
+  "threat_level": "HIGH",
+  "location": [
+    {
+      "name": "Paris",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          2.320041,
+          48.8588897
+        ]
+      }
+    },
+    {
+      "name": "Strait of Hormuz",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          56.202770199999996,
+          26.449406099999997
+        ]
+      }
+    },
+    {
+      "name": "U.K.",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.7114596,
+          16.9873547
+        ]
+      }
+    },
+    {
+      "name": "France",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          1.8883335,
+          46.603354
+        ]
+      }
+    },
+    {
+      "name": "Iran",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          54.5643516,
+          32.6475314
+        ]
+      }
+    },
+    {
+      "name": "Persian Gulf",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          50.0119434,
+          36.3200516
+        ]
+      }
+    },
+    {
+      "name": "Gulf of Oman",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          58.9845823,
+          24.213802899999997
+        ]
+      }
+    }
+  ],
+  "reasoning": "The article mentions that Western navies operating in the Strait of Hormuz would be within range of Iranian missiles and cheap drones, highlighting the persistent threat posed by these weapon systems. This classification reflects a low priority as it identifies a potential threat environment rather than reporting a specific hostile action or strike.",
+  "summary": "Analysts warn that Western navies operating in the Strait of Hormuz face significant risks from Iranian missile, drone, and artillery capabilities, contradicting President Trump's characterization of securing the passage as a simple maneuver.",
+  "enriched_at": "2026-04-10T06:21:44.301546+00:00"
+},
+{
+  "_id": {
+    "$oid": "69d896fb3f615ce1374f0ece"
+  },
+  "event_id": {
+    "$oid": "69d896fb3f615ce1374f0ecd"
+  },
+  "user_ids": [
+    {
+      "$oid": "698db2290e156f68111bc8d2"
+    },
+    {
+      "$oid": "69d75773d1ca57bffab8f3e4"
+    }
+  ],
+  "article_id": {
+    "$oid": "69c2749b140695bf83dfabf9"
+  },
+  "event_type": "GeopoliticalTension",
+  "relevance_score": null,
+  "extracted_data": [
+    {
+      "event_type": "MissileDroneThreat",
+      "extracted_data": {
+        "location": "Strait of Hormuz",
+        "vessel_name": null,
+        "threat_type": "missiles, drones, artillery",
+        "origin": "Iran",
+        "damage": null,
+        "countermeasures": null,
+        "threat_level": "HIGH",
+        "summary": "Analysts warn that Western navies operating in the Strait of Hormuz face significant risks from Iranian missile, drone, and artillery capabilities, contradicting President Trump's characterization of securing the passage as a simple maneuver.",
+        "reasoning": "The article mentions that Western navies operating in the Strait of Hormuz would be within range of Iranian missiles and cheap drones, highlighting the persistent threat posed by these weapon systems. This classification reflects a low priority as it identifies a potential threat environment rather than reporting a specific hostile action or strike."
+      }
+    },
+    {
+      "event_type": "GeopoliticalTension",
+      "extracted_data": {
+        "location": "Strait of Hormuz",
+        "countries_involved": "United States, Iran, United Kingdom, France",
+        "incident_type": "blockade threat and maritime security dispute",
+        "vessels_involved": "very large crude carriers (VLCCs)",
+        "escalation_level": "High",
+        "impact_on_shipping": "Potential threat to safe passage of commercial oil tankers",
+        "threat_level": "HIGH",
+        "summary": null,
+        "reasoning": "The article describes a high-level geopolitical standoff concerning the Strait of Hormuz, a critical maritime chokepoint, where U.S. leadership is pressuring allies to intervene. This qualifies as a 'high' priority event because the tension directly involves the potential for military engagement and the threat to a vital shipping lane, even if active combat has not yet occurred."
+      }
+    }
+  ],
+  "threat_level": "HIGH",
+  "location": [
+    {
+      "name": "Paris",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          2.320041,
+          48.8588897
+        ]
+      }
+    },
+    {
+      "name": "Strait of Hormuz",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          56.202770199999996,
+          26.449406099999997
+        ]
+      }
+    },
+    {
+      "name": "U.K.",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.7114596,
+          16.9873547
+        ]
+      }
+    },
+    {
+      "name": "France",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          1.8883335,
+          46.603354
+        ]
+      }
+    },
+    {
+      "name": "Iran",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          54.5643516,
+          32.6475314
+        ]
+      }
+    },
+    {
+      "name": "Persian Gulf",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          50.0119434,
+          36.3200516
+        ]
+      }
+    },
+    {
+      "name": "Gulf of Oman",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          58.9845823,
+          24.213802899999997
+        ]
+      }
+    }
+  ],
+  "reasoning": "The article describes a high-level geopolitical standoff concerning the Strait of Hormuz, a critical maritime chokepoint, where U.S. leadership is pressuring allies to intervene. This qualifies as a 'high' priority event because the tension directly involves the potential for military engagement and the threat to a vital shipping lane, even if active combat has not yet occurred.",
+  "summary": null,
+  "enriched_at": "2026-04-10T06:21:47.672821+00:00"
+},
+{
+  "_id": {
+    "$oid": "69d897313f615ce1374f0ed0"
+  },
+  "event_id": {
+    "$oid": "69d897313f615ce1374f0ecf"
+  },
+  "user_ids": [
+    {
+      "$oid": "698db2290e156f68111bc8d2"
+    },
+    {
+      "$oid": "69d75773d1ca57bffab8f3e4"
+    }
+  ],
+  "article_id": {
+    "$oid": "69c2749b140695bf83dfac12"
+  },
+  "event_type": "GeopoliticalTension",
+  "relevance_score": null,
+  "extracted_data": [
+    {
+      "event_type": "GeopoliticalTension",
+      "extracted_data": {
+        "location": "Middle East",
+        "countries_involved": "Iran, Israel",
+        "incident_type": "Geopolitical tension and tactical strikes",
+        "vessels_involved": null,
+        "escalation_level": "Ongoing",
+        "impact_on_shipping": null,
+        "threat_level": "HIGH",
+        "summary": "The article discusses the strategic limits of tactical strikes in the context of ongoing geopolitical tensions involving Iran and Israel, highlighting the complex economic and geopolitical consequences.",
+        "reasoning": "The article discusses the strategic limits of tactical strikes within the Iran conflict, which inherently suggests a state of heightened geopolitical tension between regional actors. While no specific chokepoint closure or direct attack is detailed in this summary, the persistent military and economic friction classifies this as a medium priority event due to the ongoing operational impact on regional stability."
+      }
+    }
+  ],
+  "threat_level": "HIGH",
+  "location": [
+    {
+      "name": "Iran",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          54.5643516,
+          32.6475314
+        ]
+      }
+    }
+  ],
+  "reasoning": "The article discusses the strategic limits of tactical strikes within the Iran conflict, which inherently suggests a state of heightened geopolitical tension between regional actors. While no specific chokepoint closure or direct attack is detailed in this summary, the persistent military and economic friction classifies this as a medium priority event due to the ongoing operational impact on regional stability.",
+  "summary": "The article discusses the strategic limits of tactical strikes in the context of ongoing geopolitical tensions involving Iran and Israel, highlighting the complex economic and geopolitical consequences.",
+  "enriched_at": "2026-04-10T06:22:41.373267+00:00"
+},
+{
+  "_id": {
+    "$oid": "69d897373f615ce1374f0ed2"
+  },
+  "event_id": {
+    "$oid": "69d897373f615ce1374f0ed1"
+  },
+  "user_ids": [
+    {
+      "$oid": "698db2290e156f68111bc8d2"
+    },
+    {
+      "$oid": "69d75773d1ca57bffab8f3e4"
+    }
+  ],
+  "article_id": {
+    "$oid": "69c2749b140695bf83dfac13"
+  },
+  "event_type": "GeopoliticalTension",
+  "relevance_score": null,
+  "extracted_data": [
+    {
+      "event_type": "GeopoliticalTension",
+      "extracted_data": {
+        "location": "Strait of Hormuz",
+        "countries_involved": "United States, Iran",
+        "incident_type": "Geopolitical tension regarding maritime control and nuclear policy",
+        "vessels_involved": null,
+        "escalation_level": "High",
+        "impact_on_shipping": "Potential for joint control or disruption in the Strait of Hormuz",
+        "threat_level": "HIGH",
+        "summary": null,
+        "reasoning": "The article is classified as GeopoliticalTension because it discusses high-level international rhetoric regarding the Strait of Hormuz, a critical maritime chokepoint. While the discussions remain diplomatic, the subject matter involves potential changes to the control of strategic shipping routes, warranting a 'medium' priority classification due to the heightened tension inherent in diplomatic disagreements over such a vital waterway."
+      }
+    }
+  ],
+  "threat_level": "HIGH",
+  "location": [
+    {
+      "name": "Hormuz",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          56.202770199999996,
+          26.449406099999997
+        ]
+      }
+    },
+    {
+      "name": "Iran",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          54.5643516,
+          32.6475314
+        ]
+      }
+    }
+  ],
+  "reasoning": "The article is classified as GeopoliticalTension because it discusses high-level international rhetoric regarding the Strait of Hormuz, a critical maritime chokepoint. While the discussions remain diplomatic, the subject matter involves potential changes to the control of strategic shipping routes, warranting a 'medium' priority classification due to the heightened tension inherent in diplomatic disagreements over such a vital waterway.",
+  "summary": null,
+  "enriched_at": "2026-04-10T06:22:47.470769+00:00"
+},
+{
+  "_id": {
+    "$oid": "69d897453f615ce1374f0ed4"
+  },
+  "event_id": {
+    "$oid": "69d897453f615ce1374f0ed3"
+  },
+  "user_ids": [
+    {
+      "$oid": "698db2290e156f68111bc8d2"
+    },
+    {
+      "$oid": "69d75773d1ca57bffab8f3e4"
+    }
+  ],
+  "article_id": {
+    "$oid": "69c2749b140695bf83dfac18"
+  },
+  "event_type": "GeopoliticalTension",
+  "relevance_score": null,
+  "extracted_data": [
+    {
+      "event_type": "GeopoliticalTension",
+      "extracted_data": {
+        "location": null,
+        "countries_involved": "United States, Iran",
+        "incident_type": "Geopolitical Tension",
+        "vessels_involved": null,
+        "escalation_level": null,
+        "impact_on_shipping": null,
+        "threat_level": "MEDIUM",
+        "summary": "The article discusses the necessity for the U.S. to increase procurement of the Precision Strike Missile in light of developments in Iran.",
+        "reasoning": "The article discusses the procurement of the Precision Strike Missile in response to regional dynamics involving Iran, which indicates heightened geopolitical friction. Because the text focuses on weapon procurement and strategic posturing rather than an active standoff, naval deployment, or direct conflict, this event is categorized as low priority."
+      }
+    }
+  ],
+  "threat_level": "MEDIUM",
+  "location": [
+    {
+      "name": "Iran",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          54.5643516,
+          32.6475314
+        ]
+      }
+    },
+    {
+      "name": "US",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -100.445882,
+          39.7837304
+        ]
+      }
+    }
+  ],
+  "reasoning": "The article discusses the procurement of the Precision Strike Missile in response to regional dynamics involving Iran, which indicates heightened geopolitical friction. Because the text focuses on weapon procurement and strategic posturing rather than an active standoff, naval deployment, or direct conflict, this event is categorized as low priority.",
+  "summary": "The article discusses the necessity for the U.S. to increase procurement of the Precision Strike Missile in light of developments in Iran.",
+  "enriched_at": "2026-04-10T06:23:01.807461+00:00"
+}]

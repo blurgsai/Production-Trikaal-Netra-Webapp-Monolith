@@ -8,6 +8,8 @@ from typing import Any
 
 from bson import ObjectId
 
+from src.shared.config import settings
+
 
 def _parse_iso_datetime(value: Any) -> datetime | None:
     if value is None:
@@ -154,27 +156,45 @@ async def build_event_query(
 
     if extracted_data_location and extracted_data_location.strip():
         regex = {"$regex": _escape_keyword(extracted_data_location), "$options": "i"}
-        and_clauses.append({"extracted_data.extracted_data.location": regex})
+        and_clauses.append({"$or": [
+            {"extracted_data.extracted_data.location": regex},
+            {"extracted_data.location": regex},
+        ]})
 
     if extracted_data_vessel_name and extracted_data_vessel_name.strip():
         regex = {"$regex": _escape_keyword(extracted_data_vessel_name), "$options": "i"}
-        and_clauses.append({"extracted_data.extracted_data.vessel_name": regex})
+        and_clauses.append({"$or": [
+            {"extracted_data.extracted_data.vessel_name": regex},
+            {"extracted_data.vessel_name": regex},
+        ]})
 
     if extracted_data_threat_type and extracted_data_threat_type.strip():
         regex = {"$regex": _escape_keyword(extracted_data_threat_type), "$options": "i"}
-        and_clauses.append({"extracted_data.extracted_data.threat_type": regex})
+        and_clauses.append({"$or": [
+            {"extracted_data.extracted_data.threat_type": regex},
+            {"extracted_data.threat_type": regex},
+        ]})
 
     if extracted_data_origin and extracted_data_origin.strip():
         regex = {"$regex": _escape_keyword(extracted_data_origin), "$options": "i"}
-        and_clauses.append({"extracted_data.extracted_data.origin": regex})
+        and_clauses.append({"$or": [
+            {"extracted_data.extracted_data.origin": regex},
+            {"extracted_data.origin": regex},
+        ]})
 
     if extracted_data_damage and extracted_data_damage.strip():
         regex = {"$regex": _escape_keyword(extracted_data_damage), "$options": "i"}
-        and_clauses.append({"extracted_data.extracted_data.damage": regex})
+        and_clauses.append({"$or": [
+            {"extracted_data.extracted_data.damage": regex},
+            {"extracted_data.damage": regex},
+        ]})
 
     if extracted_data_countermeasures and extracted_data_countermeasures.strip():
         regex = {"$regex": _escape_keyword(extracted_data_countermeasures), "$options": "i"}
-        and_clauses.append({"extracted_data.extracted_data.countermeasures": regex})
+        and_clauses.append({"$or": [
+            {"extracted_data.extracted_data.countermeasures": regex},
+            {"extracted_data.countermeasures": regex},
+        ]})
 
     if location_name and location_name.strip():
         regex = {"$regex": _escape_keyword(location_name), "$options": "i"}
@@ -393,3 +413,20 @@ async def fetch_today_article_count(db) -> int:
     start = datetime(now.year, now.month, now.day, tzinfo=UTC)
     end = start.replace(hour=23, minute=59, second=59, microsecond=999999)
     return await articles.count_documents({"ingested_at": {"$gte": start, "$lte": end}})
+
+
+async def fetch_vessels_by_name(db, name: str, limit: int = 25) -> list[dict[str, Any]]:
+    """Candidate pool of vessel_state docs whose shipName loosely matches `name`.
+
+    Used to resolve a free-text vessel name (extracted from threat events) to a
+    vessel_id/mmsi so the caller can jump to the map. Matching is a case-insensitive
+    substring search at the Mongo layer; fuzzy ranking of the returned candidates
+    happens in models via map_vessel_search_matches.
+    """
+    collection = db.get_collection(settings.VESSEL_STATE_COLLECTION)
+    regex = {"$regex": _escape_keyword(name), "$options": "i"}
+    cursor = collection.find(
+        {"identification.shipName": regex},
+        {"_id": 0, "vesselId": 1, "identification.shipName": 1, "identification.mmsi": 1},
+    ).limit(limit)
+    return await cursor.to_list(length=limit)

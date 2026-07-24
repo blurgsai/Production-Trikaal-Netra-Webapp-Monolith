@@ -1,0 +1,42 @@
+sequenceDiagram
+    participant Webapp as Webapp<br/>(External App)
+    participant ChatDB as ChatDB<br/>(MongoDB)
+
+    Note over Webapp,ChatDB: Create New Session
+    
+    Webapp->>ChatDB: Insert new session<br/>(Sessions Collection)
+    Note right of Webapp: Generate title and user_id
+    
+    ChatDB-->>Webapp: Session object<br/>(with generated _id)
+
+%% Data Formats & Schemas
+%%
+%% Request: Insert new session
+%% {
+%%   "operation": "insert_session",
+%%   "data": {
+%%     "user_id": "string (ObjectId as string)",
+%%     "title": "string (session title)",
+%%     "summary": "string (optional, can be empty)"
+%%   }
+%% }
+%%
+%% Response: Created Session object
+%% {
+%%   "id": "string (ObjectId as string, auto-generated)",
+%%   "user_id": "string (ObjectId as string)",
+%%   "title": "string",
+%%   "summary": "string (optional)",
+%%   "updated_at": "ISO 8601 datetime (auto-generated)",
+%%   "created_at": "ISO 8601 datetime (auto-generated)"
+%% }
+%%
+%% Example Response:
+%% {
+%%   "id": "65f7a3d9c1e2b4a5f6g7h8i9",
+%%   "user_id": "55f7a3d9c1e2b4a5f6g7h8i0",
+%%   "title": "Q1 Planning Discussion",
+%%   "summary": "",
+%%   "updated_at": "2026-02-18T15:30:00Z",
+%%   "created_at": "2026-02-18T15:30:00Z"
+%% }
