@@ -1,13 +1,12 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { Box } from "@mui/material";
 import dayjs from "dayjs";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useVesselsByMmsi } from "../hooks/useVesselsByMmsi";
 import { useVesselTrajectory } from "../hooks/useVesselTrajectory";
 import { useVesselEvents } from "../hooks/useVesselEvents";
 import { useFocusModePlayback } from "../hooks/useFocusModePlayback";
 import { FocusModeView } from "./FocusModeView";
-import { findNearestTrajectoryIndex } from "../model/playbackUtils";
 import type { Vessel, FocusEvent } from "../model/types";
 
 const DIRECT_ENTRY_MMSI = "366168522";
@@ -47,6 +46,7 @@ const resolveInitialTimeRange = (
 };
 
 export const FocusModePage = () => {
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const vesselIdFromUrl = searchParams.get("vesselId")?.trim() || null;
   const initialRange = resolveInitialTimeRange(
@@ -70,8 +70,6 @@ export const FocusModePage = () => {
     message: "",
     error: false,
   });
-  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
-  const [playbackEvent, setPlaybackEvent] = useState<FocusEvent | null>(null);
   const pendingUrlEntry = useRef(!!vesselIdFromUrl);
 
   const mmsiNumber = mmsiInput.trim() ? Number(mmsiInput) : null;
@@ -135,8 +133,6 @@ export const FocusModePage = () => {
       const startUnix = formStart?.unix() ?? null;
       const endUnix = formEnd?.unix() ?? null;
       setSelectedVessel(vessel);
-      setSelectedEventId(null);
-      setPlaybackEvent(null);
       setDialogOpen(false);
       setStartTime(startUnix);
       setEndTime(endUnix);
@@ -158,8 +154,6 @@ export const FocusModePage = () => {
     setSelectedVessel(null);
     setStartTime(null);
     setEndTime(null);
-    setSelectedEventId(null);
-    setPlaybackEvent(null);
     setSearchParams({}, { replace: true });
   }, [setSearchParams]);
 
@@ -169,8 +163,6 @@ export const FocusModePage = () => {
       setEndTime(end);
       setFormStart(dayjs.unix(start));
       setFormEnd(dayjs.unix(end));
-      setSelectedEventId(null);
-      setPlaybackEvent(null);
       if (selectedVessel) {
         writeFocusParams(selectedVessel.id, start, end);
       }
@@ -178,37 +170,25 @@ export const FocusModePage = () => {
     [selectedVessel, writeFocusParams],
   );
 
-  const handleClosePlayback = useCallback(() => {
-    setPlaybackEvent(null);
-  }, []);
+  const goToVesselEvents = useCallback(() => {
+    if (!selectedVessel) return;
+    navigate(
+      `/events?vessels_involved=${encodeURIComponent(selectedVessel.id)}`,
+    );
+  }, [navigate, selectedVessel]);
 
   const handleSelectEvent = useCallback(
-    (event: FocusEvent) => {
-      setSelectedEventId(event.id);
-      setPlaybackEvent(event);
-      if (event.timestamp && trajectory.length) {
-        playback.seek(
-          findNearestTrajectoryIndex(trajectory, event.timestamp.getTime()),
-        );
-      }
+    (_event: FocusEvent) => {
+      goToVesselEvents();
     },
-    [trajectory, playback],
+    [goToVesselEvents],
   );
 
   const handleNavigateToEvent = useCallback(
-    (eventId: string) => {
-      const event = events.find((e) => e.id === eventId);
-      if (event) {
-        handleSelectEvent(event);
-        return;
-      }
-      setSnackbar({
-        open: true,
-        message: `Event not found: ${eventId}`,
-        error: true,
-      });
+    (_eventId: string) => {
+      goToVesselEvents();
     },
-    [events, handleSelectEvent],
+    [goToVesselEvents],
   );
 
   // Deep-link: /focus-mode?vesselId=...&start=...&end=...
@@ -268,11 +248,8 @@ export const FocusModePage = () => {
         currentPoint={currentPoint}
         playback={playback}
         visibleEvents={events}
-        selectedEventId={selectedEventId}
-        playbackEvent={playbackEvent}
         eventsLoading={eventsQuery.isFetching}
         onSelectEvent={handleSelectEvent}
-        onClosePlayback={handleClosePlayback}
         startTime={startTime}
         endTime={endTime}
         onApplyTimeRange={handleApplyTimeRange}
