@@ -128,14 +128,17 @@ export default function AnimationControls({
 
       switch (e.code) {
         case "Space":
+          if (isBuffering) return;
           e.preventDefault();
           onPlayPause();
           break;
         case "ArrowLeft":
+          if (isBuffering) return;
           e.preventDefault();
           onSeek(Math.max(0, currentTime - SEEK_STEP));
           break;
         case "ArrowRight":
+          if (isBuffering) return;
           e.preventDefault();
           onSeek(Math.min(duration, currentTime + SEEK_STEP));
           break;
@@ -150,6 +153,7 @@ export default function AnimationControls({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [
     isKeyboardActive,
+    isBuffering,
     onPlayPause,
     onSeek,
     onClose,
@@ -199,16 +203,20 @@ export default function AnimationControls({
         }}
       >
         <PlaybackTooltip dismissToken={tooltipDismissToken} title={isPlaying ? "Pause (Space)" : "Play (Space)"} arrow>
-          <IconButton
-            onClick={onPlayPause}
-            sx={{
-              color: accentColor,
-              bgcolor: alpha(accentColor, 0.12),
-              "&:hover": { bgcolor: alpha(accentColor, 0.2) },
-            }}
-          >
-            {isPlaying ? <Pause /> : <PlayArrow />}
-          </IconButton>
+          <span>
+            <IconButton
+              onClick={onPlayPause}
+              disabled={isBuffering}
+              aria-label={isPlaying ? "Pause playback" : "Play playback"}
+              sx={{
+                color: accentColor,
+                bgcolor: alpha(accentColor, 0.12),
+                "&:hover": { bgcolor: alpha(accentColor, 0.2) },
+              }}
+            >
+              {isPlaying ? <Pause /> : <PlayArrow />}
+            </IconButton>
+          </span>
         </PlaybackTooltip>
 
         <Stack spacing={0.25} sx={{ minWidth: 70 }}>
@@ -232,6 +240,7 @@ export default function AnimationControls({
             min={0}
             max={duration || 1}
             value={displayTime}
+            disabled={isBuffering}
             onMouseDown={() => onSliderDragStart?.()}
             onChange={(_, value) => setSeekValue(value as number)}
             onChangeCommitted={(_, value) => {
@@ -265,20 +274,24 @@ export default function AnimationControls({
         </Stack>
 
         <PlaybackTooltip dismissToken={tooltipDismissToken} title="Playback speed" arrow>
-          <Button
-            size="small"
-            endIcon={<ArrowDropDown />}
-            onClick={(e) => setAnchorEl(e.currentTarget)}
-            sx={{
-              color: "text.primary",
-              border: `1px solid ${alpha(theme.palette.divider, 0.5)}`,
-              borderRadius: 1.5,
-              minWidth: 72,
-              px: 1.5,
-            }}
-          >
-            {playbackSpeed}x
-          </Button>
+          <span>
+            <Button
+              size="small"
+              endIcon={<ArrowDropDown />}
+              disabled={isBuffering}
+              onClick={(e) => setAnchorEl(e.currentTarget)}
+              aria-label="Playback speed"
+              sx={{
+                color: "text.primary",
+                border: `1px solid ${alpha(theme.palette.divider, 0.5)}`,
+                borderRadius: 1.5,
+                minWidth: 72,
+                px: 1.5,
+              }}
+            >
+              {playbackSpeed}x
+            </Button>
+          </span>
         </PlaybackTooltip>
 
         <Popover
@@ -333,6 +346,7 @@ export default function AnimationControls({
         <PlaybackTooltip dismissToken={tooltipDismissToken} title="Exit playback (Esc)" arrow>
           <IconButton
             onClick={onClose}
+            aria-label="Exit playback"
             sx={{ color: "text.secondary", "&:hover": { color: "error.main" } }}
           >
             <Close />
@@ -364,18 +378,41 @@ export default function AnimationControls({
       </Box>
 
       {isBuffering && (
-        <LinearProgress
-          sx={{
-            position: "absolute",
-            bottom: -4,
-            left: 12,
-            right: 12,
-            height: 2,
-            borderRadius: 1,
-            bgcolor: alpha(accentColor, 0.15),
-            "& .MuiLinearProgress-bar": { bgcolor: accentColor },
-          }}
-        />
+        <>
+          <LinearProgress
+            aria-hidden
+            sx={{
+              position: "absolute",
+              bottom: -4,
+              left: 12,
+              right: 12,
+              height: 2,
+              borderRadius: 1,
+              bgcolor: alpha(accentColor, 0.15),
+              "& .MuiLinearProgress-bar": { bgcolor: accentColor },
+            }}
+          />
+          <Typography
+            component="span"
+            role="status"
+            aria-live="polite"
+            sx={{
+              position: "absolute",
+              width: "1px",
+              height: "1px",
+              padding: 0,
+              margin: 0,
+              overflow: "hidden",
+              clip: "rect(0, 0, 0, 0)",
+              whiteSpace: "nowrap",
+              border: 0,
+              top: 0,
+              left: 0,
+            }}
+          >
+            Loading vessel data…
+          </Typography>
+        </>
       )}
     </Box>
   );

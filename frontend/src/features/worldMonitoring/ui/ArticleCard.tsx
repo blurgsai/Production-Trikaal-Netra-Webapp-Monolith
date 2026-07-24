@@ -1,4 +1,12 @@
-import { Button, Card, CardContent, CardMedia, Chip, Stack, Typography } from "@mui/material";
+import {
+  Card,
+  CardActionArea,
+  CardContent,
+  CardMedia,
+  Chip,
+  Stack,
+  Typography,
+} from "@mui/material";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 
 import { defenseColors } from "@/shared/theme";
@@ -37,6 +45,12 @@ export function ArticleCard({ article, onOpen }: ArticleCardProps) {
     tags: article.tags,
   };
 
+  const ariaParts = [`View article: ${article.title}`];
+  if (article.source) ariaParts.push(`Source ${article.source}`);
+  if (article.published) {
+    ariaParts.push(`Published ${formatDateTime(article.published)}`);
+  }
+
   return (
     <Card
       sx={{
@@ -44,96 +58,121 @@ export function ArticleCard({ article, onOpen }: ArticleCardProps) {
         border: `1px solid ${defenseColors.border.default}`,
         background: `linear-gradient(180deg, ${defenseColors.background.surfaceAlt}, ${defenseColors.background.surface})`,
         overflow: "hidden",
+        height: "100%",
       }}
     >
-      {article.imageUrl && (
-        <CardMedia
-          component="img"
-          image={article.imageUrl}
-          alt={article.title}
-          sx={{
-            height: 180,
-            objectFit: "cover",
-            borderBottom: `1px solid ${defenseColors.border.default}`,
-          }}
-        />
-      )}
-
-      <CardContent sx={{ p: 2 }}>
-        <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap mb={1.5}>
-          <Chip
-            size="small"
-            label={`${article.linkedEventCount} linked events`}
+      <CardActionArea
+        onClick={() => onOpen(article.id)}
+        aria-label={ariaParts.join(". ")}
+        sx={{
+          height: "100%",
+          alignItems: "stretch",
+          "&:focus-visible": {
+            outline: `2px solid ${defenseColors.primary.main}`,
+            outlineOffset: 2,
+          },
+        }}
+      >
+        {article.imageUrl && (
+          <CardMedia
+            component="img"
+            image={article.imageUrl}
+            alt=""
             sx={{
-              backgroundColor: defenseColors.border.soft,
-              color: defenseColors.text.muted,
+              height: 180,
+              objectFit: "cover",
+              borderBottom: `1px solid ${defenseColors.border.default}`,
             }}
           />
+        )}
 
-          {article.processingStatus && (
+        <CardContent sx={{ p: 2 }}>
+          <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap mb={1.5}>
             <Chip
               size="small"
-              label={article.processingStatus}
+              label={`${article.linkedEventCount} linked events`}
               sx={{
                 backgroundColor: defenseColors.border.soft,
                 color: defenseColors.text.muted,
               }}
             />
-          )}
-        </Stack>
 
-        <Typography
-          variant="h6"
-          sx={{
-            color: defenseColors.text.primary,
-            fontWeight: 800,
-            mb: 1,
-          }}
-        >
-          {article.title}
-        </Typography>
+            {article.processingStatus && (
+              <Chip
+                size="small"
+                label={article.processingStatus}
+                sx={{
+                  backgroundColor: defenseColors.border.soft,
+                  color: defenseColors.text.muted,
+                }}
+              />
+            )}
+          </Stack>
 
-        <Typography
-          variant="body2"
-          sx={{
-            color: defenseColors.text.muted,
-            mb: 1.5,
-            display: "-webkit-box",
-            WebkitLineClamp: 3,
-            WebkitBoxOrient: "vertical",
-            overflow: "hidden",
-          }}
-        >
-          {article.summary ?? "No summary available."}
-        </Typography>
-
-        {article.published && (
           <Typography
-            variant="caption"
+            variant="h6"
             sx={{
-              color: defenseColors.text.muted,
-              display: "block",
-              mb: 1.5,
+              color: defenseColors.text.primary,
+              fontWeight: 800,
+              mb: 1,
+              overflowWrap: "anywhere",
+              wordBreak: "break-word",
             }}
           >
-            Published {formatDateTime(article.published)}
+            {article.title}
           </Typography>
-        )}
 
-        <ArticleMetadataChips article={metaArticle} compact />
+          <Typography
+            variant="body2"
+            sx={{
+              color: defenseColors.text.muted,
+              mb: 1.5,
+              display: "-webkit-box",
+              WebkitLineClamp: 3,
+              WebkitBoxOrient: "vertical",
+              overflow: "hidden",
+            }}
+          >
+            {article.summary ?? "No summary available."}
+          </Typography>
 
-        <Button
-          onClick={() => onOpen(article.id)}
-          endIcon={<OpenInNewIcon />}
-          sx={{
-            color: defenseColors.primary.main,
-            p: 0,
-            mt: 1.5,
-          }}
-        >
-          View Article
-        </Button>
-      </CardContent>
+          {article.published && (
+            <Typography
+              variant="caption"
+              sx={{
+                color: defenseColors.text.muted,
+                display: "block",
+                mb: 1.5,
+              }}
+            >
+              Published {formatDateTime(article.published)}
+            </Typography>
+          )}
+
+          <ArticleMetadataChips article={metaArticle} compact />
+
+          <Stack
+            direction="row"
+            spacing={0.75}
+            alignItems="center"
+            sx={{
+              color: defenseColors.primary.main,
+              mt: 1.5,
+              fontWeight: 600,
+              fontSize: "0.875rem",
+            }}
+            aria-hidden
+          >
+            <Typography
+              component="span"
+              sx={{ color: "inherit", fontWeight: 600, fontSize: "inherit" }}
+            >
+              View Article
+            </Typography>
+            <OpenInNewIcon sx={{ fontSize: 18 }} />
+          </Stack>
+        </CardContent>
+      </CardActionArea>
     </Card>
   );
 }

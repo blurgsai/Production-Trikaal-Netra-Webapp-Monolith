@@ -149,10 +149,11 @@ describe("ChatHistoryPanel integration", () => {
         ],
       });
 
-      const selected = screen.getByText("Session 2").closest("li");
-      expect(selected).toHaveStyle({
-        backgroundColor: expect.stringContaining("rgba"),
+      const selected = screen.getByRole("button", {
+        name: /Open chat: Session 2/i,
       });
+      expect(selected).toHaveAttribute("aria-current", "true");
+      expect(selected.className).toMatch(/Mui-selected/);
     });
   });
 

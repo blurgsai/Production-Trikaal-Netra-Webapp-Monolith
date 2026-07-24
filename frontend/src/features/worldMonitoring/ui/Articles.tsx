@@ -1,10 +1,12 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Alert,
   Box,
+  Chip,
   CircularProgress,
   Pagination,
   Paper,
+  Stack,
   Typography,
   Button,
 } from "@mui/material";
@@ -25,6 +27,7 @@ import type {
   ArticleProgressiveFilter,
   SavedArticleFilterSet,
 } from "../model/types";
+import { ARTICLE_FILTER_FIELDS } from "../model/types";
 import {
   loadSavedArticleFilters,
   saveArticleFilter,
@@ -140,6 +143,40 @@ function progressiveFiltersToArticleFilters(
   return result;
 }
 
+function formatFilterChipLabel(filter: ArticleProgressiveFilter): string {
+  const fieldLabel =
+    ARTICLE_FILTER_FIELDS.find((f) => f.value === filter.field)?.label ??
+    filter.field;
+  const value =
+    filter.operator === "between" && filter.value2
+      ? `${filter.value} – ${filter.value2}`
+      : filter.value;
+  const truncated =
+    value.length > 28 ? `${value.slice(0, 28)}…` : value;
+  return `${fieldLabel} ${filter.operator} ${truncated}`;
+}
+
+function hasActiveFilterValues(
+  filters: ReturnType<typeof progressiveFiltersToArticleFilters>,
+): boolean {
+  return Boolean(
+    filters.search ||
+      filters.source ||
+      filters.processingStatus ||
+      filters.title ||
+      filters.author ||
+      filters.sourceType ||
+      filters.publishedFrom ||
+      filters.publishedTo ||
+      filters.ingestedFrom ||
+      filters.ingestedTo ||
+      filters.updatedFrom ||
+      filters.updatedTo ||
+      filters.tags ||
+      filters.locationName,
+  );
+}
+
 export function Articles() {
   const urlParams = useWorldMonitoringUrlParams();
   const [filters, setFilters] = useState(() =>
@@ -212,6 +249,17 @@ export function Articles() {
   const articles = data?.articles ?? [];
   const pagination = data?.pagination;
 
+  const activeFilterChips = useMemo(
+    () =>
+      progressiveFilters
+        .map((filter, index) => ({ filter, index }))
+        .filter(({ filter }) => Boolean(filter.field && filter.value)),
+    [progressiveFilters],
+  );
+
+  const hasActiveFilters =
+    activeFilterChips.length > 0 || hasActiveFilterValues(filters as ReturnType<typeof progressiveFiltersToArticleFilters>);
+
   const handleAddProgressiveFilter = useCallback(() => {
     setProgressiveFilters((prev) => [
       ...prev,
@@ -241,6 +289,11 @@ export function Articles() {
 
   const handleResetProgressiveFilters = useCallback(() => {
     setProgressiveFilters([]);
+    setFilters((prev) => ({
+      ...DEFAULT_FILTERS,
+      sort: prev.sort,
+    }));
+    setPage(1);
   }, []);
 
   const handleApplyProgressiveFilters = useCallback(() => {
@@ -251,6 +304,20 @@ export function Articles() {
     setFilters(newFilters);
     setPage(1);
   }, [progressiveFilters, filters.sort]);
+
+  const handleRemoveFilterChip = useCallback(
+    (index: number) => {
+      setProgressiveFilters((prev) => {
+        const next = prev.filter((_, i) => i !== index);
+        setFilters(
+          progressiveFiltersToArticleFilters(next, filters.sort),
+        );
+        setPage(1);
+        return next;
+      });
+    },
+    [filters.sort],
+  );
 
   const handleSaveFilter = useCallback((name: string) => {
     const updated = saveArticleFilter(name, progressiveFilters);
@@ -293,33 +360,96 @@ export function Articles() {
       <Paper
         sx={{
           display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: 1.5,
+          flexDirection: "column",
+          gap: 1.25,
           p: 1.5,
           borderRadius: 3,
           border: `1px solid ${defenseColors.border.default}`,
           background: `linear-gradient(180deg, ${defenseColors.background.surfaceAlt}, ${defenseColors.background.surface})`,
         }}
       >
-        <Typography variant="h6" sx={{ fontSize: "1.1rem", fontWeight: 600 }}>
-          Source Intelligence
-        </Typography>
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          {progressiveFilters.length > 0 && (
-            <Typography variant="caption" color="textSecondary">
-              {progressiveFilters.length} filter{progressiveFilters.length !== 1 ? "s" : ""}
-            </Typography>
-          )}
-          <Button
-            size="small"
-            variant="outlined"
-            startIcon={<FilterListIcon />}
-            onClick={handleOpenFilterDialog}
-          >
-            Filters
-          </Button>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 1.5,
+          }}
+        >
+          <Typography variant="h6" sx={{ fontSize: "1.1rem", fontWeight: 600 }}>
+            Source Intelligence
+          </Typography>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            {activeFilterChips.length > 0 && (
+              <Button
+                size="small"
+                variant="text"
+                onClick={handleResetProgressiveFilters}
+                sx={{
+                  textTransform: "none",
+                  color: defenseColors.text.muted,
+                  fontWeight: 600,
+                }}
+              >
+                Clear Filters
+              </Button>
+            )}
+            <Button
+              size="small"
+              variant="outlined"
+              startIcon={<FilterListIcon />}
+              onClick={handleOpenFilterDialog}
+              aria-label={
+                activeFilterChips.length > 0
+                  ? `Filters, ${activeFilterChips.length} active`
+                  : "Filters"
+              }
+            >
+              Filters
+              {activeFilterChips.length > 0 && (
+                <Chip
+                  label={activeFilterChips.length}
+                  size="small"
+                  color="primary"
+                  sx={{
+                    ml: 0.75,
+                    height: 18,
+                    fontSize: "0.65rem",
+                    minWidth: 18,
+                  }}
+                />
+              )}
+            </Button>
+          </Box>
         </Box>
+
+        {activeFilterChips.length > 0 && (
+          <Stack
+            direction="row"
+            spacing={1}
+            flexWrap="wrap"
+            useFlexGap
+            aria-label="Active article filters"
+          >
+            {activeFilterChips.map(({ filter, index }) => (
+              <Chip
+                key={`${filter.field}-${filter.operator}-${filter.value}-${index}`}
+                size="small"
+                label={formatFilterChipLabel(filter)}
+                onDelete={() => handleRemoveFilterChip(index)}
+                sx={{
+                  maxWidth: "100%",
+                  color: defenseColors.text.primary,
+                  backgroundColor: defenseColors.border.soft,
+                  border: `1px solid ${defenseColors.border.default}`,
+                  "& .MuiChip-label": {
+                    overflowWrap: "anywhere",
+                  },
+                }}
+              />
+            ))}
+          </Stack>
+        )}
       </Paper>
 
       {error && (
@@ -341,10 +471,60 @@ export function Articles() {
             <CircularProgress sx={{ color: defenseColors.primary.main }} />
           </Box>
         ) : articles.length === 0 ? (
-          <Box sx={{ display: "grid", placeItems: "center", flex: 1, py: 6 }}>
-            <Typography sx={{ color: defenseColors.text.muted }}>
-              No articles found matching the current filters.
-            </Typography>
+          <Box
+            role="status"
+            aria-live="polite"
+            sx={{
+              display: "grid",
+              placeItems: "center",
+              flex: 1,
+              py: 6,
+              px: 2,
+              textAlign: "center",
+            }}
+          >
+            <Stack spacing={1.5} alignItems="center" maxWidth={400}>
+              <Typography
+                sx={{ color: defenseColors.text.primary, fontWeight: 600 }}
+              >
+                {hasActiveFilters
+                  ? "No articles match your current search or filters."
+                  : "No articles to display."}
+              </Typography>
+              {hasActiveFilters ? (
+                <>
+                  <Typography
+                    variant="body2"
+                    sx={{ color: defenseColors.text.muted }}
+                  >
+                    Try adjusting keywords, source, or date range.
+                  </Typography>
+                  <Button
+                    variant="outlined"
+                    onClick={handleResetProgressiveFilters}
+                    sx={{
+                      textTransform: "none",
+                      fontWeight: 600,
+                      color: defenseColors.text.primary,
+                      borderColor: defenseColors.border.strong,
+                      "&:hover": {
+                        borderColor: defenseColors.primary.main,
+                        backgroundColor: defenseColors.primary.soft,
+                      },
+                    }}
+                  >
+                    Clear Filters
+                  </Button>
+                </>
+              ) : (
+                <Typography
+                  variant="body2"
+                  sx={{ color: defenseColors.text.muted }}
+                >
+                  Articles will appear here when available for the current view.
+                </Typography>
+              )}
+            </Stack>
           </Box>
         ) : (
           <Box

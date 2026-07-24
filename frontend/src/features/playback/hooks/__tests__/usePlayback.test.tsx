@@ -65,6 +65,7 @@ function mockPlaybackData(overrides?: Partial<PlaybackData>) {
     data: makePlaybackData(overrides),
     isLoading: false,
     error: null,
+    refetch: vi.fn(),
   });
 }
 
@@ -73,6 +74,7 @@ function mockPlaybackDataLoading() {
     data: undefined,
     isLoading: true,
     error: null,
+    refetch: vi.fn(),
   });
 }
 
@@ -81,6 +83,7 @@ function mockPlaybackDataError(msg: string) {
     data: undefined,
     isLoading: false,
     error: msg,
+    refetch: vi.fn(),
   });
 }
 
@@ -496,7 +499,7 @@ describe('usePlayback', () => {
   // ── T-45: data is passed through from usePlaybackData ───────────────────────
   it('data is passed through from usePlaybackData', () => {
     const customData = makePlaybackData({ extras: { custom: 'value' } });
-    vi.mocked(usePlaybackData).mockReturnValue({ data: customData, isLoading: false, error: null });
+    vi.mocked(usePlaybackData).mockReturnValue({ data: customData, isLoading: false, error: null, refetch: vi.fn() });
     const { result } = renderHook(() => usePlayback({ eventId: 'ev1', eventType: 'geofence_intrusion', isCompound: false }));
     expect(result.current.data).toBe(customData);
   });

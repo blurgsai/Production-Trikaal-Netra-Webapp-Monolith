@@ -50,7 +50,7 @@ export function CompoundInstanceList({
       <Box sx={{ p: 3, pb: 2 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
           <Tooltip title="Back to configs">
-            <IconButton size="small" onClick={onBack}>
+            <IconButton size="small" onClick={onBack} aria-label="Back to configs">
               <ArrowBackIcon fontSize="small" />
             </IconButton>
           </Tooltip>
@@ -67,13 +67,28 @@ export function CompoundInstanceList({
       <Divider />
 
       <TableContainer sx={{ flexGrow: 1, overflow: 'auto' }}>
-        <Table size="small" stickyHeader>
+        <Table size="small" stickyHeader aria-label="Compound event instances">
+          <caption
+            style={{
+              position: 'absolute',
+              width: '1px',
+              height: '1px',
+              padding: 0,
+              margin: 0,
+              overflow: 'hidden',
+              clip: 'rect(0, 0, 0, 0)',
+              whiteSpace: 'nowrap',
+              border: 0,
+            }}
+          >
+            Compound event instances list
+          </caption>
           <TableHead>
             <TableRow>
-              <TableCell>Vessel</TableCell>
-              <TableCell>Event Types</TableCell>
-              <TableCell>Severity</TableCell>
-              <TableCell>Start Time</TableCell>
+              <TableCell component="th" scope="col">Vessel</TableCell>
+              <TableCell component="th" scope="col">Event Types</TableCell>
+              <TableCell component="th" scope="col">Severity</TableCell>
+              <TableCell component="th" scope="col">Start Time</TableCell>
             </TableRow>
           </TableHead>
 

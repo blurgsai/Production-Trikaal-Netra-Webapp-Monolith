@@ -1,0 +1,9 @@
+import type { VesselInfo } from "./types";
+import { mapRawVesselToInfo } from "./mappers";
+
+/** Maps a vessel table row (or raw feature props) into domain VesselInfo. */
+export function vesselInfoFromRaw(
+  raw: Record<string, unknown> & { id?: string | number },
+): VesselInfo | null {
+  return mapRawVesselToInfo(raw);
+}

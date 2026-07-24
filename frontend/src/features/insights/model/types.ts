@@ -11,7 +11,7 @@ export interface InsightsEventTypeShare {
   percent: number;
 }
 
-export type InsightsTimelineRange = "all" | "1y" | "6m" | "3m" | "1m" | "1w";
+export type InsightsTimelineRange = "1y" | "6m" | "3m" | "1m" | "1w";
 
 export interface InsightsTimelinePoint {
   date: string;

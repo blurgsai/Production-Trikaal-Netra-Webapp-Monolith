@@ -14,6 +14,7 @@ import {
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+import { useId } from "react";
 
 import type {
   EventDetailDialogProps,
@@ -41,18 +42,54 @@ export default function EventDetailDialog({
   onOpenArticle,
   variant = "dialog",
 }: EventDetailDialogProps) {
+  const reactId = useId();
+  const dialogTitleId = `${reactId}-dialog-title`;
+  const eventTitleId = `${reactId}-event-title`;
+  const eventSummaryId = `${reactId}-event-summary`;
   const severity = getSeverityConfig(eventDetail?.threatLevel);
 
+  const labelledBy =
+    eventDetail && !loading ? eventTitleId : dialogTitleId;
+  const describedBy =
+    eventDetail && !loading ? eventSummaryId : undefined;
+
+  const isInline = variant === "inline";
+
   const content = (
-    <DialogContent sx={{ p: 0 }}>
+    <DialogContent
+      sx={{
+        p: 0,
+        overflow: isInline ? "visible" : undefined,
+        // DialogContent defaults can introduce a second scrollport.
+        ...(isInline ? { flex: "none" } : null),
+      }}
+    >
       {loading || !eventDetail ? (
-        <Box sx={{ minHeight: 320, display: "grid", placeItems: "center" }}>
-          <CircularProgress sx={{ color: defenseColors.primary.main }} />
+        <Box
+          role="status"
+          aria-live="polite"
+          aria-busy="true"
+          sx={{ minHeight: 320, display: "grid", placeItems: "center" }}
+        >
+          <CircularProgress
+            aria-label="Loading event detail"
+            sx={{ color: defenseColors.primary.main }}
+          />
         </Box>
       ) : (
-        <Stack spacing={0} sx={{ maxHeight: "78vh" }}>
+        <Stack
+          spacing={0}
+          sx={{
+            // Dialog: constrain height so only the body scrolls.
+            // Inline: grow naturally; parent panel owns the single scrollbar.
+            ...(isInline ? { maxHeight: "none" } : { maxHeight: "78vh" }),
+            minWidth: 0,
+            maxWidth: "100%",
+            overflowX: "hidden",
+          }}
+        >
           {/* ── Header ── */}
-          <Box sx={{ p: 3 }}>
+          <Box sx={{ p: 3, minWidth: 0, overflowX: "hidden" }}>
             <Stack
               direction="row"
               spacing={1}
@@ -75,8 +112,13 @@ export default function EventDetailDialog({
                 size="small"
                 label={formatEventTypeLabel(eventDetail.eventType)}
                 sx={{
+                  maxWidth: "100%",
                   color: defenseColors.primary.main,
                   backgroundColor: defenseColors.primary.soft,
+                  "& .MuiChip-label": {
+                    overflowWrap: "anywhere",
+                    whiteSpace: "normal",
+                  },
                 }}
               />
               {eventDetail.primaryLocation?.name && (
@@ -84,23 +126,42 @@ export default function EventDetailDialog({
                   size="small"
                   label={eventDetail.primaryLocation.name}
                   sx={{
+                    maxWidth: "100%",
                     color: defenseColors.text.muted,
                     backgroundColor: defenseColors.border.soft,
+                    "& .MuiChip-label": {
+                      overflowWrap: "anywhere",
+                      whiteSpace: "normal",
+                    },
                   }}
                 />
               )}
             </Stack>
 
             <Typography
-              variant="h4"
-              sx={{ fontWeight: 900, letterSpacing: "-0.03em", mb: 1 }}
+              id={eventTitleId}
+              variant={isInline ? "h5" : "h4"}
+              sx={{
+                fontWeight: 900,
+                letterSpacing: "-0.03em",
+                mb: 1,
+                minWidth: 0,
+                maxWidth: "100%",
+                overflowWrap: "anywhere",
+                wordBreak: "break-word",
+              }}
             >
               {eventDetail.title}
             </Typography>
 
             <Typography
+              id={eventSummaryId}
               variant="body1"
-              sx={{ color: defenseColors.text.muted }}
+              sx={{
+                color: defenseColors.text.muted,
+                overflowWrap: "anywhere",
+                wordBreak: "break-word",
+              }}
             >
               {eventDetail.summary}
             </Typography>
@@ -108,12 +169,21 @@ export default function EventDetailDialog({
 
           <Divider sx={{ borderColor: defenseColors.border.default }} />
 
-          {/* ── Scrollable body ── */}
-          <Box sx={{ p: 3, overflowY: "auto" }}>
-            <Stack spacing={2.5}>
+          {/* ── Body: scrolls only in dialog; inline scrolls with outer panel ── */}
+          <Box
+            sx={{
+              p: 3,
+              minWidth: 0,
+              overflowX: "hidden",
+              ...(isInline
+                ? { overflowY: "visible" }
+                : { overflowY: "auto", minHeight: 0 }),
+            }}
+          >
+            <Stack spacing={2.5} sx={{ minWidth: 0 }}>
               {/* Structured Intelligence */}
               {(eventDetail.structuredFields ?? []).length > 0 && (
-                <Box>
+                <Box sx={{ minWidth: 0 }}>
                   <Typography
                     variant="subtitle2"
                     sx={{ mb: 1, color: defenseColors.text.primary }}
@@ -131,6 +201,10 @@ export default function EventDetailDialog({
                             color: defenseColors.text.primary,
                             backgroundColor: defenseColors.border.soft,
                             border: `1px solid ${defenseColors.border.default}`,
+                            "& .MuiChip-label": {
+                              overflowWrap: "anywhere",
+                              whiteSpace: "normal",
+                            },
                           }}
                         />
                       ),
@@ -153,7 +227,7 @@ export default function EventDetailDialog({
               )}
 
               {/* AI Assessment */}
-              <Box>
+              <Box sx={{ minWidth: 0 }}>
                 <Typography
                   variant="subtitle2"
                   sx={{ mb: 1, color: defenseColors.text.primary }}
@@ -166,11 +240,17 @@ export default function EventDetailDialog({
                     borderRadius: 2,
                     border: `1px solid ${defenseColors.border.default}`,
                     backgroundColor: defenseColors.primary.soft,
+                    minWidth: 0,
+                    overflowWrap: "anywhere",
                   }}
                 >
                   <Typography
                     variant="body2"
-                    sx={{ color: defenseColors.text.muted }}
+                    sx={{
+                      color: defenseColors.text.muted,
+                      overflowWrap: "anywhere",
+                      wordBreak: "break-word",
+                    }}
                   >
                     {eventDetail.reasoning ?? "No AI reasoning available."}
                   </Typography>
@@ -179,7 +259,7 @@ export default function EventDetailDialog({
 
               {/* Location Context */}
               {(eventDetail.locations ?? []).length > 0 && (
-                <Box>
+                <Box sx={{ minWidth: 0 }}>
                   <Typography
                     variant="subtitle2"
                     sx={{ mb: 1, color: defenseColors.text.primary }}
@@ -192,6 +272,7 @@ export default function EventDetailDialog({
                         key={`${location.name}-${location.lat}-${location.lng}`}
                         label={`${location.name}${location.role ? ` (${location.role})` : ""}`}
                         sx={{
+                          maxWidth: "100%",
                           color:
                             location.role === "primary"
                               ? defenseColors.primary.main
@@ -201,6 +282,10 @@ export default function EventDetailDialog({
                               ? defenseColors.primary.soft
                               : defenseColors.border.soft,
                           border: `1px solid ${defenseColors.border.default}`,
+                          "& .MuiChip-label": {
+                            overflowWrap: "anywhere",
+                            whiteSpace: "normal",
+                          },
                         }}
                       />
                     ))}
@@ -210,7 +295,7 @@ export default function EventDetailDialog({
 
               {/* Linked Article Preview */}
               {eventDetail.linkedArticlePreview && (
-                <Box>
+                <Box sx={{ minWidth: 0 }}>
                   <Typography
                     variant="subtitle2"
                     sx={{ mb: 1, color: defenseColors.text.primary }}
@@ -223,6 +308,8 @@ export default function EventDetailDialog({
                       borderRadius: 2,
                       border: `1px solid ${defenseColors.border.default}`,
                       backgroundColor: defenseColors.border.soft,
+                      minWidth: 0,
+                      overflowX: "hidden",
                     }}
                   >
                     {eventDetail.linkedArticlePreview.imageUrl && (
@@ -232,6 +319,8 @@ export default function EventDetailDialog({
                         alt={eventDetail.linkedArticlePreview.title}
                         sx={{
                           height: 180,
+                          width: "100%",
+                          maxWidth: "100%",
                           borderRadius: 2,
                           mb: 1.5,
                           objectFit: "cover",
@@ -241,7 +330,12 @@ export default function EventDetailDialog({
                     )}
                     <Typography
                       variant="subtitle1"
-                      sx={{ fontWeight: 700, mb: 0.5 }}
+                      sx={{
+                        fontWeight: 700,
+                        mb: 0.5,
+                        overflowWrap: "anywhere",
+                        wordBreak: "break-word",
+                      }}
                     >
                       {eventDetail.linkedArticlePreview.title}
                     </Typography>
@@ -262,7 +356,11 @@ export default function EventDetailDialog({
                     )}
                     <Typography
                       variant="body2"
-                      sx={{ color: defenseColors.text.muted }}
+                      sx={{
+                        color: defenseColors.text.muted,
+                        overflowWrap: "anywhere",
+                        wordBreak: "break-word",
+                      }}
                     >
                       {eventDetail.linkedArticlePreview.summary ??
                         "Open the linked article for full provenance."}
@@ -294,7 +392,7 @@ export default function EventDetailDialog({
               )}
 
               {/* Metadata */}
-              <Box>
+              <Box sx={{ minWidth: 0 }}>
                 <Typography
                   variant="subtitle2"
                   sx={{ mb: 1, color: defenseColors.text.primary }}
@@ -305,7 +403,10 @@ export default function EventDetailDialog({
                   {eventDetail.enrichedAt && (
                     <Typography
                       variant="body2"
-                      sx={{ color: defenseColors.text.muted }}
+                      sx={{
+                        color: defenseColors.text.muted,
+                        overflowWrap: "anywhere",
+                      }}
                     >
                       Enriched At: {formatDateTime(eventDetail.enrichedAt)}
                     </Typography>
@@ -322,7 +423,7 @@ export default function EventDetailDialog({
 
               {/* Full Article Detail (when loaded separately) */}
               {articleDetail && (
-                <Box>
+                <Box sx={{ minWidth: 0 }}>
                   <Typography
                     variant="subtitle2"
                     sx={{ mb: 1, color: defenseColors.text.primary }}
@@ -335,6 +436,8 @@ export default function EventDetailDialog({
                       borderRadius: 2,
                       border: `1px solid ${defenseColors.border.default}`,
                       backgroundColor: defenseColors.border.soft,
+                      minWidth: 0,
+                      overflowX: "hidden",
                     }}
                   >
                     {articleDetail.imageUrl && (
@@ -344,6 +447,8 @@ export default function EventDetailDialog({
                         alt={articleDetail.title}
                         sx={{
                           height: 220,
+                          width: "100%",
+                          maxWidth: "100%",
                           borderRadius: 2,
                           mb: 1.5,
                           objectFit: "cover",
@@ -353,7 +458,12 @@ export default function EventDetailDialog({
                     )}
                     <Typography
                       variant="subtitle1"
-                      sx={{ fontWeight: 700, mb: 0.5 }}
+                      sx={{
+                        fontWeight: 700,
+                        mb: 0.5,
+                        overflowWrap: "anywhere",
+                        wordBreak: "break-word",
+                      }}
                     >
                       {articleDetail.title}
                     </Typography>
@@ -371,7 +481,11 @@ export default function EventDetailDialog({
                     )}
                     <Typography
                       variant="body2"
-                      sx={{ color: defenseColors.text.muted }}
+                      sx={{
+                        color: defenseColors.text.muted,
+                        overflowWrap: "anywhere",
+                        wordBreak: "break-word",
+                      }}
                     >
                       {articleDetail.summary ??
                         articleDetail.processedContent ??
@@ -388,13 +502,16 @@ export default function EventDetailDialog({
     </DialogContent>
   );
 
-  if (variant === "inline") {
+  if (isInline) {
     return (
       <Box
+        className="wm-scrollable"
         sx={{
           flex: 1,
-          overflowY: "auto",
           minHeight: 0,
+          minWidth: 0,
+          overflowY: "auto",
+          overflowX: "hidden",
         }}
       >
         {content}
@@ -407,6 +524,9 @@ export default function EventDetailDialog({
       onClose={onClose}
       fullWidth
       maxWidth="md"
+      disableEnforceFocus={false}
+      aria-labelledby={labelledBy}
+      aria-describedby={describedBy}
       PaperProps={{
         sx: {
           backgroundColor: defenseColors.background.surface,
@@ -418,6 +538,7 @@ export default function EventDetailDialog({
       }}
     >
       <DialogTitle
+        id={dialogTitleId}
         sx={{
           m: 0,
           p: 2,
@@ -426,7 +547,9 @@ export default function EventDetailDialog({
           borderBottom: `1px solid ${defenseColors.border.default}`,
         }}
       >
-        Event Detail
+        {eventDetail?.title
+          ? `Event Detail: ${eventDetail.title}`
+          : "Event Detail"}
       </DialogTitle>
       <IconButton
         aria-label="close"

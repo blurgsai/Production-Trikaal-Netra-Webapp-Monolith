@@ -227,10 +227,10 @@ describe("EventTablePanel integration", () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByPlaceholderText("Search events…")).toBeInTheDocument();
+      expect(screen.getByPlaceholderText("e.g. dark ship")).toBeInTheDocument();
     });
 
-    const searchInput = screen.getByPlaceholderText("Search events…");
+    const searchInput = screen.getByPlaceholderText("e.g. dark ship");
     await userEvent.type(searchInput, "geofence");
 
     await waitFor(() => {
@@ -396,7 +396,7 @@ describe("EventTablePanel integration", () => {
     });
 
     const initialCount = fetchCount;
-    const refreshBtn = screen.getByLabelText("Refresh");
+    const refreshBtn = screen.getByLabelText("Refresh events");
     await userEvent.click(refreshBtn);
 
     await waitFor(() => {

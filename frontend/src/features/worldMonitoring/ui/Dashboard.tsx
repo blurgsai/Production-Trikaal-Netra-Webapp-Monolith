@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 
-import { Alert, Box, CircularProgress, Stack } from "@mui/material";
+import { Alert, Box, Button, CircularProgress, Stack, Typography } from "@mui/material";
 
 import { useDashboard } from "../hooks/useDashboard";
 import { useDashboardEventDetail } from "../hooks/useDashboardEventDetail";
@@ -25,9 +25,11 @@ type MetricCardData = {
   helper: string;
 };
 
+const METRICS_HEADING_ID = "wm-overview-metrics-heading";
+
 export const Dashboard = () => {
   const navigate = useNavigate();
-  const { data, isLoading, error } = useDashboard();
+  const { data, isLoading, error, refetch } = useDashboard();
 
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
 
@@ -79,13 +81,19 @@ export const Dashboard = () => {
   if (isLoading) {
     return (
       <Box
+        role="status"
+        aria-live="polite"
+        aria-busy="true"
         sx={{
           display: "grid",
           placeItems: "center",
           flex: 1,
         }}
       >
-        <CircularProgress sx={{ color: defenseColors.primary.main }} />
+        <CircularProgress
+          aria-label="Loading overview intelligence"
+          sx={{ color: defenseColors.primary.main }}
+        />
       </Box>
     );
   }
@@ -121,20 +129,32 @@ export const Dashboard = () => {
   return (
     <Stack
       spacing={2}
+      className="wm-scrollable"
       sx={{
         flex: 1,
         minHeight: 0,
-        overflow: "hidden",
+        overflowY: "auto",
+        overflowX: "hidden",
         pr: 0.5,
         pb: 1,
       }}
     >
       {error && (
-        <Alert severity="error">Failed to load overview intelligence.</Alert>
+        <Alert
+          severity="error"
+          action={
+            <Button color="inherit" size="small" onClick={() => void refetch()}>
+              Retry
+            </Button>
+          }
+        >
+          Failed to load overview intelligence.
+        </Alert>
       )}
 
-      {/* Metric Cards */}
       <Box
+        component="section"
+        aria-labelledby={METRICS_HEADING_ID}
         sx={{
           display: "grid",
           gridTemplateColumns: {
@@ -143,8 +163,26 @@ export const Dashboard = () => {
             xl: "repeat(5, 1fr)",
           },
           gap: 1.5,
+          flexShrink: 0,
         }}
       >
+        <Typography
+          id={METRICS_HEADING_ID}
+          component="h2"
+          sx={{
+            position: "absolute",
+            width: "1px",
+            height: "1px",
+            padding: 0,
+            margin: 0,
+            overflow: "hidden",
+            clip: "rect(0, 0, 0, 0)",
+            whiteSpace: "nowrap",
+            border: 0,
+          }}
+        >
+          Overview metrics
+        </Typography>
         {metricCards.map((card) => (
           <MetricCard
             key={card.label}
@@ -155,7 +193,7 @@ export const Dashboard = () => {
         ))}
       </Box>
 
-      {/* Charts */}
+      {/* Charts — fixed equal card heights; tables scroll inside */}
       <Box
         sx={{
           display: "grid",
@@ -164,10 +202,8 @@ export const Dashboard = () => {
             xl: "1.2fr 1fr 1fr",
           },
           gap: 2,
-          flex: "0 0 auto",
-          minHeight: 0,
-          maxHeight: { xs: 520, xl: 360 },
-          overflow: "hidden",
+          flexShrink: 0,
+          alignItems: "stretch",
         }}
       >
         <ActivityTrend trends={trends} />
@@ -183,16 +219,15 @@ export const Dashboard = () => {
       {/* Hotspots + Recent Intelligence */}
       <Box
         sx={{
-          flex: 1,
-          minHeight: 0,
+          flexShrink: 0,
+          minHeight: { xs: 360, xl: 420 },
+          height: { xs: 420, xl: 480 },
           display: "grid",
           gridTemplateColumns: {
             xs: "minmax(0, 1fr)",
             xl: "minmax(0, 1fr) minmax(0, 1.1fr)",
           },
-          gridTemplateRows: "minmax(0, 1fr)",
           gap: 2,
-          overflow: "hidden",
         }}
       >
         <OperationalHotspots hotspots={hotspots} />

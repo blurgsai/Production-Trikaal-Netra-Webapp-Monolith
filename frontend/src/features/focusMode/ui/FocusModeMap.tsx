@@ -169,6 +169,7 @@ function setInitialViewCenteredOn(
   lat: number,
   lon: number,
   deltaDegrees: number,
+  flyDuration = 0.8,
 ): void {
   whenCanvasSized(viewer, () => {
     const is2D = viewer.scene.mode === Cesium.SceneMode.SCENE2D;
@@ -181,7 +182,7 @@ function setInitialViewCenteredOn(
           lon + deltaDegrees,
           lat + deltaDegrees,
         ),
-        duration: 0.8,
+        duration: flyDuration,
       });
       return;
     }
@@ -189,7 +190,7 @@ function setInitialViewCenteredOn(
     const center = Cesium.Cartesian3.fromDegrees(lon, lat);
     const radiusMeters = deltaDegrees * 111_000;
     viewer.camera.flyToBoundingSphere(new Cesium.BoundingSphere(center, radiusMeters), {
-      duration: 0.8,
+      duration: flyDuration,
       offset: new Cesium.HeadingPitchRange(
         0,
         -Cesium.Math.toRadians(45),
@@ -202,6 +203,7 @@ function setInitialViewCenteredOn(
 function fitTrajectoryView(
   viewer: Cesium.Viewer,
   coords: Array<{ lat: number; lon: number }>,
+  flyDuration = 0.8,
 ): void {
   if (coords.length === 0) return;
 
@@ -211,7 +213,7 @@ function fitTrajectoryView(
     const is2D = viewer.scene.mode === Cesium.SceneMode.SCENE2D;
 
     viewer.camera.flyToBoundingSphere(boundingSphere, {
-      duration: 0.8,
+      duration: flyDuration,
       offset: is2D
         ? undefined
         : new Cesium.HeadingPitchRange(
@@ -271,7 +273,9 @@ interface Props {
   events: FocusEvent[];
   fitKey: unknown;
   eventsLoading?: boolean;
+  preferReducedMotion?: boolean;
   onNavigateToEvent?: (eventId: string) => void;
+  onSelectEventMarker?: (event: FocusEvent) => void;
 }
 
 export const FocusModeMap = ({
@@ -282,11 +286,14 @@ export const FocusModeMap = ({
   events,
   fitKey,
   eventsLoading = false,
+  preferReducedMotion = false,
   onNavigateToEvent,
+  onSelectEventMarker,
 }: Props) => {
   void playbackSpeed; // kept for parity with the 2D map props
 
   const theme = useTheme();
+  const flyDuration = preferReducedMotion ? 0 : 0.8;
 
   const severityColorMap = useMemo(
     () => ({
@@ -317,6 +324,10 @@ export const FocusModeMap = ({
   } | null>(null);
   const onNavigateToEventRef = useRef(onNavigateToEvent);
   onNavigateToEventRef.current = onNavigateToEvent;
+  const onSelectEventMarkerRef = useRef(onSelectEventMarker);
+  onSelectEventMarkerRef.current = onSelectEventMarker;
+  const flyDurationRef = useRef(flyDuration);
+  flyDurationRef.current = flyDuration;
   const selectedInfoRef = useRef<typeof selectedInfo>(null);
   selectedInfoRef.current = selectedInfo;
   const eventsRef = useRef(events);
@@ -512,12 +523,14 @@ export const FocusModeMap = ({
         const id = entity?.id;
 
         if (typeof id === "string" && eventDataRef.current[id]) {
+          const eventData = eventDataRef.current[id];
           setSelectedInfo({
             type: "event",
-            data: eventDataRef.current[id],
+            data: eventData,
             x: event.position.x,
             y: event.position.y,
           });
+          onSelectEventMarkerRef.current?.(eventData);
           return;
         }
 
@@ -593,6 +606,7 @@ export const FocusModeMap = ({
         eventView.lat,
         eventView.lon,
         eventView.deltaDegrees,
+        flyDurationRef.current,
       );
       return;
     }
@@ -601,7 +615,7 @@ export const FocusModeMap = ({
 
     lastFitKeyRef.current = fitKey;
     viewer.camera.cancelFlight();
-    fitTrajectoryView(viewer, fullTrajectory);
+    fitTrajectoryView(viewer, fullTrajectory, flyDurationRef.current);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fitKey, isReady, eventsLoading]);
 
@@ -777,6 +791,7 @@ export const FocusModeMap = ({
             point.lat,
             point.lon,
             DEFAULT_INITIAL_VIEW_DELTA_DEGREES,
+            flyDurationRef.current,
           );
         }}
         disabled={!currentPoint}

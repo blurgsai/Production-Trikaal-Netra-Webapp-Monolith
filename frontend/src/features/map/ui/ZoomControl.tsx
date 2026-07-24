@@ -41,6 +41,7 @@ function ZoomControl() {
       <IconButton
         size="small"
         onClick={zoomIn}
+        aria-label="Zoom in"
         sx={{
           p: 0.25,
           "&:hover": { backgroundColor: alpha(theme.palette.text.primary, 0.2) },
@@ -51,6 +52,7 @@ function ZoomControl() {
 
       <Typography
         variant="caption"
+        aria-live="polite"
         sx={{
           py: 0.25,
           fontWeight: 600,
@@ -62,7 +64,7 @@ function ZoomControl() {
         {zoom}
       </Typography>
 
-      <IconButton size="small" onClick={zoomOut} sx={{ p: 0.25 }}>
+      <IconButton size="small" onClick={zoomOut} aria-label="Zoom out" sx={{ p: 0.25 }}>
         <RemoveIcon sx={{ fontSize: 16 }} />
       </IconButton>
     </Box>

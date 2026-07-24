@@ -93,7 +93,11 @@ function BaseMap({
   const [coords, setCoords] = useState({ lat: 0, lng: 0 });
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", width: "100%", height: "100%" }}>
+    <Box
+      role="region"
+      aria-label="Maritime vessel map"
+      sx={{ display: "flex", flexDirection: "column", width: "100%", height: "100%" }}
+    >
     {mapControlSettings.statusbar && <MapStatusBar vesselCqlFilter={vesselCqlFilter} coords={coords} />}
     <Box sx={{ position: "relative", flex: 1, minHeight: 0 }}>
     <MapContainer
@@ -170,6 +174,7 @@ function BaseMap({
           <Tooltip title="Measure Distance" placement="left">
             <IconButton
               size="small"
+              aria-label="Measure distance"
               onClick={() => {
                 setIsPolygonMode(false);
                 setIsMeasureMode((prev) => !prev);
@@ -182,6 +187,7 @@ function BaseMap({
           <Tooltip title="Draw Polygon Filter" placement="left">
             <IconButton
               size="small"
+              aria-label="Draw polygon filter"
               onClick={() => {
                 setIsMeasureMode(false);
                 setIsPolygonMode((prev) => !prev);

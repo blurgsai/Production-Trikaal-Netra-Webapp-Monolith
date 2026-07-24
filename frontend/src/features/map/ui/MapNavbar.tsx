@@ -14,7 +14,9 @@ export type ViewTile = "map" | "table" | "layers" | "vessel" | "charts";
 
 interface MapNavbarProps {
   visibleTiles: ViewTile[];
+  effectiveVisibleTiles: ViewTile[];
   onVisibleTilesChange: (tiles: ViewTile[]) => void;
+  autoHiddenSecondary?: boolean;
   filters: VesselTableFilter[];
   appliedFilters: VesselTableFilter[];
   allTableColumns: string[];
@@ -41,7 +43,9 @@ const VIEW_OPTIONS: { value: ViewTile; label: string; icon: React.ReactNode }[] 
 
 function MapNavbar({
   visibleTiles,
+  effectiveVisibleTiles,
   onVisibleTilesChange,
+  autoHiddenSecondary = false,
   filters,
   appliedFilters,
   allTableColumns,
@@ -70,17 +74,21 @@ function MapNavbar({
   };
 
   const handleToggleTile = (tile: ViewTile) => {
-    const isCurrentlyVisible = visibleTiles.includes(tile);
-    let newTiles: ViewTile[];
+    const isEffectivelyVisible = effectiveVisibleTiles.includes(tile);
 
-    if (isCurrentlyVisible) {
-      newTiles = visibleTiles.filter((t) => t !== tile);
-    } else {
-      newTiles = [...visibleTiles, tile];
+    if (isEffectivelyVisible) {
+      const newTiles = visibleTiles.filter((t) => t !== tile);
+      if (newTiles.length > 0) {
+        onVisibleTilesChange(newTiles);
+      }
+      return;
     }
 
-    if (newTiles.length > 0) {
-      onVisibleTilesChange(newTiles);
+    // Show tile: add if missing, or re-signal to unlock auto-hidden secondary
+    if (visibleTiles.includes(tile)) {
+      onVisibleTilesChange([...visibleTiles]);
+    } else {
+      onVisibleTilesChange([...visibleTiles, tile]);
     }
   };
 
@@ -151,7 +159,7 @@ function MapNavbar({
               <ListItemIcon>
                 <Checkbox
                   edge="start"
-                  checked={visibleTiles.includes(option.value)}
+                  checked={effectiveVisibleTiles.includes(option.value)}
                   tabIndex={-1}
                   disableRipple
                   size="small"
@@ -163,6 +171,14 @@ function MapNavbar({
               <ListItemText primary={option.label} />
             </MenuItem>
           ))}
+          {autoHiddenSecondary && (
+            <MenuItem disabled dense>
+              <ListItemText
+                primary="Some panels are hidden at this width. Re-enable them here."
+                primaryTypographyProps={{ variant: "caption", color: "text.secondary" }}
+              />
+            </MenuItem>
+          )}
         </Menu>
       </Toolbar>
       <FilterDialog

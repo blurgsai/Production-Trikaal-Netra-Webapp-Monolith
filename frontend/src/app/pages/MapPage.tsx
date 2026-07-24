@@ -1,8 +1,9 @@
-import { Box } from "@mui/material";
-import { BaseMap, MapNavbar, VesselTableTool, LayerPanel, VesselConfigPanel, ChartHouse, useMapConfig, useVesselTrajectory, useVesselTable, useVesselColumns, MapTileSettings, useMapUrlParams, useVesselByMmsi } from "@/features/map";
+import { Box, Typography, useMediaQuery } from "@mui/material";
+import { useTheme } from "@mui/material/styles";
+import { BaseMap, MapNavbar, VesselTableTool, LayerPanel, VesselConfigPanel, ChartHouse, useMapConfig, useVesselTrajectory, useVesselTable, useVesselColumns, MapTileSettings, useMapUrlParams, useVesselByMmsi, vesselInfoFromRaw } from "@/features/map";
 import type { VesselInfo, VesselConfig, ViewTile, Polygon, PopupFieldConfig, ChartConfig } from "@/features/map";
 import { useLocalStorage } from "@/shared";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { Mosaic, MosaicWindow, type MosaicNode } from "react-mosaic-component";
 import "react-mosaic-component/react-mosaic-component.css";
 import "@/shared/ui/mosaic/mosaic.css";
@@ -17,7 +18,80 @@ const DEFAULT_LAYOUT: MosaicNode<ViewTile> = {
   splitPercentage: 60,
 } as unknown as MosaicNode<ViewTile>;
 
+const SECONDARY_TILES: ViewTile[] = ["layers", "vessel", "charts"];
+
+function buildMosaicLayout(
+  tiles: ViewTile[],
+  twoTileSplit = 50
+): MosaicNode<ViewTile> {
+  if (tiles.length === 1) return tiles[0];
+  if (tiles.length === 2) {
+    return {
+      direction: "row",
+      first: tiles[0],
+      second: tiles[1],
+      splitPercentage: twoTileSplit,
+    } as unknown as MosaicNode<ViewTile>;
+  }
+  if (tiles.length === 3) {
+    return {
+      direction: "row",
+      first: tiles[0],
+      second: {
+        direction: "column",
+        first: tiles[1],
+        second: tiles[2],
+        splitPercentage: 50,
+      },
+      splitPercentage: 60,
+    } as unknown as MosaicNode<ViewTile>;
+  }
+  if (tiles.length === 4) {
+    return {
+      direction: "row",
+      first: {
+        direction: "column",
+        first: tiles[0],
+        second: tiles[1],
+        splitPercentage: 50,
+      },
+      second: {
+        direction: "column",
+        first: tiles[2],
+        second: tiles[3],
+        splitPercentage: 50,
+      },
+      splitPercentage: 50,
+    } as unknown as MosaicNode<ViewTile>;
+  }
+  return {
+    direction: "row",
+    first: tiles[0],
+    second: {
+      direction: "column",
+      first: {
+        direction: "row",
+        first: tiles[1],
+        second: tiles[2],
+        splitPercentage: 50,
+      },
+      second: {
+        direction: "row",
+        first: tiles[3],
+        second: tiles[4],
+        splitPercentage: 50,
+      },
+      splitPercentage: 50,
+    },
+    splitPercentage: 50,
+  } as unknown as MosaicNode<ViewTile>;
+}
+
 function MapPage() {
+  const theme = useTheme();
+  const below1440 = useMediaQuery(theme.breakpoints.down(1440));
+  const below1280 = useMediaQuery(theme.breakpoints.down(1280));
+
   const urlParams = useMapUrlParams();
   const vesselFromUrl = useVesselByMmsi(urlParams.vessel);
   const { fetchColumns, searchValues } = useVesselColumns();
@@ -59,12 +133,40 @@ function MapPage() {
   const [visibleTiles, setVisibleTiles] = useLocalStorage<ViewTile[]>("trikaal_mosaic_tiles", DEFAULT_TILES);
   const [mosaicLayout, setMosaicLayout] = useLocalStorage<MosaicNode<ViewTile>>("trikaal_mosaic_layout", DEFAULT_LAYOUT);
   const [chartConfigs, setChartConfigs] = useLocalStorage<ChartConfig[]>("trikaal_chart_configs", []);
+  const [sessionUnlockedSecondary, setSessionUnlockedSecondary] = useState<ViewTile[]>([]);
+  const [displayLayout, setDisplayLayout] = useState<MosaicNode<ViewTile>>(mosaicLayout);
+  const [selectionAnnouncement, setSelectionAnnouncement] = useState("");
 
   useEffect(() => {
     if (urlParams.view.length > 0) {
       setVisibleTiles(urlParams.view as ViewTile[]);
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const effectiveVisibleTiles = useMemo(() => {
+    if (!below1440) return visibleTiles;
+    return visibleTiles.filter((tile) => {
+      if (tile === "map" || tile === "table") return true;
+      return sessionUnlockedSecondary.includes(tile);
+    });
+  }, [below1440, visibleTiles, sessionUnlockedSecondary]);
+
+  const autoHiddenSecondary = useMemo(() => {
+    if (!below1440) return false;
+    return visibleTiles.some(
+      (tile) => SECONDARY_TILES.includes(tile) && !sessionUnlockedSecondary.includes(tile)
+    );
+  }, [below1440, visibleTiles, sessionUnlockedSecondary]);
+
+  const handleVisibleTilesChange = useCallback(
+    (tiles: ViewTile[]) => {
+      setVisibleTiles(tiles);
+      if (below1440) {
+        setSessionUnlockedSecondary(tiles.filter((t) => SECONDARY_TILES.includes(t)));
+      }
+    },
+    [below1440, setVisibleTiles]
+  );
 
   const handleCreateChart = useCallback((chart: ChartConfig) => {
     setChartConfigs((prev) => [...prev, chart]);
@@ -113,12 +215,6 @@ function MapPage() {
     onPolygonFiltersChange: setPolygonFilters,
     initialFilters: urlParams.filters.length > 0 ? urlParams.filters : undefined,
   });
-  
-  console.log("🗺️ Map CQL Debug:", {
-    appliedFilters,
-    polygonFilters,
-    cqlFilter,
-  });
 
   const { trajectory, load: loadTrajectory, clear: clearTrajectory } = useVesselTrajectory();
 
@@ -138,8 +234,33 @@ function MapPage() {
     setSelectedVesselPosition(latlng ?? null);
     if (!vessel) {
       clearTrajectory();
+      setSelectionAnnouncement("Selection cleared");
+    } else {
+      const label = vessel.name || vessel.mmsi || vessel.id;
+      setSelectionAnnouncement(`Selected vessel ${label}`);
     }
   };
+
+  const handleTableVesselSelect = useCallback(
+    (row: { id: string | number; properties: Record<string, unknown> } | null) => {
+      if (!row) {
+        handleVesselSelect(null);
+        return;
+      }
+      const info = vesselInfoFromRaw({ id: row.id, ...row.properties });
+      if (info) {
+        handleVesselSelect(info, {
+          lat: info.locationCurrentLat,
+          lng: info.locationCurrentLon,
+        });
+        handleVesselClick(info);
+      } else {
+        setSelectionAnnouncement(`Selected row ${row.id}`);
+      }
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [vesselConfig.trajectory.timeSeconds]
+  );
 
   const handlePopupFieldsChange = (fields: PopupFieldConfig) => {
     setVesselConfig((prev) => ({ ...prev, popupFields: fields }));
@@ -149,6 +270,9 @@ function MapPage() {
     if (!vesselFromUrl) return;
     setSelectedVessel(vesselFromUrl);
     setSelectedVesselPosition({ lat: vesselFromUrl.locationCurrentLat, lng: vesselFromUrl.locationCurrentLon });
+    setSelectionAnnouncement(
+      `Selected vessel ${vesselFromUrl.name || vesselFromUrl.mmsi || vesselFromUrl.id}`
+    );
     loadTrajectory({
       vesselId: vesselFromUrl.id,
       timeSeconds: vesselConfig.trajectory.timeSeconds,
@@ -178,70 +302,26 @@ function MapPage() {
   };
 
   useEffect(() => {
-    if (visibleTiles.length === 0) return;
+    if (effectiveVisibleTiles.length === 0) return;
 
-    if (visibleTiles.length === 1) {
-      setMosaicLayout(visibleTiles[0]);
-    } else if (visibleTiles.length === 2) {
-      setMosaicLayout({
-        direction: "row",
-        first: visibleTiles[0],
-        second: visibleTiles[1],
-        splitPercentage: 50,
-      } as unknown as MosaicNode<ViewTile>);
-    } else if (visibleTiles.length === 3) {
-      setMosaicLayout({
-        direction: "row",
-        first: visibleTiles[0],
-        second: {
-          direction: "column",
-          first: visibleTiles[1],
-          second: visibleTiles[2],
-          splitPercentage: 50,
-        },
-        splitPercentage: 60,
-      } as unknown as MosaicNode<ViewTile>);
-    } else if (visibleTiles.length === 4) {
-      setMosaicLayout({
-        direction: "row",
-        first: {
-          direction: "column",
-          first: visibleTiles[0],
-          second: visibleTiles[1],
-          splitPercentage: 50,
-        },
-        second: {
-          direction: "column",
-          first: visibleTiles[2],
-          second: visibleTiles[3],
-          splitPercentage: 50,
-        },
-        splitPercentage: 50,
-      } as unknown as MosaicNode<ViewTile>);
-    } else if (visibleTiles.length === 5) {
-      setMosaicLayout({
-        direction: "row",
-        first: visibleTiles[0],
-        second: {
-          direction: "column",
-          first: {
-            direction: "row",
-            first: visibleTiles[1],
-            second: visibleTiles[2],
-            splitPercentage: 50,
-          },
-          second: {
-            direction: "row",
-            first: visibleTiles[3],
-            second: visibleTiles[4],
-            splitPercentage: 50,
-          },
-          splitPercentage: 50,
-        },
-        splitPercentage: 50,
-      } as unknown as MosaicNode<ViewTile>);
+    const twoTileSplit =
+      below1280 &&
+      effectiveVisibleTiles.length === 2 &&
+      effectiveVisibleTiles.includes("map") &&
+      effectiveVisibleTiles.includes("table")
+        ? 70
+        : effectiveVisibleTiles.length === 2
+          ? 50
+          : 50;
+
+    const nextLayout = buildMosaicLayout(effectiveVisibleTiles, twoTileSplit);
+    setDisplayLayout(nextLayout);
+
+    // Persist layout only at full desktop widths — responsive overrides stay session-only
+    if (!below1440) {
+      setMosaicLayout(nextLayout);
     }
-  }, [visibleTiles, setMosaicLayout]);
+  }, [effectiveVisibleTiles, below1280, below1440, setMosaicLayout]);
 
   const getTileTitle = (id: ViewTile): string => {
     switch (id) {
@@ -282,6 +362,8 @@ function MapPage() {
             pageData={pageData}
             loading={loading}
             error={error}
+            selectedVesselId={selectedVessel?.id ?? null}
+            onVesselRowSelect={handleTableVesselSelect}
             onGoToPage={goToPage}
             onChangePageSize={changePageSize}
             onSetSort={setSort}
@@ -350,10 +432,32 @@ function MapPage() {
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <Box sx={{ width: "100%", flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}>
+      <Box sx={{ width: "100%", flex: 1, minHeight: 0, display: "flex", flexDirection: "column", position: "relative", overflow: "hidden" }}>
+        <Typography
+          component="div"
+          aria-live="polite"
+          aria-atomic="true"
+          sx={{
+            position: "absolute",
+            width: "1px",
+            height: "1px",
+            padding: 0,
+            margin: 0,
+            overflow: "hidden",
+            clip: "rect(0, 0, 0, 0)",
+            whiteSpace: "nowrap",
+            border: 0,
+            top: 0,
+            left: 0,
+          }}
+        >
+          {selectionAnnouncement}
+        </Typography>
         <MapNavbar
           visibleTiles={visibleTiles}
-          onVisibleTilesChange={setVisibleTiles}
+          effectiveVisibleTiles={effectiveVisibleTiles}
+          onVisibleTilesChange={handleVisibleTilesChange}
+          autoHiddenSecondary={autoHiddenSecondary}
           filters={filters}
           appliedFilters={appliedFilters}
           allTableColumns={allTableColumns}
@@ -372,8 +476,14 @@ function MapPage() {
         <Box sx={{ flex: 1, minHeight: 0, position: "relative" }} className="mosaic-blueprint-theme">
           <Mosaic<ViewTile>
             renderTile={renderTile}
-            value={mosaicLayout}
-            onChange={(node) => node && setMosaicLayout(node)}
+            value={displayLayout}
+            onChange={(node) => {
+              if (!node) return;
+              setDisplayLayout(node);
+              if (!below1440) {
+                setMosaicLayout(node);
+              }
+            }}
           />
         </Box>
       </Box>

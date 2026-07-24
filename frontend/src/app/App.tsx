@@ -28,7 +28,7 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider theme={defenseTheme}>
-        <CssBaseline />
+        <CssBaseline enableColorScheme />
         <BrowserRouter>
           <ChatbotProvider>
             <AuthProvider>
