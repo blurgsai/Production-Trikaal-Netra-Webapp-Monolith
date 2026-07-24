@@ -13,6 +13,7 @@ export interface UsePlaybackReturn {
   data: PlaybackData | null;
   isLoading: boolean;
   error: string | null;
+  refetch: () => void;
   currentTimestampMs: number;
   currentPositions: Record<string, VesselPosition>;
   isPlaying: boolean;
@@ -28,7 +29,7 @@ export function usePlayback({
   eventType,
   isCompound,
 }: UsePlaybackOptions): UsePlaybackReturn {
-  const { data, isLoading, error } = usePlaybackData({ eventId, eventType, isCompound });
+  const { data, isLoading, error, refetch } = usePlaybackData({ eventId, eventType, isCompound });
 
   const [currentTimestampMs, setCurrentTimestampMs] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -78,6 +79,7 @@ export function usePlayback({
     data:               data ?? null,
     isLoading,
     error,
+    refetch,
     currentTimestampMs,
     currentPositions,
     isPlaying,

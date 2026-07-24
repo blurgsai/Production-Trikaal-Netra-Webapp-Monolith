@@ -13,6 +13,7 @@ export interface UsePlaybackDataReturn {
   data: PlaybackData | undefined;
   isLoading: boolean;
   error: string | null;
+  refetch: () => void;
 }
 
 // The "fetch + map + cache" hook (design_pattern.md Layer 3). It owns the ONLY
@@ -24,7 +25,7 @@ export function usePlaybackData({
   eventType,
   isCompound,
 }: UsePlaybackDataOptions): UsePlaybackDataReturn {
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['playback', eventId, isCompound],
     queryFn: () => fetchPlaybackData(eventId!, eventType!, isCompound),
     enabled: !!eventId && !!eventType,
@@ -36,5 +37,8 @@ export function usePlaybackData({
     data,
     isLoading,
     error: error ? (error as Error).message : null,
+    refetch: () => {
+      void refetch();
+    },
   };
 }

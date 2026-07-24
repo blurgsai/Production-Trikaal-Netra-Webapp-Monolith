@@ -49,7 +49,8 @@ export function CompoundConfigList({ onSelectConfig }: Props) {
         <TextField
           size="small"
           fullWidth
-          placeholder="Search compound configs…"
+          label="Search compound configs"
+          placeholder="e.g. rendezvous"
           value={search}
           onChange={e => { setSearch(e.target.value); setPage(0); }}
           InputProps={{ startAdornment: <InputAdornment position="start"><SearchIcon /></InputAdornment> }}
@@ -60,13 +61,28 @@ export function CompoundConfigList({ onSelectConfig }: Props) {
       <Divider />
 
       <TableContainer sx={{ flexGrow: 1, overflow: 'auto' }}>
-        <Table size="small" stickyHeader>
+        <Table size="small" stickyHeader aria-label="Compound event configs">
+          <caption
+            style={{
+              position: 'absolute',
+              width: '1px',
+              height: '1px',
+              padding: 0,
+              margin: 0,
+              overflow: 'hidden',
+              clip: 'rect(0, 0, 0, 0)',
+              whiteSpace: 'nowrap',
+              border: 0,
+            }}
+          >
+            Compound event configs list
+          </caption>
           <TableHead>
             <TableRow>
-              <TableCell>Type</TableCell>
-              <TableCell>Constituent Types</TableCell>
-              <TableCell>Severity</TableCell>
-              <TableCell>Timestamp</TableCell>
+              <TableCell component="th" scope="col">Type</TableCell>
+              <TableCell component="th" scope="col">Constituent Types</TableCell>
+              <TableCell component="th" scope="col">Severity</TableCell>
+              <TableCell component="th" scope="col">Timestamp</TableCell>
             </TableRow>
           </TableHead>
 

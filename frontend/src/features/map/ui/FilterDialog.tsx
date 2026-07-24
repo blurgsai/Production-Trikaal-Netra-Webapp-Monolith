@@ -1,5 +1,6 @@
 import { useState } from "react";
 import {
+  Alert,
   Box,
   Button,
   Dialog,
@@ -8,6 +9,7 @@ import {
   IconButton,
   MenuItem,
   Select,
+  Snackbar,
   Stack,
   Tab,
   Tabs,
@@ -106,13 +108,24 @@ function FilterDialog({
 }: FilterDialogProps) {
   const [filterTab, setFilterTab] = useState<"filters" | "saved">("filters");
   const [filterName, setFilterName] = useState("");
+  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: "success" | "error" }>({
+    open: false,
+    message: "",
+    severity: "success",
+  });
 
   const handleApply = () => {
-    onApplyFilters();
-    onClose();
+    try {
+      onApplyFilters();
+      setSnackbar({ open: true, message: "Filters applied", severity: "success" });
+      onClose();
+    } catch {
+      setSnackbar({ open: true, message: "Failed to apply filters", severity: "error" });
+    }
   };
 
   return (
+    <>
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: 1, borderColor: "divider" }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
@@ -335,6 +348,22 @@ function FilterDialog({
         </Box>
       )}
     </Dialog>
+    <Snackbar
+      open={snackbar.open}
+      autoHideDuration={3000}
+      onClose={() => setSnackbar((prev) => ({ ...prev, open: false }))}
+      anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+    >
+      <Alert
+        severity={snackbar.severity}
+        onClose={() => setSnackbar((prev) => ({ ...prev, open: false }))}
+        variant="filled"
+        sx={{ width: "100%" }}
+      >
+        {snackbar.message}
+      </Alert>
+    </Snackbar>
+    </>
   );
 }
 

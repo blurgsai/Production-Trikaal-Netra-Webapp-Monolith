@@ -18,6 +18,14 @@ import { buildEventMarks } from "../model/playbackUtils";
 
 const SPEED_OPTIONS = [0.25, 0.5, 1, 1.5, 2, 4, 8];
 
+const focusVisibleSx = {
+  "&:focus-visible": {
+    outline: "2px solid",
+    outlineColor: "primary.main",
+    outlineOffset: 2,
+  },
+} as const;
+
 interface Props {
   trajectory: TrajectoryPoint[];
   events: FocusEvent[];
@@ -60,6 +68,7 @@ export const FocusPlaybackControls = ({
   const isDirty = draftStart !== startTime || draftEnd !== endTime;
   const displayIndex = seekIndex ?? currentIndex;
   const total = trajectory.length;
+  const settingsOpen = Boolean(anchorEl);
 
   const endDayjs = draftEnd ? dayjs(draftEnd * 1000) : null;
   const startDayjs = draftStart ? dayjs(draftStart * 1000) : null;
@@ -74,6 +83,46 @@ export const FocusPlaybackControls = ({
     () => buildEventMarks(trajectory, events),
     [trajectory, events],
   );
+
+  const formatIndexTime = (index: number) => {
+    const point = trajectory[index];
+    return point
+      ? dayjs(point.timestamp * 1000).format("YYYY-MM-DD HH:mm:ss")
+      : "No position";
+  };
+
+  useEffect(() => {
+    if (total === 0) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const active = document.activeElement;
+      const isTyping =
+        active instanceof HTMLInputElement ||
+        active instanceof HTMLTextAreaElement ||
+        (active instanceof HTMLElement && active.isContentEditable);
+      if (isTyping) return;
+
+      switch (e.code) {
+        case "Space":
+          e.preventDefault();
+          onPlayPause();
+          break;
+        case "ArrowLeft":
+          e.preventDefault();
+          onSeek(Math.max(0, currentIndex - 1));
+          break;
+        case "ArrowRight":
+          e.preventDefault();
+          onSeek(Math.min(total - 1, currentIndex + 1));
+          break;
+        default:
+          break;
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [total, currentIndex, onPlayPause, onSeek]);
 
   return (
     <Paper
@@ -104,6 +153,9 @@ export const FocusPlaybackControls = ({
           color="primary"
           size="large"
           disabled={total === 0}
+          aria-label={isPlaying ? "Pause playback" : "Play playback"}
+          aria-pressed={isPlaying}
+          sx={focusVisibleSx}
         >
           {isPlaying ? (
             <Pause fontSize="large" />
@@ -119,6 +171,8 @@ export const FocusPlaybackControls = ({
           value={displayIndex}
           disabled={total === 0}
           marks={eventMarks}
+          getAriaLabel={() => "Playback timeline"}
+          getAriaValueText={formatIndexTime}
           onChange={(_, v) => setSeekIndex(v as number)}
           onChangeCommitted={(_, v) => {
             onSeek(v as number);
@@ -133,6 +187,9 @@ export const FocusPlaybackControls = ({
           }}
           sx={{
             flex: 1,
+            "& .MuiSlider-thumb": {
+              ...focusVisibleSx,
+            },
             "& .MuiSlider-mark": {
               width: 8,
               height: 8,
@@ -153,12 +210,16 @@ export const FocusPlaybackControls = ({
           variant="outlined"
           startIcon={<Settings />}
           onClick={(e) => setAnchorEl(e.currentTarget)}
+          aria-label="Playback speed"
+          aria-haspopup="menu"
+          aria-expanded={settingsOpen}
+          sx={focusVisibleSx}
         >
           {playbackSpeed}x
         </Button>
 
         <Popover
-          open={Boolean(anchorEl)}
+          open={settingsOpen}
           anchorEl={anchorEl}
           onClose={() => setAnchorEl(null)}
           anchorOrigin={{ vertical: "top", horizontal: "right" }}
@@ -222,11 +283,12 @@ export const FocusPlaybackControls = ({
                   key={s}
                   size="small"
                   variant={s === playbackSpeed ? "contained" : "outlined"}
+                  aria-pressed={s === playbackSpeed}
                   onClick={() => {
                     onSpeedChange(s);
                     setAnchorEl(null);
                   }}
-                  sx={{ minWidth: 40, px: 1, py: 0.25, fontSize: 12 }}
+                  sx={{ minWidth: 40, px: 1, py: 0.25, fontSize: 12, ...focusVisibleSx }}
                 >
                   {s}x
                 </Button>

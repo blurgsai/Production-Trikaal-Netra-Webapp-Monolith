@@ -186,10 +186,12 @@ describe("Threats integration", () => {
       expect(screen.queryByText("Failed to load world monitoring threats.")).toBeNull();
     });
 
-    it("I-06: renders keyword search input", async () => {
+    it("I-06: renders Filters control in Event Explorer", async () => {
       setupSuccessHandlers();
       renderWithProviders(<Threats />);
-      await waitFor(() => expect(screen.getByPlaceholderText(/threat level.*reasoning/i)).toBeInTheDocument());
+      await waitFor(() =>
+        expect(screen.getByRole("button", { name: /Filters/i })).toBeInTheDocument(),
+      );
     });
 
     it("I-07: renders event location from mapped data", async () => {

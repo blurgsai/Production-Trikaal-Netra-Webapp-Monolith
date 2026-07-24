@@ -70,6 +70,8 @@ export const FocusModePage = () => {
     message: "",
     error: false,
   });
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
+  const [selectionAnnouncement, setSelectionAnnouncement] = useState("");
   const pendingUrlEntry = useRef(!!vesselIdFromUrl);
 
   const mmsiNumber = mmsiInput.trim() ? Number(mmsiInput) : null;
@@ -150,10 +152,60 @@ export const FocusModePage = () => {
     [formStart, formEnd, writeFocusParams, setSearchParams],
   );
 
+  const formatEventType = (type: string) =>
+    type.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+
+  const handleHighlightEvent = useCallback((event: FocusEvent) => {
+    setSelectedEventId(event.id);
+    const time = event.timestamp
+      ? dayjs(event.timestamp).format("YYYY-MM-DD HH:mm:ss")
+      : "unknown time";
+    setSelectionAnnouncement(
+      `Selected event: ${formatEventType(event.type)} at ${time}`,
+    );
+  }, []);
+
+  const goToVesselEvents = useCallback(() => {
+    if (!selectedVessel) return;
+    navigate(
+      `/events?vessels_involved=${encodeURIComponent(selectedVessel.id)}`,
+    );
+  }, [navigate, selectedVessel]);
+
+  const handleSelectEvent = useCallback(
+    (event: FocusEvent) => {
+      handleHighlightEvent(event);
+      goToVesselEvents();
+    },
+    [goToVesselEvents, handleHighlightEvent],
+  );
+
+  const handleNavigateToEvent = useCallback(
+    (eventId: string) => {
+      const event = events.find((e) => e.id === eventId);
+      if (event) {
+        handleHighlightEvent(event);
+      } else {
+        setSelectedEventId(eventId);
+      }
+      goToVesselEvents();
+    },
+    [events, goToVesselEvents, handleHighlightEvent],
+  );
+
+  const handleSelectEventMarker = useCallback(
+    (event: FocusEvent) => {
+      handleHighlightEvent(event);
+    },
+    [handleHighlightEvent],
+  );
+
   const handleChangeVessel = useCallback(() => {
     setSelectedVessel(null);
     setStartTime(null);
     setEndTime(null);
+    setSelectedEventId(null);
+    setSelectionAnnouncement("");
     setSearchParams({}, { replace: true });
   }, [setSearchParams]);
 
@@ -168,27 +220,6 @@ export const FocusModePage = () => {
       }
     },
     [selectedVessel, writeFocusParams],
-  );
-
-  const goToVesselEvents = useCallback(() => {
-    if (!selectedVessel) return;
-    navigate(
-      `/events?vessels_involved=${encodeURIComponent(selectedVessel.id)}`,
-    );
-  }, [navigate, selectedVessel]);
-
-  const handleSelectEvent = useCallback(
-    (_event: FocusEvent) => {
-      goToVesselEvents();
-    },
-    [goToVesselEvents],
-  );
-
-  const handleNavigateToEvent = useCallback(
-    (_eventId: string) => {
-      goToVesselEvents();
-    },
-    [goToVesselEvents],
   );
 
   // Deep-link: /focus-mode?vesselId=...&start=...&end=...
@@ -229,6 +260,7 @@ export const FocusModePage = () => {
         display: "flex",
         flexDirection: "column",
         width: "100%",
+        overflow: "hidden",
       }}
     >
       <FocusModeView
@@ -249,7 +281,11 @@ export const FocusModePage = () => {
         playback={playback}
         visibleEvents={events}
         eventsLoading={eventsQuery.isFetching}
+        selectedEventId={selectedEventId}
+        selectionAnnouncement={selectionAnnouncement}
         onSelectEvent={handleSelectEvent}
+        onHighlightEvent={handleHighlightEvent}
+        onSelectEventMarker={handleSelectEventMarker}
         startTime={startTime}
         endTime={endTime}
         onApplyTimeRange={handleApplyTimeRange}

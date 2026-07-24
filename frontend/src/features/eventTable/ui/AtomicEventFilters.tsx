@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import {
   Box, Button, Select, MenuItem, TextField, FormControl, InputLabel,
-  Popover, IconButton, Divider, Typography, Autocomplete,
+  Popover, IconButton, Typography, Autocomplete,
 } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
 import { DateTimePicker, LocalizationProvider } from '@mui/x-date-pickers';
@@ -75,14 +75,14 @@ export function AtomicEventFilters({
   const panelBg   = alpha(theme.palette.background.paper, 0.98);
   const headerBg  = alpha(theme.palette.common.black, 0.12);
   const inputBg   = alpha(theme.palette.background.default, 0.72);
-  const border    = alpha(theme.palette.divider, 0.8);
   const softBlue  = alpha(theme.palette.primary.main, 0.12);
+  const quietBorder = 'transparent';
 
   const darkInputSx = {
     '& .MuiOutlinedInput-root': {
       backgroundColor: inputBg,
-      '& fieldset': { borderColor: border },
-      '&:hover fieldset': { borderColor: theme.palette.primary.main },
+      '& fieldset': { borderColor: quietBorder },
+      '&:hover fieldset': { borderColor: alpha(theme.palette.primary.main, 0.5) },
       '&.Mui-focused fieldset': { borderColor: theme.palette.primary.main, borderWidth: '1px' },
     },
     '& .MuiInputBase-input': { color: `${theme.palette.text.primary} !important` },
@@ -92,7 +92,8 @@ export function AtomicEventFilters({
   const menuSx = {
     backgroundColor: panelBg,
     color: theme.palette.text.primary,
-    border: `1px solid ${border}`,
+    border: 'none',
+    boxShadow: theme.shadows[8],
     '& .MuiMenuItem-root:hover': { backgroundColor: softBlue },
     '& .Mui-selected': { backgroundColor: `${softBlue} !important` },
   };
@@ -102,8 +103,8 @@ export function AtomicEventFilters({
     field: '', operator: '', value: '', value2: '',
   });
 
-  const [anchorEl, setAnchorEl]     = useState<HTMLElement | null>(null);
-  const [rows, setRows]              = useState<FilterRow[]>([createRow()]);
+  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+  const [rows, setRows] = useState<FilterRow[]>([]);
 
   const open = Boolean(anchorEl);
 
@@ -113,7 +114,7 @@ export function AtomicEventFilters({
   );
 
   const handleOpen = useCallback((e: React.MouseEvent<HTMLElement>) => {
-    setRows(appliedFilters.length > 0 ? filtersToRows(appliedFilters) : [createRow()]);
+    setRows(appliedFilters.length > 0 ? filtersToRows(appliedFilters) : []);
     setAnchorEl(e.currentTarget);
   }, [appliedFilters]);
 
@@ -122,10 +123,19 @@ export function AtomicEventFilters({
   const updateRow = (id: string, patch: Partial<FilterRow>) =>
     setRows(prev => prev.map(r => r.id === id ? { ...r, ...patch } : r));
 
-  const removeRow = (id: string) =>
-    setRows(prev => prev.length > 1 ? prev.filter(r => r.id !== id) : [createRow()]);
+  const removeRow = (id: string) => {
+    setRows(prev => {
+      const next = prev.filter(r => r.id !== id);
+      onApplyFilters(rowsToFilters(next));
+      return next;
+    });
+  };
 
-  const handleClearAll = () => { setRows([createRow()]); onApplyFilters([]); handleClose(); };
+  const handleClearAll = () => {
+    setRows([]);
+    onApplyFilters([]);
+    handleClose();
+  };
 
   const validCount = rows.filter(isValidFilterRow).length;
 
@@ -134,6 +144,10 @@ export function AtomicEventFilters({
     handleClose();
   };
 
+  const FILTERS_POPOVER_ID = 'atomic-event-filters-popover';
+  const FILTERS_TITLE_ID = 'atomic-event-filters-title';
+  const canDeleteRows = rows.length > 1;
+
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <span>
@@ -141,13 +155,16 @@ export function AtomicEventFilters({
           variant="outlined"
           startIcon={<FilterListIcon />}
           onClick={handleOpen}
+          aria-haspopup="dialog"
+          aria-expanded={open}
+          aria-controls={open ? FILTERS_POPOVER_ID : undefined}
           sx={{
-            borderColor: border,
+            border: 'none',
             textTransform: 'none',
             fontWeight: 600,
             px: 2,
             backgroundColor: inputBg,
-            '&:hover': { borderColor: theme.palette.primary.main, bgcolor: softBlue },
+            '&:hover': { border: 'none', bgcolor: softBlue },
           }}
         >
           Filters{appliedFilters.length > 0 ? ` (${appliedFilters.length})` : ''}
@@ -157,30 +174,60 @@ export function AtomicEventFilters({
           open={open}
           anchorEl={anchorEl}
           onClose={handleClose}
+          disableEnforceFocus={false}
+          disableRestoreFocus={false}
           anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
           transformOrigin={{ vertical: 'top', horizontal: 'left' }}
-          PaperProps={{
-            elevation: 4,
-            sx: { width: 840, bgcolor: panelBg, border: `1px solid ${border}`, borderRadius: 2, mt: 1.5, overflow: 'hidden' },
+          slotProps={{
+            paper: {
+              id: FILTERS_POPOVER_ID,
+              role: 'dialog',
+              'aria-modal': true,
+              'aria-labelledby': FILTERS_TITLE_ID,
+              elevation: 8,
+              sx: {
+                width: 'min(840px, calc(100vw - 32px))',
+                bgcolor: panelBg,
+                border: 'none',
+                borderRadius: 2,
+                mt: 1.5,
+                overflow: 'hidden',
+                boxShadow: theme.shadows[8],
+              },
+            },
           }}
         >
           {/* Header */}
           <Box sx={{ p: 2.5, display: 'flex', alignItems: 'center', justifyContent: 'space-between', bgcolor: headerBg }}>
-            <Typography variant="h6" fontWeight={600}>Advanced Filters</Typography>
+            <Typography id={FILTERS_TITLE_ID} variant="h6" fontWeight={600}>Advanced Filters</Typography>
             <Box sx={{ display: 'flex', gap: 1.5 }}>
               <Button size="small" startIcon={<ClearAllIcon />} onClick={handleClearAll} sx={{ color: theme.palette.error.light, textTransform: 'none' }}>
                 Clear All
               </Button>
-              <IconButton size="small" onClick={handleClose}><CloseIcon fontSize="small" /></IconButton>
+              <IconButton size="small" onClick={handleClose} aria-label="Close filters">
+                <CloseIcon fontSize="small" />
+              </IconButton>
             </Box>
           </Box>
-
-          <Divider sx={{ borderColor: border }} />
 
           {/* Filter rows */}
           <Box sx={{ p: 3, maxHeight: 480, overflowY: 'auto' }}>
             {columns.length === 0 ? (
               <Typography color="text.secondary" align="center" py={4}>Loading filter options…</Typography>
+            ) : rows.length === 0 ? (
+              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, py: 4 }}>
+                <Typography color="text.secondary" align="center">
+                  No filters yet. Add a filter to narrow the events list.
+                </Typography>
+                <Button
+                  variant="contained"
+                  startIcon={<AddIcon />}
+                  onClick={() => setRows([createRow()])}
+                  sx={{ textTransform: 'none' }}
+                >
+                  Add Filter
+                </Button>
+              </Box>
             ) : (
               <>
                 {rows.map(row => {
@@ -189,6 +236,19 @@ export function AtomicEventFilters({
                   const operators = OPERATORS[fieldType] ?? OPERATORS.string;
                   const isBetween = row.operator === 'between';
                   const options   = mergeUniqueValues(col?.uniqueValues ?? [], fieldValues[row.field] ?? []);
+
+                  const datePickerSlots = {
+                    textField: { fullWidth: true, sx: darkInputSx },
+                    popper: { disablePortal: true },
+                  } as const;
+
+                  const selectSx = {
+                    color: theme.palette.text.primary,
+                    backgroundColor: inputBg,
+                    '& .MuiOutlinedInput-notchedOutline': { borderColor: quietBorder },
+                    '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: alpha(theme.palette.primary.main, 0.5) },
+                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: theme.palette.primary.main },
+                  };
 
                   return (
                     <Box key={row.id} sx={{ display: 'flex', gap: 2, mb: 3, alignItems: 'flex-start' }}>
@@ -202,8 +262,8 @@ export function AtomicEventFilters({
                             updateRow(row.id, { field: e.target.value, operator: '', value: '', value2: '' });
                             onLoadValues(e.target.value);
                           }}
-                          sx={{ color: theme.palette.text.primary, backgroundColor: inputBg, '& .MuiOutlinedInput-notchedOutline': { borderColor: border } }}
-                          MenuProps={{ PaperProps: { sx: menuSx } }}
+                          sx={selectSx}
+                          MenuProps={{ disablePortal: true, PaperProps: { sx: menuSx } }}
                         >
                           {columns.map(c => (
                             <MenuItem key={c.field} value={c.field}>{c.label}</MenuItem>
@@ -218,8 +278,8 @@ export function AtomicEventFilters({
                           value={row.operator}
                           label="Operator"
                           onChange={e => updateRow(row.id, { operator: e.target.value, value: '', value2: '' })}
-                          sx={{ color: theme.palette.text.primary, backgroundColor: inputBg, '& .MuiOutlinedInput-notchedOutline': { borderColor: border } }}
-                          MenuProps={{ PaperProps: { sx: menuSx } }}
+                          sx={selectSx}
+                          MenuProps={{ disablePortal: true, PaperProps: { sx: menuSx } }}
                         >
                           {operators.map(op => (
                             <MenuItem key={op.value} value={op.value}>{op.label}</MenuItem>
@@ -232,19 +292,21 @@ export function AtomicEventFilters({
                         {row.operator && fieldType === 'timestamp' ? (
                           isBetween ? (
                             <>
-                              <DateTimePicker label="From" value={row.value ? dayjs(row.value) : null} onChange={v => updateRow(row.id, { value: v?.toISOString() ?? '' })} slotProps={{ textField: { fullWidth: true, sx: darkInputSx } }} />
-                              <DateTimePicker label="To"   value={row.value2 ? dayjs(row.value2) : null} onChange={v => updateRow(row.id, { value2: v?.toISOString() ?? '' })} slotProps={{ textField: { fullWidth: true, sx: darkInputSx } }} />
+                              <DateTimePicker label="From" value={row.value ? dayjs(row.value) : null} onChange={v => updateRow(row.id, { value: v?.toISOString() ?? '' })} slotProps={datePickerSlots} />
+                              <DateTimePicker label="To"   value={row.value2 ? dayjs(row.value2) : null} onChange={v => updateRow(row.id, { value2: v?.toISOString() ?? '' })} slotProps={datePickerSlots} />
                             </>
                           ) : (
-                            <DateTimePicker label="Date & Time" value={row.value ? dayjs(row.value) : null} onChange={v => updateRow(row.id, { value: v?.toISOString() ?? '' })} slotProps={{ textField: { fullWidth: true, sx: darkInputSx } }} />
+                            <DateTimePicker label="Date & Time" value={row.value ? dayjs(row.value) : null} onChange={v => updateRow(row.id, { value: v?.toISOString() ?? '' })} slotProps={datePickerSlots} />
                           )
                         ) : row.operator && options.length > 0 ? (
                           <Autocomplete
-                            freeSolo fullWidth
+                            freeSolo
+                            fullWidth
                             options={options.map(String)}
                             inputValue={row.value}
                             onInputChange={(_, v) => updateRow(row.id, { value: v })}
                             onChange={(_, v) => updateRow(row.id, { value: v ?? '' })}
+                            disablePortal
                             renderInput={params => <TextField {...params} label="Value" sx={darkInputSx} />}
                             ListboxProps={{ sx: { backgroundColor: panelBg, color: theme.palette.text.primary } }}
                           />
@@ -256,9 +318,15 @@ export function AtomicEventFilters({
                         ) : null}
                       </Box>
 
-                      <IconButton onClick={() => removeRow(row.id)} sx={{ color: theme.palette.error.light, mt: 1 }}>
-                        <DeleteIcon />
-                      </IconButton>
+                      {canDeleteRows && (
+                        <IconButton
+                          onClick={() => removeRow(row.id)}
+                          aria-label="Remove filter"
+                          sx={{ color: theme.palette.error.light, mt: 1 }}
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      )}
                     </Box>
                   );
                 })}
@@ -269,8 +337,6 @@ export function AtomicEventFilters({
               </>
             )}
           </Box>
-
-          <Divider sx={{ borderColor: border }} />
 
           {/* Footer */}
           <Box sx={{ p: 2.5, display: 'flex', justifyContent: 'flex-end', gap: 2, bgcolor: headerBg }}>

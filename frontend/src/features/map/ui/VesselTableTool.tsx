@@ -15,7 +15,12 @@ import {
   MenuItem,
   Stack,
 } from "@mui/material";
-import { DataGrid, type GridColDef, type GridSortModel } from "@mui/x-data-grid";
+import {
+  DataGrid,
+  type GridColDef,
+  type GridRowSelectionModel,
+  type GridSortModel,
+} from "@mui/x-data-grid";
 import CloseIcon from "@mui/icons-material/Close";
 import ViewColumnIcon from "@mui/icons-material/ViewColumn";
 import TableChartOutlinedIcon from "@mui/icons-material/TableChartOutlined";
@@ -37,6 +42,10 @@ interface VesselTableToolProps {
   };
   loading: boolean;
   error: string;
+  selectedVesselId?: string | null;
+  onVesselRowSelect?: (
+    row: { id: string | number; properties: Record<string, unknown> } | null
+  ) => void;
   onGoToPage: (page: number) => void;
   onChangePageSize: (size: number) => void;
   onSetSort: (column: string | undefined, order: "asc" | "desc") => void;
@@ -64,6 +73,8 @@ function VesselTableTool({
   pageData,
   loading,
   error,
+  selectedVesselId = null,
+  onVesselRowSelect,
   onGoToPage,
   onChangePageSize,
   onSetSort,
@@ -102,6 +113,27 @@ function VesselTableTool({
     () => (sortBy ? [{ field: sortBy, sort: sortOrder }] : []),
     [sortBy, sortOrder]
   );
+
+  const rowSelectionModel: GridRowSelectionModel = useMemo(
+    () => ({
+      type: "include",
+      ids: selectedVesselId != null ? new Set([selectedVesselId]) : new Set(),
+    }),
+    [selectedVesselId]
+  );
+
+  const handleRowSelectionModelChange = (model: GridRowSelectionModel) => {
+    if (!onVesselRowSelect) return;
+    const id = model.type === "include" ? [...model.ids][0] : undefined;
+    if (id == null) {
+      onVesselRowSelect(null);
+      return;
+    }
+    const source = pageData.rows.find((row) => String(row.id) === String(id));
+    if (source) {
+      onVesselRowSelect(source);
+    }
+  };
 
   return (
     <Box
@@ -165,6 +197,14 @@ function VesselTableTool({
           }}
           columnVisibilityModel={columnVisibilityModel}
           onColumnVisibilityModelChange={(model) => onSetColumnVisibility(model)}
+          rowSelectionModel={rowSelectionModel}
+          onRowSelectionModelChange={handleRowSelectionModelChange}
+          onRowClick={(params) => {
+            if (!onVesselRowSelect) return;
+            const source = pageData.rows.find((row) => String(row.id) === String(params.id));
+            if (source) onVesselRowSelect(source);
+          }}
+          disableMultipleRowSelection
           disableColumnFilter
           disableVirtualization
           hideFooter
@@ -181,6 +221,11 @@ function VesselTableTool({
           sx={{
             border: "none",
             "& .MuiDataGrid-main": { overflow: "auto" },
+            "& .MuiDataGrid-row:focus, & .MuiDataGrid-row:focus-within": {
+              outline: "2px solid",
+              outlineColor: "primary.main",
+              outlineOffset: -2,
+            },
           }}
         />
       </Box>

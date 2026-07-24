@@ -1,5 +1,6 @@
 import { useState, useRef, type ComponentType } from "react";
 import {
+  Alert,
   Box,
   Typography,
   IconButton,
@@ -16,6 +17,8 @@ import {
   AccordionSummary,
   AccordionDetails,
   Autocomplete,
+  CircularProgress,
+  Snackbar,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -137,6 +140,11 @@ function VesselConfigPanel({ config, onApply, onFetchColumns, onSearchColumnValu
   const [isApplying, setIsApplying] = useState(false);
   const [tableColumns, setTableColumns] = useState<string[]>([]);
   const [columnOptions, setColumnOptions] = useState<Record<string, string[]>>({});
+  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: "success" | "error" }>({
+    open: false,
+    message: "",
+    severity: "success",
+  });
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useState(() => {
@@ -288,6 +296,9 @@ function VesselConfigPanel({ config, onApply, onFetchColumns, onSearchColumnValu
     setIsApplying(true);
     try {
       await onApply(local);
+      setSnackbar({ open: true, message: "Vessel style applied", severity: "success" });
+    } catch {
+      setSnackbar({ open: true, message: "Failed to apply vessel style", severity: "error" });
     } finally {
       setIsApplying(false);
     }
@@ -1019,10 +1030,32 @@ function VesselConfigPanel({ config, onApply, onFetchColumns, onSearchColumnValu
 
       {/* Sticky Apply */}
       <Box sx={{ p: 1.5, borderTop: "1px solid", borderColor: "divider", bgcolor: "background.paper", flexShrink: 0, display: "flex", justifyContent: "flex-end" }}>
-        <Button variant="contained" size="small" onClick={handleApply} disabled={isApplying} sx={{ borderRadius: 1.5, fontWeight: 700, px: 3 }}>
+        <Button
+          variant="contained"
+          size="small"
+          onClick={handleApply}
+          disabled={isApplying}
+          startIcon={isApplying ? <CircularProgress size={14} color="inherit" /> : undefined}
+          sx={{ borderRadius: 1.5, fontWeight: 700, px: 3 }}
+        >
           {isApplying ? "Applying…" : "Apply Style"}
         </Button>
       </Box>
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={3000}
+        onClose={() => setSnackbar((prev) => ({ ...prev, open: false }))}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert
+          severity={snackbar.severity}
+          onClose={() => setSnackbar((prev) => ({ ...prev, open: false }))}
+          variant="filled"
+          sx={{ width: "100%" }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

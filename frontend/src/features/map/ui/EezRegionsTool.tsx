@@ -43,7 +43,7 @@ function EezRegionsTool() {
   return (
     <>
       <Tooltip title="EEZ Regions" placement="left">
-        <IconButton size="small" onClick={handleOpen} color={open ? "primary" : "default"}>
+        <IconButton size="small" onClick={handleOpen} color={open ? "primary" : "default"} aria-label="EEZ regions">
           <TravelExploreIcon />
         </IconButton>
       </Tooltip>

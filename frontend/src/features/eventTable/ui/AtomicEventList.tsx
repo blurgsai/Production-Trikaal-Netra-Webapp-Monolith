@@ -116,7 +116,8 @@ export function AtomicEventList({ selectedEvent, onSelectEvent }: Props) {
         <Box sx={{ display: 'flex', gap: 1, mt: 2, alignItems: 'center' }}>
           <TextField
             size="small"
-            placeholder="Search events…"
+            label="Search events"
+            placeholder="e.g. dark ship"
             value={searchInput}
             onChange={handleSearch}
             InputProps={{
@@ -139,7 +140,11 @@ export function AtomicEventList({ selectedEvent, onSelectEvent }: Props) {
           />
 
           <Tooltip title="Refresh">
-            <IconButton onClick={() => refetch()} disabled={isFetching}>
+            <IconButton
+              onClick={() => refetch()}
+              disabled={isFetching}
+              aria-label="Refresh events"
+            >
               <RefreshIcon />
             </IconButton>
           </Tooltip>
@@ -150,14 +155,29 @@ export function AtomicEventList({ selectedEvent, onSelectEvent }: Props) {
 
       {/* Table */}
       <TableContainer sx={{ flexGrow: 1, overflow: 'auto' }}>
-        <Table size="small" stickyHeader>
+        <Table size="small" stickyHeader aria-label="Atomic events">
+          <caption
+            style={{
+              position: 'absolute',
+              width: '1px',
+              height: '1px',
+              padding: 0,
+              margin: 0,
+              overflow: 'hidden',
+              clip: 'rect(0, 0, 0, 0)',
+              whiteSpace: 'nowrap',
+              border: 0,
+            }}
+          >
+            Atomic events list
+          </caption>
           <TableHead>
             <TableRow>
-              <TableCell>Event ID</TableCell>
-              <TableCell>Type</TableCell>
-              <TableCell>Vessel</TableCell>
-              <TableCell>Severity</TableCell>
-              <TableCell>Timestamp</TableCell>
+              <TableCell component="th" scope="col">Event ID</TableCell>
+              <TableCell component="th" scope="col">Type</TableCell>
+              <TableCell component="th" scope="col">Vessel</TableCell>
+              <TableCell component="th" scope="col">Severity</TableCell>
+              <TableCell component="th" scope="col">Timestamp</TableCell>
             </TableRow>
           </TableHead>
 

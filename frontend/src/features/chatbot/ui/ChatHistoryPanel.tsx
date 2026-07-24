@@ -1,8 +1,8 @@
-import { useEffect } from "react";
+import { useEffect, type KeyboardEvent } from "react";
 import {
   Box,
   List,
-  ListItem,
+  ListItemButton,
   ListItemText,
   ListItemIcon,
   alpha,
@@ -20,6 +20,16 @@ interface ChatHistoryPanelProps {
   fetchChatHistory: () => Promise<void>;
   createNewSession: () => Promise<void>;
   fullscreen?: boolean;
+}
+
+function activateOnEnterOrSpace(
+  event: KeyboardEvent,
+  action: () => void,
+) {
+  if (event.key === "Enter" || event.key === " ") {
+    event.preventDefault();
+    action();
+  }
 }
 
 export default function ChatHistoryPanel({
@@ -41,6 +51,8 @@ export default function ChatHistoryPanel({
 
   return (
     <Box
+      component="nav"
+      aria-label="Chat history"
       sx={{
         width: fullscreen ? 300 : 240,
         borderRight: (theme) => `1px solid ${alpha(theme.palette.divider, 0.15)}`,
@@ -72,15 +84,15 @@ export default function ChatHistoryPanel({
         </Typography>
       </Box>
 
-      <List dense>
-        <ListItem
+      <List dense aria-label="Conversations">
+        <ListItemButton
           onClick={createNewSession}
-          key="create_new_session"
+          onKeyDown={(event) => activateOnEnterOrSpace(event, createNewSession)}
+          aria-label="New chat"
           sx={{
             mb: 1,
             borderRadius: 2,
             p: 1.5,
-            cursor: "pointer",
             transition: "all 0.2s ease",
             bgcolor: (theme) => alpha(theme.palette.primary.main, 0.12),
             border: (theme) => `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
@@ -111,54 +123,60 @@ export default function ChatHistoryPanel({
               color: "primary.main",
             }}
           />
-        </ListItem>
+        </ListItemButton>
 
-        {chatHistory?.map((msg) => (
-          <ListItem
-            key={msg.sessionId}
-            onClick={() => setSessionId(msg.sessionId)}
-            sx={{
-              mb: 1,
-              borderRadius: 2,
-              p: 2,
-              cursor: "pointer",
-              transition: "all 0.2s ease",
-              bgcolor:
-                msg?.sessionId === sessionId
+        {chatHistory?.map((msg) => {
+          const isSelected = msg?.sessionId === sessionId;
+          return (
+            <ListItemButton
+              key={msg.sessionId}
+              selected={isSelected}
+              aria-current={isSelected ? "true" : undefined}
+              aria-label={`Open chat: ${msg.title || "Untitled conversation"}`}
+              onClick={() => setSessionId(msg.sessionId)}
+              onKeyDown={(event) =>
+                activateOnEnterOrSpace(event, () => setSessionId(msg.sessionId))
+              }
+              sx={{
+                mb: 1,
+                borderRadius: 2,
+                p: 2,
+                transition: "all 0.2s ease",
+                bgcolor: isSelected
                   ? (theme) => alpha(theme.palette.primary.main, 0.15)
                   : "transparent",
-              border:
-                msg?.sessionId === sessionId
+                border: isSelected
                   ? (theme) => `1px solid ${alpha(theme.palette.primary.main, 0.3)}`
                   : "1px solid transparent",
-              "&:hover": {
-                bgcolor: (theme) => alpha(theme.palette.action.hover, 0.5),
-                transform: "translateX(2px)",
-              },
-            }}
-          >
-            <ListItemIcon
-              sx={{
-                minWidth: 40,
-                mr: 1.5,
-                p: 0,
-                color: msg?.sessionId === sessionId ? "primary.main" : "text.secondary",
+                "&:hover": {
+                  bgcolor: (theme) => alpha(theme.palette.action.hover, 0.5),
+                  transform: "translateX(2px)",
+                },
               }}
             >
-              <ChatIcon fontSize="small" />
-            </ListItemIcon>
+              <ListItemIcon
+                sx={{
+                  minWidth: 40,
+                  mr: 1.5,
+                  p: 0,
+                  color: isSelected ? "primary.main" : "text.secondary",
+                }}
+              >
+                <ChatIcon fontSize="small" />
+              </ListItemIcon>
 
-            <ListItemText
-              primary={msg.title}
-              primaryTypographyProps={{
-                variant: "body2",
-                fontWeight: msg?.sessionId === sessionId ? 600 : 400,
-                noWrap: true,
-                color: "text.primary",
-              }}
-            />
-          </ListItem>
-        ))}
+              <ListItemText
+                primary={msg.title}
+                primaryTypographyProps={{
+                  variant: "body2",
+                  fontWeight: isSelected ? 600 : 400,
+                  noWrap: true,
+                  color: "text.primary",
+                }}
+              />
+            </ListItemButton>
+          );
+        })}
       </List>
     </Box>
   );

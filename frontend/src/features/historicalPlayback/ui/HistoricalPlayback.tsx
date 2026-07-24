@@ -1,6 +1,16 @@
-import { useCallback, useRef, useState, useEffect } from "react";
+import { useCallback, useRef, useState, useEffect, useId } from "react";
 
-import { Box, Fade, Paper, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  IconButton,
+  Typography,
+  useMediaQuery,
+} from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
 import MapIcon from "@mui/icons-material/Map";
 import PlayArrowRoundedIcon from "@mui/icons-material/PlayArrowRounded";
 
@@ -42,8 +52,34 @@ interface ActivePlaybackSession {
   geometry: GeoJSON.Geometry;
 }
 
+const drawCtaSx = {
+  position: "absolute",
+  top: 24,
+  right: 88,
+  zIndex: 1000,
+  px: 1.5,
+  py: 0.75,
+  minWidth: 0,
+  borderRadius: 4,
+  bgcolor: "background.paper",
+  border: 1,
+  borderColor: "divider",
+  boxShadow: (theme: { shadows: string[] }) => theme.shadows[8],
+  textTransform: "none",
+  color: "text.secondary",
+  "&:focus-visible": {
+    outline: "2px solid",
+    outlineColor: "primary.main",
+    outlineOffset: 2,
+  },
+} as const;
+
 export default function HistoricalPlayback() {
   const urlParams = usePlaybackUrlParams();
+  const prefersReducedMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
+  const onboardingTitleId = useId();
+  const onboardingDescId = useId();
+  const drawCtaRef = useRef<HTMLButtonElement | null>(null);
 
   const [polygon, setPolygon] = useState<
     GeoJSON.Feature | GeoJSON.Geometry | null
@@ -51,6 +87,7 @@ export default function HistoricalPlayback() {
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [addingSession, setAddingSession] = useState(false);
+  const [onboardingDismissed, setOnboardingDismissed] = useState(false);
 
   const [playbackRange, setPlaybackRange] = useState<PlaybackRange>(() => ({
     start: urlParams.start ?? toLocalDatetime(DATA_START_UTC),
@@ -152,6 +189,7 @@ export default function HistoricalPlayback() {
     setPolygon(null);
     setAddingSession(false);
     setDialogOpen(false);
+    setOnboardingDismissed(false);
   };
 
   const handleDialogClose = () => {
@@ -173,14 +211,42 @@ export default function HistoricalPlayback() {
     setTimeout(() => drawPolygonRef.current?.(), 100);
   }, [resetDialogDefaults, sessions.length]);
 
+  const handleStartDraw = useCallback(() => {
+    drawPolygonRef.current?.();
+  }, []);
+
+  const handleOnboardingClose = useCallback(() => {
+    setOnboardingDismissed(true);
+  }, []);
+
   const hasSessions = sessions.length > 0;
-  const showOnboarding = !hasSessions && !polygon && !drawingActive && !addingSession;
-  const canAddSession = hasSessions && sessions.length < MAX_PLAYBACK_SESSIONS && !addingSession;
+  const canStartDraw =
+    !hasSessions && !polygon && !drawingActive && !addingSession;
+  const showOnboardingDialog = canStartDraw && !onboardingDismissed;
+  const canAddSession =
+    hasSessions && sessions.length < MAX_PLAYBACK_SESSIONS && !addingSession;
   const nextSessionColor =
     PLAYBACK_SESSION_COLORS[sessions.length % PLAYBACK_SESSION_COLORS.length];
   const drawColor = hasSessions
     ? nextSessionColor
     : PLAYBACK_SESSION_COLORS[0];
+
+  const pulseDotSx = (color: string) => ({
+    width: 10,
+    height: 10,
+    borderRadius: "50%",
+    bgcolor: color,
+    ...(prefersReducedMotion
+      ? {}
+      : {
+          animation: "pulse 2s infinite",
+          "@keyframes pulse": {
+            "0%": { opacity: 1, transform: "scale(1)" },
+            "50%": { opacity: 0.5, transform: "scale(1.2)" },
+            "100%": { opacity: 1, transform: "scale(1)" },
+          },
+        }),
+  });
 
   return (
     <PlaybackControlsProvider
@@ -209,117 +275,152 @@ export default function HistoricalPlayback() {
           </Box>
         )}
 
-        {showOnboarding && (
-          <Fade in timeout={600}>
-            <Box sx={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
-              <Paper
-                sx={{
-                  position: "absolute",
-                  top: 24,
-                  left: "50%",
-                  transform: "translateX(-50%)",
-                  zIndex: 1000,
-                  px: 3,
-                  py: 2.5,
-                  maxWidth: 480,
-                  width: "90%",
-                  borderRadius: 3,
-                  bgcolor: "background.paper",
-                  border: 1,
-                  borderColor: "divider",
-                  boxShadow: (theme) => theme.shadows[8],
-                  pointerEvents: "auto",
-                }}
-              >
-                <Typography variant="h6" fontWeight={800} sx={{ mb: 1.5, color: "text.primary" }}>
-                  Historical Playback
-                </Typography>
-                <Typography variant="body2" sx={{ color: "text.secondary", mb: 2 }}>
-                  Replay vessel movement inside a selected area over time.
-                </Typography>
-                <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-                    <Box
-                      sx={{
-                        width: 32,
-                        height: 32,
-                        borderRadius: 1.5,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        bgcolor: "primary.soft",
-                        color: "primary.main",
-                      }}
-                    >
-                      <MapIcon fontSize="small" />
-                    </Box>
-                    <Typography variant="body2" sx={{ color: "text.secondary" }}>
-                      Draw a polygon on the map using the toolbar on the top-right
-                    </Typography>
-                  </Box>
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-                    <Box
-                      sx={{
-                        width: 32,
-                        height: 32,
-                        borderRadius: 1.5,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        bgcolor: "primary.soft",
-                        color: "primary.main",
-                      }}
-                    >
-                      <PlayArrowRoundedIcon fontSize="small" />
-                    </Box>
-                    <Typography variant="body2" sx={{ color: "text.secondary" }}>
-                      Choose a time range and granularity, then press Play
-                    </Typography>
-                  </Box>
-                </Box>
-              </Paper>
-
-              <Paper
-                onClick={() => drawPolygonRef.current?.()}
-                sx={{
-                  position: "absolute",
-                  top: 24,
-                  right: 88,
-                  zIndex: 1000,
-                  px: 1.5,
-                  py: 0.75,
-                  borderRadius: 4,
-                  bgcolor: "background.paper",
-                  border: 1,
-                  borderColor: "divider",
-                  boxShadow: (theme) => theme.shadows[8],
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 1,
-                  pointerEvents: "auto",
-                  cursor: "pointer",
-                }}
-              >
+        <Dialog
+          open={showOnboardingDialog}
+          onClose={handleOnboardingClose}
+          aria-labelledby={onboardingTitleId}
+          aria-describedby={onboardingDescId}
+          transitionDuration={prefersReducedMotion ? 0 : 225}
+          slotProps={{
+            backdrop: { sx: { backgroundColor: "transparent" } },
+          }}
+          PaperProps={{
+            sx: {
+              position: "absolute",
+              top: 24,
+              m: 0,
+              maxWidth: 480,
+              width: "90%",
+              borderRadius: 3,
+              bgcolor: "background.paper",
+              border: 1,
+              borderColor: "divider",
+              boxShadow: (theme) => theme.shadows[8],
+            },
+          }}
+          sx={{
+            "& .MuiDialog-container": {
+              alignItems: "flex-start",
+              pt: 0,
+            },
+          }}
+        >
+          <DialogTitle
+            id={onboardingTitleId}
+            sx={{
+              display: "flex",
+              alignItems: "flex-start",
+              justifyContent: "space-between",
+              gap: 1,
+              fontWeight: 800,
+              pb: 1,
+            }}
+          >
+            Historical Playback
+            <IconButton
+              aria-label="Close onboarding"
+              onClick={handleOnboardingClose}
+              size="small"
+              sx={{ mt: -0.5, mr: -1 }}
+            >
+              <CloseIcon fontSize="small" />
+            </IconButton>
+          </DialogTitle>
+          <DialogContent>
+            <Typography
+              id={onboardingDescId}
+              variant="body2"
+              sx={{ color: "text.secondary", mb: 2 }}
+            >
+              Replay vessel movement inside a selected area over time.
+            </Typography>
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5, mb: 2 }}>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
                 <Box
                   sx={{
-                    width: 10,
-                    height: 10,
-                    borderRadius: "50%",
-                    bgcolor: "primary.main",
-                    animation: "pulse 2s infinite",
-                    "@keyframes pulse": {
-                      "0%": { opacity: 1, transform: "scale(1)" },
-                      "50%": { opacity: 0.5, transform: "scale(1.2)" },
-                      "100%": { opacity: 1, transform: "scale(1)" },
-                    },
+                    width: 32,
+                    height: 32,
+                    borderRadius: 1.5,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    bgcolor: "primary.soft",
+                    color: "primary.main",
                   }}
-                />
-                <Typography variant="caption" sx={{ color: "text.secondary", fontWeight: 600, whiteSpace: "nowrap" }}>
-                  Click to draw area
+                >
+                  <MapIcon fontSize="small" />
+                </Box>
+                <Typography variant="body2" sx={{ color: "text.secondary" }}>
+                  Draw a polygon on the map using the toolbar on the top-right
                 </Typography>
-              </Paper>
+              </Box>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                <Box
+                  sx={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: 1.5,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    bgcolor: "primary.soft",
+                    color: "primary.main",
+                  }}
+                >
+                  <PlayArrowRoundedIcon fontSize="small" />
+                </Box>
+                <Typography variant="body2" sx={{ color: "text.secondary" }}>
+                  Choose a time range and granularity, then press Play
+                </Typography>
+              </Box>
             </Box>
-          </Fade>
+            <Button
+              ref={drawCtaRef}
+              type="button"
+              variant="contained"
+              fullWidth
+              onClick={handleStartDraw}
+              aria-label="Click to draw area"
+              startIcon={<Box sx={pulseDotSx("primary.main")} />}
+              sx={{
+                textTransform: "none",
+                borderRadius: 2,
+                fontWeight: 700,
+                "&:focus-visible": {
+                  outline: "2px solid",
+                  outlineColor: "primary.light",
+                  outlineOffset: 2,
+                },
+              }}
+            >
+              Click to draw area
+            </Button>
+            <Typography
+              variant="caption"
+              sx={{ display: "block", mt: 1.5, color: "text.disabled" }}
+            >
+              Press Esc to close
+            </Typography>
+          </DialogContent>
+        </Dialog>
+
+        {canStartDraw && onboardingDismissed && (
+          <Button
+            type="button"
+            variant="outlined"
+            onClick={handleStartDraw}
+            aria-label="Click to draw area"
+            startIcon={<Box sx={pulseDotSx("primary.main")} />}
+            sx={drawCtaSx}
+          >
+            <Typography
+              component="span"
+              variant="caption"
+              sx={{ color: "text.secondary", fontWeight: 600, whiteSpace: "nowrap" }}
+            >
+              Click to draw area
+            </Typography>
+          </Button>
         )}
 
         {hasSessions && (
@@ -350,6 +451,7 @@ export default function HistoricalPlayback() {
                   filters={session.filters}
                   granularity={session.granularity}
                   onClosePlayback={() => handleRemoveSession(session.id)}
+                  preferReducedMotion={prefersReducedMotion}
                 />
               ))}
             </PlaybackMap>
@@ -357,44 +459,22 @@ export default function HistoricalPlayback() {
         )}
 
         {addingSession && hasSessions && !dialogOpen && (
-          <Paper
-            onClick={() => drawPolygonRef.current?.()}
-            sx={{
-              position: "absolute",
-              top: 24,
-              right: 88,
-              zIndex: 1000,
-              px: 1.5,
-              py: 0.75,
-              borderRadius: 4,
-              bgcolor: "background.paper",
-              border: 1,
-              borderColor: "divider",
-              boxShadow: (theme) => theme.shadows[8],
-              display: "flex",
-              alignItems: "center",
-              gap: 1,
-              cursor: "pointer",
-            }}
+          <Button
+            type="button"
+            variant="outlined"
+            onClick={handleStartDraw}
+            aria-label={`Draw area for playback ${sessions.length + 1}`}
+            startIcon={<Box sx={pulseDotSx(nextSessionColor)} />}
+            sx={drawCtaSx}
           >
-            <Box
-              sx={{
-                width: 10,
-                height: 10,
-                borderRadius: "50%",
-                bgcolor: nextSessionColor,
-                animation: "pulse 2s infinite",
-                "@keyframes pulse": {
-                  "0%": { opacity: 1, transform: "scale(1)" },
-                  "50%": { opacity: 0.5, transform: "scale(1.2)" },
-                  "100%": { opacity: 1, transform: "scale(1)" },
-                },
-              }}
-            />
-            <Typography variant="caption" sx={{ color: "text.secondary", fontWeight: 600, whiteSpace: "nowrap" }}>
+            <Typography
+              component="span"
+              variant="caption"
+              sx={{ color: "text.secondary", fontWeight: 600, whiteSpace: "nowrap" }}
+            >
               Draw area for playback {sessions.length + 1}
             </Typography>
-          </Paper>
+          </Button>
         )}
 
         {hasSessions && !dialogOpen && <PlaybackControlsStack />}

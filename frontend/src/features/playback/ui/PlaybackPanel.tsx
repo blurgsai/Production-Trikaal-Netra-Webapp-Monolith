@@ -1,5 +1,12 @@
 import { Fragment, useMemo } from 'react';
-import { Box, CircularProgress, Typography } from '@mui/material';
+import {
+  Alert,
+  Box,
+  Button,
+  CircularProgress,
+  Skeleton,
+  Typography,
+} from '@mui/material';
 import { usePlayback } from '../hooks/usePlayback';
 import { useResolvedEventTypes } from '../hooks/useResolvedEventTypes';
 import { useTrajectoryOverrides } from '../hooks/useTrajectoryOverrides';
@@ -25,6 +32,7 @@ export function PlaybackPanel({ eventId, eventType, isCompound }: PlaybackPanelP
     data,
     isLoading,
     error,
+    refetch,
     currentTimestampMs,
     currentPositions,
     isPlaying,
@@ -51,16 +59,48 @@ export function PlaybackPanel({ eventId, eventType, isCompound }: PlaybackPanelP
 
   if (isLoading) {
     return (
-      <Box display="flex" alignItems="center" justifyContent="center" height="100%">
-        <CircularProgress />
+      <Box
+        role="status"
+        aria-live="polite"
+        aria-busy="true"
+        display="flex"
+        flexDirection="column"
+        alignItems="center"
+        justifyContent="center"
+        height="100%"
+        gap={2}
+        p={3}
+      >
+        <Box sx={{ width: '100%', maxWidth: 360, display: 'flex', flexDirection: 'column', gap: 1 }}>
+          <Skeleton variant="rounded" height={28} />
+          <Skeleton variant="rounded" height={28} />
+          <Skeleton variant="rounded" height={28} />
+        </Box>
+        <CircularProgress aria-label="Loading playback" />
+        <Typography variant="body2" color="text.secondary">
+          Loading playback…
+        </Typography>
       </Box>
     );
   }
 
   if (error) {
     return (
-      <Box display="flex" alignItems="center" justifyContent="center" height="100%" p={2}>
-        <Typography color="error" align="center">{error}</Typography>
+      <Box
+        display="flex"
+        flexDirection="column"
+        alignItems="center"
+        justifyContent="center"
+        height="100%"
+        gap={2}
+        p={2}
+      >
+        <Alert severity="error" sx={{ maxWidth: 420 }}>
+          {error}
+        </Alert>
+        <Button variant="contained" onClick={() => refetch()}>
+          Retry
+        </Button>
       </Box>
     );
   }

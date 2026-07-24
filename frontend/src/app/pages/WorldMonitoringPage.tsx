@@ -48,6 +48,7 @@ export function WorldMonitoringPage() {
       <Tabs
         value={activeTab === -1 ? 0 : activeTab}
         onChange={(_, newIndex) => navigate(TABS[newIndex].path)}
+        aria-label="World Monitoring"
         sx={{
           minHeight: 44,
           px: 2,
@@ -59,6 +60,10 @@ export function WorldMonitoringPage() {
             minHeight: 44,
             "&.Mui-selected": {
               color: worldMonitorPalette.accent,
+            },
+            "&:focus-visible": {
+              outline: `2px solid ${worldMonitorPalette.accent}`,
+              outlineOffset: 2,
             },
           },
           "& .MuiTabs-indicator": {

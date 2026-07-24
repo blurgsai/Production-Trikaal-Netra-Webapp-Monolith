@@ -23,7 +23,6 @@ import { defenseColors } from "@/shared/theme";
 import type { InsightsTimelinePoint, InsightsTimelineRange } from "../model/types";
 
 const TIMELINE_RANGE_OPTIONS: { value: InsightsTimelineRange; label: string }[] = [
-  { value: "all", label: "All time" },
   { value: "1y", label: "Past 1 year" },
   { value: "6m", label: "Past 6 months" },
   { value: "3m", label: "Past 3 months" },

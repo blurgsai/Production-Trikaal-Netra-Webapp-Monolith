@@ -298,9 +298,31 @@ export const defenseTheme = createTheme({
         },
       },
     },
+    MuiButtonBase: {
+      styleOverrides: {
+        root: {
+          "&:focus-visible": {
+            outline: `2px solid ${c.action.focusVisible}`,
+            outlineOffset: c.action.focusVisibleOffset,
+          },
+        },
+      },
+    },
     MuiIconButton: {
       styleOverrides: {
-        root: { "&:hover": { backgroundColor: c.action.hover } },
+        root: {
+          "&:hover": { backgroundColor: c.action.hover },
+          "&:focus-visible": {
+            outline: `2px solid ${c.action.focusVisible}`,
+            outlineOffset: c.action.focusVisibleOffset,
+          },
+          "&.Mui-disabled": {
+            opacity: c.action.disabledOpacity,
+            color: c.text.disabled,
+            cursor: "not-allowed",
+            pointerEvents: "auto",
+          },
+        },
       },
     },
     MuiToolbar: {

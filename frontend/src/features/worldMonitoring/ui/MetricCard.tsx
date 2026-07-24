@@ -1,4 +1,5 @@
 import { Box, Card, CardContent, Typography } from "@mui/material";
+import { useId } from "react";
 
 import { defenseColors } from "@/shared/theme";
 
@@ -9,8 +10,15 @@ interface MetricCardProps {
 }
 
 export const MetricCard = ({ label, value, helper }: MetricCardProps) => {
+  const reactId = useId();
+  const labelId = `${reactId}-label`;
+  const helperId = `${reactId}-helper`;
+
   return (
     <Card
+      component="article"
+      aria-labelledby={labelId}
+      aria-describedby={helperId}
       sx={{
         borderRadius: 3,
         border: `1px solid ${defenseColors.border.default}`,
@@ -32,6 +40,7 @@ export const MetricCard = ({ label, value, helper }: MetricCardProps) => {
 
       <CardContent sx={{ p: 2 }}>
         <Typography
+          id={labelId}
           variant="caption"
           sx={{ color: defenseColors.text.muted }}
         >
@@ -39,6 +48,7 @@ export const MetricCard = ({ label, value, helper }: MetricCardProps) => {
         </Typography>
 
         <Typography
+          component="div"
           variant="h4"
           sx={{
             color: defenseColors.text.primary,
@@ -49,7 +59,11 @@ export const MetricCard = ({ label, value, helper }: MetricCardProps) => {
           {value}
         </Typography>
 
-        <Typography variant="body2" sx={{ color: defenseColors.text.muted }}>
+        <Typography
+          id={helperId}
+          variant="body2"
+          sx={{ color: defenseColors.text.muted }}
+        >
           {helper}
         </Typography>
       </CardContent>
