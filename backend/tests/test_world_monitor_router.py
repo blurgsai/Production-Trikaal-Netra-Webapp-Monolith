@@ -134,6 +134,45 @@ class TestGetEvents:
         assert resp.status_code == 422
 
 
+class TestSearchVessels:
+    def test_returns_matches(self, client):
+        with patch(
+            "src.features.world_monitor.router.search_vessels_by_name",
+            new_callable=AsyncMock,
+        ) as mock_service:
+            mock_service.return_value = {
+                "query": "Stellar",
+                "matches": [
+                    {
+                        "vessel_id": 1,
+                        "ship_name": "MV Stellar Voyager",
+                        "mmsi": 123456789,
+                        "score": 0.85,
+                    }
+                ],
+            }
+            resp = client.get(
+                "/world-monitor/vessels/search",
+                params={"name": "Stellar", "limit": 5},
+            )
+
+            assert resp.status_code == 200
+            body = resp.json()
+            assert body["success"] is True
+            assert body["query"] == "Stellar"
+            assert len(body["matches"]) == 1
+            assert body["matches"][0]["vessel_id"] == 1
+            assert body["matches"][0]["mmsi"] == 123456789
+
+    def test_rejects_missing_name(self, client):
+        resp = client.get("/world-monitor/vessels/search")
+        assert resp.status_code == 422
+
+    def test_rejects_invalid_limit(self, client):
+        resp = client.get("/world-monitor/vessels/search", params={"name": "x", "limit": 25})
+        assert resp.status_code == 422
+
+
 class TestGetMapEvents:
     def test_returns_map_data(self, client):
         with patch(

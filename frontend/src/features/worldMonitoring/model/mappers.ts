@@ -31,6 +31,7 @@ import type {
   ArticleDetail,
   ArticleLinkedEvent,
   ArticleMetadata,
+  VesselSearchMatch,
 } from "./types";
 import { severityConfig } from "./types";
 
@@ -327,3 +328,18 @@ export const mapArticleMetadata = (
   sourceTypes: raw.source_types,
   processingStatuses: raw.processing_statuses,
 });
+
+// ── Vessel Search mappers ───────────────────────────────────────────────────────
+
+export const mapVesselSearchMatch = (
+  raw: { vessel_id: number; ship_name: string; mmsi: number | null; score: number },
+): VesselSearchMatch => ({
+  vesselId: raw.vessel_id,
+  shipName: raw.ship_name,
+  mmsi: raw.mmsi,
+  score: raw.score,
+});
+
+export const mapVesselSearchMatches = (
+  raw: { vessel_id: number; ship_name: string; mmsi: number | null; score: number }[],
+): VesselSearchMatch[] => raw.map(mapVesselSearchMatch);

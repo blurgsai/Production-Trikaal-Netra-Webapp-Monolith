@@ -22,6 +22,7 @@ from src.features.world_monitor.clients import (
     fetch_metadata,
     fetch_recent_events,
     fetch_today_article_count,
+    fetch_vessels_by_name,
 )
 
 
@@ -403,6 +404,39 @@ class TestFetchRecentEvents:
 
         assert len(result) == 1
         mock_cursor.limit.assert_called_with(5)
+
+
+class TestFetchVesselsByName:
+    @pytest.mark.asyncio
+    async def test_queries_vessel_state_collection_case_insensitive(self, mock_cursor):
+        docs = [
+            {"vesselId": 101, "identification": {"shipName": "MV Star", "mmsi": 123456789}},
+        ]
+        mock_cursor.to_list = AsyncMock(return_value=docs)
+        vessel_state_collection = MagicMock()
+        vessel_state_collection.find = MagicMock(return_value=mock_cursor)
+        db = MagicMock()
+        db.get_collection = MagicMock(return_value=vessel_state_collection)
+
+        result = await fetch_vessels_by_name(db, "star", limit=10)
+
+        assert result == docs
+        db.get_collection.assert_called_with("vessel_state")
+        query_arg = vessel_state_collection.find.call_args[0][0]
+        assert query_arg["identification.shipName"]["$options"] == "i"
+        mock_cursor.limit.assert_called_with(10)
+
+    @pytest.mark.asyncio
+    async def test_returns_empty_list_when_no_match(self, mock_cursor):
+        mock_cursor.to_list = AsyncMock(return_value=[])
+        vessel_state_collection = MagicMock()
+        vessel_state_collection.find = MagicMock(return_value=mock_cursor)
+        db = MagicMock()
+        db.get_collection = MagicMock(return_value=vessel_state_collection)
+
+        result = await fetch_vessels_by_name(db, "nonexistent-vessel")
+
+        assert result == []
 
 
 class TestFetchAllEvents:

@@ -16,7 +16,42 @@ from src.features.world_monitor.services import (
     get_overview_recent,
     get_overview_summary,
     get_overview_trends,
+    search_vessels_by_name,
 )
+
+
+class TestSearchVesselsByName:
+    @pytest.mark.asyncio
+    async def test_fuzzy_ranks_candidates(self, mock_db):
+        docs = [
+            {"vesselId": 1, "identification": {"shipName": "Stellar Voyager", "mmsi": 123456789}},
+            {"vesselId": 2, "identification": {"shipName": "MV Sea Star", "mmsi": 555555555}},
+            {"vesselId": 3, "identification": {"shipName": "Northern Star", "mmsi": 987654321}},
+        ]
+        with patch(
+            "src.features.world_monitor.services.fetch_vessels_by_name",
+            new_callable=AsyncMock,
+            return_value=docs,
+        ):
+            result = await search_vessels_by_name(mock_db, "Stellar", limit=2)
+
+            assert result["query"] == "Stellar"
+            assert len(result["matches"]) == 2
+            assert result["matches"][0]["ship_name"] == "Stellar Voyager"
+            assert result["matches"][0]["score"] >= result["matches"][1]["score"]
+            assert result["matches"][0]["vessel_id"] == 1
+
+    @pytest.mark.asyncio
+    async def test_returns_empty_when_no_matches(self, mock_db):
+        with patch(
+            "src.features.world_monitor.services.fetch_vessels_by_name",
+            new_callable=AsyncMock,
+            return_value=[],
+        ):
+            result = await search_vessels_by_name(mock_db, "Unknown", limit=5)
+
+            assert result["query"] == "Unknown"
+            assert result["matches"] == []
 
 
 class TestGetMetadata:
